@@ -1,8 +1,11 @@
 package com.trackgod.app.feature.profile
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.trackgod.app.core.repository.SettingsRepository
+import com.trackgod.app.service.WeighInReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +35,7 @@ data class SettingsState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
+    @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsState())
@@ -114,16 +118,35 @@ class SettingsViewModel @Inject constructor(
     fun setWeighInReminder(enabled: Boolean) {
         settingsRepository.setWeighInReminderEnabled(enabled)
         _state.value = _state.value.copy(weighInReminder = enabled)
+        if (enabled) {
+            scheduleWeighInReminder()
+        } else {
+            WeighInReminderScheduler.cancel(appContext)
+        }
     }
 
     fun setReminderDay(day: String) {
         settingsRepository.setReminderDay(day)
         _state.value = _state.value.copy(reminderDay = day)
+        if (_state.value.weighInReminder) {
+            scheduleWeighInReminder()
+        }
     }
 
     fun setReminderTime(time: String) {
         settingsRepository.setReminderTime(time)
         _state.value = _state.value.copy(reminderTime = time)
+        if (_state.value.weighInReminder) {
+            scheduleWeighInReminder()
+        }
+    }
+
+    private fun scheduleWeighInReminder() {
+        val day = _state.value.reminderDay
+        val timeParts = _state.value.reminderTime.split(":")
+        val hour = timeParts.getOrNull(0)?.toIntOrNull() ?: 8
+        val minute = timeParts.getOrNull(1)?.toIntOrNull() ?: 0
+        WeighInReminderScheduler.schedule(appContext, day, hour, minute)
     }
 
     // -- Data --

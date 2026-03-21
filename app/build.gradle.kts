@@ -91,6 +91,9 @@ dependencies {
     // Vico Charts
     implementation(libs.vico.compose)
 
+    // WorkManager
+    implementation(libs.work.runtime.ktx)
+
     // Core
     implementation(libs.core.ktx)
     implementation(libs.activity.compose)

@@ -5,7 +5,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,7 +22,9 @@ import com.trackgod.app.feature.profile.ProfileScreen
 import com.trackgod.app.feature.profile.SettingsScreen
 import com.trackgod.app.feature.splash.SplashScreen
 import com.trackgod.app.feature.stats.StatsScreen
+import com.trackgod.app.feature.weightloss.PhotoComparisonScreen
 import com.trackgod.app.feature.weightloss.WeightLossScreen
+import com.trackgod.app.feature.weightloss.WeightLossViewModel
 import com.trackgod.app.feature.workout.picker.ExercisePickerScreen
 import com.trackgod.app.feature.workout.session.WorkoutSessionScreen
 import com.trackgod.app.ui.component.BottomNavBar
@@ -179,6 +183,24 @@ fun TrackGodNavHost() {
             }
             composable(Screen.WeightLoss.route) {
                 WeightLossScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToPhotoComparison = {
+                        navController.navigate(Screen.PhotoComparison.route)
+                    },
+                )
+            }
+            composable(Screen.PhotoComparison.route) {
+                // Share the WeightLossViewModel with the parent route so
+                // the comparison screen sees the same progress photos.
+                val parentEntry = remember(it) {
+                    navController.getBackStackEntry(Screen.WeightLoss.route)
+                }
+                val viewModel: WeightLossViewModel =
+                    androidx.hilt.navigation.compose.hiltViewModel(parentEntry)
+                val state by viewModel.state.collectAsStateWithLifecycle()
+
+                PhotoComparisonScreen(
+                    photos = state.progressPhotos,
                     onNavigateBack = { navController.popBackStack() },
                 )
             }

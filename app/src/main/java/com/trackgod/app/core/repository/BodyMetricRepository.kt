@@ -42,6 +42,21 @@ class BodyMetricRepository @Inject constructor(
     fun getProgressPhotos(limit: Int = 20): Flow<List<BodyMetricEntity>> =
         bodyMetricDao.getProgressPhotos(limit)
 
+    /**
+     * Save a progress photo (no weight) as a body-metric entry.
+     */
+    suspend fun addProgressPhoto(photoUri: String): Long {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val entity = BodyMetricEntity(
+            date = dateFormat.format(Date()),
+            weight = null,
+            note = null,
+            photoUri = photoUri,
+            createdAt = System.currentTimeMillis(),
+        )
+        return bodyMetricDao.insert(entity)
+    }
+
     suspend fun deleteMetric(metric: BodyMetricEntity) =
         bodyMetricDao.delete(metric)
 }

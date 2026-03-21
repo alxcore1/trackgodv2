@@ -13,6 +13,7 @@ coroutines = "1.9.0"
 coreKtx = "1.15.0"
 activityCompose = "1.9.3"
 vico = "2.0.0-beta.3"
+workRuntime = "2.10.0"
 
 [libraries]
 # Compose BOM
@@ -53,6 +54,9 @@ coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutin
 
 # Vico Charts
 vico-compose = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
+
+# WorkManager
+work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntime" }
 
 # Core
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

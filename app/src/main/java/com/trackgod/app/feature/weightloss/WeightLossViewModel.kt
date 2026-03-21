@@ -283,4 +283,26 @@ class WeightLossViewModel @Inject constructor(
             weightLossRepository.deleteMilestone(milestone)
         }
     }
+
+    /**
+     * Save a progress photo as a body-metric entry (no weight, just the URI + date).
+     */
+    fun addProgressPhoto(uri: String) {
+        viewModelScope.launch {
+            bodyMetricRepository.addProgressPhoto(uri)
+        }
+    }
+
+    /**
+     * Delete a body-metric entry (e.g. a progress photo).
+     */
+    fun deletePhoto(metricId: Long) {
+        viewModelScope.launch {
+            val photos = _state.value.progressPhotos
+            val target = photos.find { it.id == metricId }
+            if (target != null) {
+                bodyMetricRepository.deleteMetric(target)
+            }
+        }
+    }
 }

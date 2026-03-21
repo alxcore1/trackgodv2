@@ -2,7 +2,6 @@ package com.trackgod.app.feature.weightloss
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,12 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -43,7 +39,6 @@ import com.trackgod.app.ui.component.TrackGodCard
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.SurfaceHighest
-import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
 import java.text.NumberFormat
@@ -52,6 +47,7 @@ import java.util.Locale
 @Composable
 fun WeightLossScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToPhotoComparison: () -> Unit = {},
     viewModel: WeightLossViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -173,49 +169,10 @@ fun WeightLossScreen(
                 // -- PROGRESS PHOTOS --
                 SectionDivider(text = "PROGRESS PHOTOS", modifier = Modifier.fillMaxWidth())
                 Spacer(modifier = Modifier.height(12.dp))
-                if (state.progressPhotos.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp)
-                            .background(SurfaceLow),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = "NO PHOTOS YET",
-                            color = TextTertiary,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp,
-                        )
-                    }
-                } else {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        items(state.progressPhotos) { photo ->
-                            Box(
-                                modifier = Modifier
-                                    .size(80.dp)
-                                    .background(SurfaceLow),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = photo.date,
-                                    color = TextTertiary,
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                TrackGodButton(
-                    text = "COMPARE PHOTOS",
-                    onClick = { /* Task 2 handles this */ },
-                    variant = ButtonVariant.Secondary,
-                    modifier = Modifier.fillMaxWidth(),
+                ProgressPhotosSection(
+                    photos = state.progressPhotos,
+                    onPhotoAdded = viewModel::addProgressPhoto,
+                    onCompare = onNavigateToPhotoComparison,
                 )
             }
 
