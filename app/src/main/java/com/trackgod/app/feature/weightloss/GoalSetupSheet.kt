@@ -164,22 +164,38 @@ fun GoalSetupSheet(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Validation error
+            val sw = startWeight.toFloatOrNull()
+            val tw = targetWeight.toFloatOrNull()
+            val isWeightValid = sw != null && tw != null && sw > tw
+            val showWeightError = sw != null && tw != null && sw <= tw
+
+            if (showWeightError) {
+                Text(
+                    text = "Starting weight must be greater than target weight",
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Save
             TrackGodButton(
                 text = "SAVE GOAL",
                 onClick = {
-                    val sw = startWeight.toFloatOrNull() ?: return@TrackGodButton
-                    val tw = targetWeight.toFloatOrNull() ?: return@TrackGodButton
+                    val startW = startWeight.toFloatOrNull() ?: return@TrackGodButton
+                    val targetW = targetWeight.toFloatOrNull() ?: return@TrackGodButton
                     if (targetDate.isBlank()) return@TrackGodButton
+                    if (startW <= targetW) return@TrackGodButton
                     val wg = weeklyGoal.toFloatOrNull()
                     val mot = motivation.ifBlank { null }
-                    onSave(sw, tw, targetDate, wg, mot)
+                    onSave(startW, targetW, targetDate, wg, mot)
                 },
-                enabled = startWeight.toFloatOrNull() != null
-                        && targetWeight.toFloatOrNull() != null
-                        && targetDate.isNotBlank(),
+                enabled = isWeightValid && targetDate.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             )
 

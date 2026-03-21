@@ -34,6 +34,11 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
@@ -75,6 +81,31 @@ fun WorkoutSessionScreen(
     viewModel: WorkoutSessionViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Vibrate when rest timer completes
+    LaunchedEffect(state.restTimerCompleted) {
+        if (state.restTimerCompleted) {
+            val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val mgr = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+                mgr?.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            }
+            if (vibrator?.hasVibrator() == true) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(
+                        VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(500)
+                }
+            }
+            viewModel.consumeRestTimerCompleted()
+        }
+    }
 
     // Navigate away when workout is confirmed or discarded
     LaunchedEffect(state.showCompleteDialog) {
@@ -95,8 +126,7 @@ fun WorkoutSessionScreen(
         onFinishWorkout = viewModel::finishWorkout,
         onDismissCompleteDialog = viewModel::dismissCompleteDialog,
         onConfirmFinish = { name ->
-            viewModel.confirmFinish(name)
-            onWorkoutComplete()
+            viewModel.confirmFinish(name) { onWorkoutComplete() }
         },
         onDiscardWorkout = {
             viewModel.discardWorkout()

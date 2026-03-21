@@ -57,6 +57,8 @@ data class WorkoutSessionState(
     val weightUnit: String = "kg",
     val weightIncrement: Float = 2.5f,
     val isLoading: Boolean = true,
+    val restTimerCompleted: Boolean = false,
+    val finishError: String? = null,
 )
 
 // ── ViewModel ────────────────────────────────────────────────────────────────
@@ -79,20 +81,18 @@ class WorkoutSessionViewModel @Inject constructor(
     private var workoutId: Long = -1L
 
     init {
-        val passedId = savedStateHandle.get<Long>("workoutId") ?: -1L
+        val passedId = savedStateHandle.get<Long>("workoutId")
+            ?: throw IllegalArgumentException(
+                "WorkoutSessionViewModel requires a valid workoutId route argument"
+            )
 
         viewModelScope.launch {
             // Load settings
             loadSettings()
 
-            // Create or resume workout
-            workoutId = if (passedId <= 0L) {
-                val newId = workoutRepository.createWorkout()
-                settingsRepository.setActiveWorkoutId(newId)
-                newId
-            } else {
-                passedId
-            }
+            // Use the workout ID provided via navigation route argument.
+            // The workout is already created by AltarViewModel before navigation.
+            workoutId = passedId
 
             // Load workout entity
             val workout = workoutRepository.getWorkout(workoutId)
@@ -255,13 +255,13 @@ class WorkoutSessionViewModel @Inject constructor(
 
     fun incrementWeight(delta: Float) {
         val current = _state.value.weightInput.toFloatOrNull() ?: 0f
-        val next = (current + delta).coerceAtLeast(0f)
+        val next = (current + delta).coerceIn(0f, MAX_WEIGHT)
         _state.update { it.copy(weightInput = formatWeight(next, _state.value.weightIncrement)) }
     }
 
     fun incrementReps(delta: Int) {
         val current = _state.value.repsInput.toIntOrNull() ?: 0
-        val next = (current + delta).coerceAtLeast(0)
+        val next = (current + delta).coerceIn(0, MAX_REPS)
         _state.update { it.copy(repsInput = next.toString()) }
     }
 
@@ -270,8 +270,8 @@ class WorkoutSessionViewModel @Inject constructor(
     fun logSet() {
         val s = _state.value
         val exercise = s.currentExercise ?: return
-        val weight = s.weightInput.toFloatOrNull() ?: return
-        val reps = s.repsInput.toIntOrNull() ?: return
+        val weight = (s.weightInput.toFloatOrNull() ?: return).coerceAtMost(MAX_WEIGHT)
+        val reps = (s.repsInput.toIntOrNull() ?: return).coerceAtMost(MAX_REPS)
         if (weight <= 0f || reps <= 0) return
 
         viewModelScope.launch {
@@ -293,7 +293,9 @@ class WorkoutSessionViewModel @Inject constructor(
                 restTimerManager.start(
                     durationSeconds = s.restTimerDuration,
                     scope = viewModelScope,
-                    onComplete = { /* vibration trigger handled at UI layer */ },
+                    onComplete = {
+                        _state.update { it.copy(restTimerCompleted = true) }
+                    },
                 )
             }
         }
@@ -319,8 +321,8 @@ class WorkoutSessionViewModel @Inject constructor(
         val s = _state.value
         val setId = s.editingSetId ?: return
         val set = s.completedSets.find { it.id == setId } ?: return
-        val weight = s.weightInput.toFloatOrNull() ?: return
-        val reps = s.repsInput.toIntOrNull() ?: return
+        val weight = (s.weightInput.toFloatOrNull() ?: return).coerceAtMost(MAX_WEIGHT)
+        val reps = (s.repsInput.toIntOrNull() ?: return).coerceAtMost(MAX_REPS)
         if (weight <= 0f || reps <= 0) return
 
         viewModelScope.launch {
@@ -383,6 +385,11 @@ class WorkoutSessionViewModel @Inject constructor(
         restTimerManager.skip()
     }
 
+    /** Called by the UI after handling the rest-timer-completed vibration. */
+    fun consumeRestTimerCompleted() {
+        _state.update { it.copy(restTimerCompleted = false) }
+    }
+
     // ── Finish / Discard ─────────────────────────────────────────────────────
 
     fun finishWorkout() {
@@ -409,13 +416,23 @@ class WorkoutSessionViewModel @Inject constructor(
         }
     }
 
-    fun confirmFinish(name: String) {
+    fun confirmFinish(name: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            workoutRepository.completeWorkout(workoutId, name)
-            settingsRepository.clearActiveWorkoutId()
-            sessionTimerJob?.cancel()
-            restTimerManager.stop()
+            try {
+                workoutRepository.completeWorkout(workoutId, name)
+                settingsRepository.clearActiveWorkoutId()
+                sessionTimerJob?.cancel()
+                restTimerManager.stop()
+                _state.update { it.copy(finishError = null) }
+                onSuccess()
+            } catch (e: Exception) {
+                _state.update { it.copy(finishError = "Failed to save workout. Please retry.") }
+            }
         }
+    }
+
+    fun clearFinishError() {
+        _state.update { it.copy(finishError = null) }
     }
 
     fun discardWorkout() {
@@ -425,6 +442,11 @@ class WorkoutSessionViewModel @Inject constructor(
             sessionTimerJob?.cancel()
             restTimerManager.stop()
         }
+    }
+
+    companion object {
+        const val MAX_WEIGHT = 9999f
+        const val MAX_REPS = 999
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
