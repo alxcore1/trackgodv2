@@ -141,6 +141,9 @@ class WorkoutRepository @Inject constructor(
     suspend fun getExerciseById(exerciseId: Long): ExerciseEntity? =
         exerciseDao.getById(exerciseId)
 
+    suspend fun getCompletedWorkoutCount(): Int =
+        workoutDao.getCompletedWorkoutCount()
+
     // -- Stats / Analytics queries ------------------------------------------------
 
     suspend fun getAllCompletedWorkoutsOnce(): List<WorkoutEntity> =

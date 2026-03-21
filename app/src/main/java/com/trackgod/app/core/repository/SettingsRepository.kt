@@ -23,6 +23,13 @@ class SettingsRepository @Inject constructor(
         private const val KEY_SHOW_RIR = "show_rir"
         private const val KEY_DEFAULT_WEIGHT_INCREMENT = "default_weight_increment"
         private const val KEY_WEIGHT_UNIT = "weight_unit"
+        private const val KEY_HEIGHT_UNIT = "height_unit"
+        private const val KEY_REST_TIMER_SOUND = "rest_timer_sound"
+        private const val KEY_WEIGH_IN_REMINDER = "weigh_in_reminder"
+        private const val KEY_REMINDER_DAY = "reminder_day"
+        private const val KEY_REMINDER_TIME = "reminder_time"
+        private const val KEY_AUTO_BACKUP = "auto_backup"
+        private const val KEY_MAX_BACKUPS = "max_backups"
         private const val KEY_FIRST_LAUNCH = "first_launch"
         private const val KEY_DATABASE_SEEDED = "database_seeded"
         private const val NO_ACTIVE_WORKOUT = -1L
@@ -96,6 +103,59 @@ class SettingsRepository @Inject constructor(
 
     fun setWeightUnit(unit: String) {
         prefs.edit().putString(KEY_WEIGHT_UNIT, unit).apply()
+    }
+
+    fun getHeightUnit(): String =
+        prefs.getString(KEY_HEIGHT_UNIT, "cm") ?: "cm"
+
+    fun setHeightUnit(unit: String) {
+        prefs.edit().putString(KEY_HEIGHT_UNIT, unit).apply()
+    }
+
+    // --- Notifications ---
+
+    fun isRestTimerSoundEnabled(): Boolean =
+        prefs.getBoolean(KEY_REST_TIMER_SOUND, true)
+
+    fun setRestTimerSoundEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_REST_TIMER_SOUND, enabled).apply()
+    }
+
+    fun isWeighInReminderEnabled(): Boolean =
+        prefs.getBoolean(KEY_WEIGH_IN_REMINDER, false)
+
+    fun setWeighInReminderEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_WEIGH_IN_REMINDER, enabled).apply()
+    }
+
+    fun getReminderDay(): String =
+        prefs.getString(KEY_REMINDER_DAY, "Sunday") ?: "Sunday"
+
+    fun setReminderDay(day: String) {
+        prefs.edit().putString(KEY_REMINDER_DAY, day).apply()
+    }
+
+    fun getReminderTime(): String =
+        prefs.getString(KEY_REMINDER_TIME, "08:00") ?: "08:00"
+
+    fun setReminderTime(time: String) {
+        prefs.edit().putString(KEY_REMINDER_TIME, time).apply()
+    }
+
+    // --- Data / Backup ---
+
+    fun isAutoBackupEnabled(): Boolean =
+        prefs.getBoolean(KEY_AUTO_BACKUP, true)
+
+    fun setAutoBackupEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_AUTO_BACKUP, enabled).apply()
+    }
+
+    fun getMaxBackups(): Int =
+        prefs.getInt(KEY_MAX_BACKUPS, 10)
+
+    fun setMaxBackups(count: Int) {
+        prefs.edit().putInt(KEY_MAX_BACKUPS, count).apply()
     }
 
     // --- First Launch / Seeding ---

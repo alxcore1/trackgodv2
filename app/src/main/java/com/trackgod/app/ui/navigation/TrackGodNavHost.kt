@@ -14,7 +14,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.trackgod.app.feature.altar.AltarScreen
 import com.trackgod.app.feature.history.HistoryScreen
+import com.trackgod.app.feature.profile.EditProfileScreen
+import com.trackgod.app.feature.profile.PrivacyPolicyScreen
 import com.trackgod.app.feature.profile.ProfileScreen
+import com.trackgod.app.feature.profile.SettingsScreen
 import com.trackgod.app.feature.splash.SplashScreen
 import com.trackgod.app.feature.stats.StatsScreen
 import com.trackgod.app.feature.workout.picker.ExercisePickerScreen
@@ -98,7 +101,25 @@ fun TrackGodNavHost() {
             }
             composable(Screen.History.route) { HistoryScreen() }
             composable(Screen.Stats.route) { StatsScreen() }
-            composable(Screen.Profile.route) { ProfileScreen() }
+            composable(Screen.Profile.route) {
+                ProfileScreen(
+                    onNavigateToEditProfile = {
+                        navController.navigate(Screen.EditProfile.route)
+                    },
+                    onNavigateToSettings = {
+                        navController.navigate(Screen.Settings.route)
+                    },
+                    onNavigateToWeightLoss = {
+                        // TODO: navigate to weight loss screen
+                    },
+                    onNavigateToBackup = {
+                        // TODO: navigate to backup screen
+                    },
+                    onNavigateToPrivacyPolicy = {
+                        navController.navigate(Screen.PrivacyPolicy.route)
+                    },
+                )
+            }
 
             // ── Workout session ─────────────────────────────────────────────
             composable(
@@ -141,6 +162,23 @@ fun TrackGodNavHost() {
                         navController.popBackStack()
                     },
                     onDismiss = { navController.popBackStack() },
+                )
+            }
+
+            // ── Profile sub-screens ─────────────────────────────────────────
+            composable(Screen.EditProfile.route) {
+                EditProfileScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                )
+            }
+            composable(Screen.Settings.route) {
+                SettingsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                )
+            }
+            composable(Screen.PrivacyPolicy.route) {
+                PrivacyPolicyScreen(
+                    onNavigateBack = { navController.popBackStack() },
                 )
             }
         }
