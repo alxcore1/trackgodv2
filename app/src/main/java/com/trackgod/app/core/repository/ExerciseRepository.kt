@@ -14,6 +14,9 @@ class ExerciseRepository @Inject constructor(
     fun getAllActive(): Flow<List<ExerciseEntity>> =
         exerciseDao.getAllActive()
 
+    suspend fun getAllActiveSnapshot(): List<ExerciseEntity> =
+        exerciseDao.getAllActiveSnapshot()
+
     fun getByCategory(category: String): Flow<List<ExerciseEntity>> =
         exerciseDao.getByCategory(category)
 

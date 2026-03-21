@@ -24,6 +24,9 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercises WHERE is_active = 1 ORDER BY usage_count DESC, name ASC")
     fun getAllActive(): Flow<List<ExerciseEntity>>
 
+    @Query("SELECT * FROM exercises WHERE is_active = 1 ORDER BY usage_count DESC, name ASC")
+    suspend fun getAllActiveSnapshot(): List<ExerciseEntity>
+
     @Query("SELECT * FROM exercises WHERE category = :category AND is_active = 1 ORDER BY usage_count DESC")
     fun getByCategory(category: String): Flow<List<ExerciseEntity>>
 

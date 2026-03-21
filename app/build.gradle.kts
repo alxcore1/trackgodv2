@@ -94,6 +94,15 @@ dependencies {
     // WorkManager
     implementation(libs.work.runtime.ktx)
 
+    // CameraX
+    implementation(libs.camerax.core)
+    implementation(libs.camerax.camera2)
+    implementation(libs.camerax.lifecycle)
+    implementation(libs.camerax.view)
+
+    // ML Kit Text Recognition
+    implementation(libs.mlkit.text.recognition)
+
     // Core
     implementation(libs.core.ktx)
     implementation(libs.activity.compose)

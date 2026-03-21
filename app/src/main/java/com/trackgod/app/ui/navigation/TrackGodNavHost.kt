@@ -26,6 +26,7 @@ import com.trackgod.app.feature.stats.StatsScreen
 import com.trackgod.app.feature.weightloss.PhotoComparisonScreen
 import com.trackgod.app.feature.weightloss.WeightLossScreen
 import com.trackgod.app.feature.weightloss.WeightLossViewModel
+import com.trackgod.app.feature.ocr.OcrScannerScreen
 import com.trackgod.app.feature.workout.picker.ExercisePickerScreen
 import com.trackgod.app.feature.workout.session.WorkoutSessionScreen
 import com.trackgod.app.ui.component.BottomNavBar
@@ -165,6 +166,19 @@ fun TrackGodNavHost() {
                         navController.previousBackStackEntry
                             ?.savedStateHandle
                             ?.set("selectedExerciseId", exercise.id)
+                        navController.popBackStack()
+                    },
+                    onDismiss = { navController.popBackStack() },
+                )
+            }
+
+            // ── OCR Scanner ───────────────────────────────────────────────
+            composable(Screen.OcrScanner.route) {
+                OcrScannerScreen(
+                    onExerciseSelected = { exerciseId ->
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("selectedExerciseId", exerciseId)
                         navController.popBackStack()
                     },
                     onDismiss = { navController.popBackStack() },
