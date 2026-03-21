@@ -19,6 +19,32 @@ class SeedDatabase @Inject constructor(
     suspend fun seedIfNeeded() {
         if (settingsRepository.isDatabaseSeeded()) return
 
+        val exercises = loadExercisesFromAssets()
+        exerciseRepository.seedExercises(exercises)
+        settingsRepository.setDatabaseSeeded()
+    }
+
+    /**
+     * Seed only non-machine exercises (barbell, dumbbell, bodyweight, cable, other).
+     */
+    suspend fun seedBasicsOnly() {
+        if (settingsRepository.isDatabaseSeeded()) return
+
+        val exercises = loadExercisesFromAssets()
+            .filter { it.equipmentType != "machine" }
+        exerciseRepository.seedExercises(exercises)
+        settingsRepository.setDatabaseSeeded()
+    }
+
+    /**
+     * Mark the database as seeded without inserting any exercises.
+     * Used for the "Empty Slate" option during onboarding.
+     */
+    suspend fun markAsSeeded() {
+        settingsRepository.setDatabaseSeeded()
+    }
+
+    private fun loadExercisesFromAssets(): List<ExerciseEntity> {
         val json = context.assets.open("exercises_seed.json")
             .bufferedReader()
             .use { it.readText() }
@@ -42,7 +68,6 @@ class SeedDatabase @Inject constructor(
             )
         }
 
-        exerciseRepository.seedExercises(exercises)
-        settingsRepository.setDatabaseSeeded()
+        return exercises
     }
 }

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trackgod.app.core.database.SeedDatabase
+import com.trackgod.app.core.repository.UserRepository
 import com.trackgod.app.service.DatabaseIntegrityManager
 import com.trackgod.app.service.IntegrityResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,10 +18,14 @@ import javax.inject.Inject
 class SplashViewModel @Inject constructor(
     private val seedDatabase: SeedDatabase,
     private val integrityManager: DatabaseIntegrityManager,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _isReady = MutableStateFlow(false)
     val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
+
+    private val _hasProfile = MutableStateFlow(false)
+    val hasProfile: StateFlow<Boolean> = _hasProfile.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -40,7 +45,16 @@ class SplashViewModel @Inject constructor(
                 }
             }
 
-            seedDatabase.seedIfNeeded()
+            // Check if user has completed onboarding
+            val profileExists = userRepository.hasProfile()
+            _hasProfile.value = profileExists
+
+            // Only auto-seed if profile already exists (returning user)
+            // New users will pick their seed option in onboarding
+            if (profileExists) {
+                seedDatabase.seedIfNeeded()
+            }
+
             _isReady.value = true
         }
     }

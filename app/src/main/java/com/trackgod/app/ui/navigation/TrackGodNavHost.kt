@@ -17,6 +17,10 @@ import androidx.navigation.navArgument
 import com.trackgod.app.feature.altar.AltarScreen
 import com.trackgod.app.feature.backup.BackupScreen
 import com.trackgod.app.feature.history.HistoryScreen
+import com.trackgod.app.feature.onboarding.OnboardingScreen
+import com.trackgod.app.feature.onboarding.SeedingChoiceScreen
+import com.trackgod.app.feature.onboarding.SeedingChoiceViewModel
+import com.trackgod.app.feature.onboarding.V1ImportScreen
 import com.trackgod.app.feature.profile.EditProfileScreen
 import com.trackgod.app.feature.profile.PrivacyPolicyScreen
 import com.trackgod.app.feature.profile.ProfileScreen
@@ -85,6 +89,44 @@ fun TrackGodNavHost() {
                             popUpTo(Screen.Splash.route) { inclusive = true }
                         }
                     },
+                    onEnterOnboarding = {
+                        navController.navigate(Screen.Onboarding.route) {
+                            popUpTo(Screen.Splash.route) { inclusive = true }
+                        }
+                    },
+                )
+            }
+
+            // ── Onboarding flow ──────────────────────────────────────────────
+            composable(Screen.Onboarding.route) {
+                OnboardingScreen(
+                    onOnboardingComplete = {
+                        navController.navigate(Screen.SeedingChoice.route) {
+                            popUpTo(Screen.Onboarding.route) { inclusive = true }
+                        }
+                    },
+                )
+            }
+
+            composable(Screen.SeedingChoice.route) {
+                val viewModel: SeedingChoiceViewModel =
+                    androidx.hilt.navigation.compose.hiltViewModel()
+                SeedingChoiceScreen(
+                    seedDatabase = viewModel.seedDatabase,
+                    onComplete = {
+                        navController.navigate(Screen.Altar.route) {
+                            popUpTo(Screen.SeedingChoice.route) { inclusive = true }
+                        }
+                    },
+                    onNavigateToV1Import = {
+                        navController.navigate(Screen.V1Import.route)
+                    },
+                )
+            }
+
+            composable(Screen.V1Import.route) {
+                V1ImportScreen(
+                    onNavigateBack = { navController.popBackStack() },
                 )
             }
 

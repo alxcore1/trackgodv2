@@ -62,9 +62,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun SplashScreen(
     onEnter: () -> Unit = {},
+    onEnterOnboarding: () -> Unit = {},
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
     val isReady by viewModel.isReady.collectAsState()
+    val hasProfile by viewModel.hasProfile.collectAsState()
 
     // ── Animation states ─────────────────────────────────────────────────────
 
@@ -215,7 +217,9 @@ fun SplashScreen(
             // ── CTA button ───────────────────────────────────────────────
             TrackGodButton(
                 text = if (isReady) "TAP TO ENTER THE ALTAR" else "INITIALIZING...",
-                onClick = onEnter,
+                onClick = {
+                    if (hasProfile) onEnter() else onEnterOnboarding()
+                },
                 enabled = isReady,
                 icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 modifier = Modifier
