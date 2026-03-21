@@ -73,4 +73,13 @@ interface SetDao {
         """
     )
     suspend fun getPersonalRecords(): List<PersonalRecordResult>
+
+    @Query("SELECT * FROM sets WHERE workout_id = :workoutId ORDER BY set_number ASC")
+    suspend fun getByWorkoutOnce(workoutId: Long): List<SetEntity>
+
+    @Query("SELECT COUNT(*) FROM sets WHERE workout_id = :workoutId AND exercise_id = :exerciseId")
+    suspend fun countSetsForExercise(workoutId: Long, exerciseId: Long): Int
+
+    @Query("SELECT DISTINCT exercise_id FROM sets WHERE workout_id = :workoutId")
+    suspend fun getDistinctExerciseIds(workoutId: Long): List<Long>
 }
