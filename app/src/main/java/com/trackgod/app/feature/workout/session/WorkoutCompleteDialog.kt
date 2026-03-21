@@ -146,6 +146,21 @@ fun WorkoutCompleteDialog(
                     )
                 }
             } else {
+                // Zero-sets warning
+                if (totalSets <= 0) {
+                    Text(
+                        text = "LOG AT LEAST ONE SET",
+                        color = BloodBright,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                    )
+                }
+
                 // Normal action buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -160,7 +175,7 @@ fun WorkoutCompleteDialog(
                     TrackGodButton(
                         text = "SAVE WORKOUT",
                         onClick = { onSave(workoutName) },
-                        enabled = workoutName.isNotBlank(),
+                        enabled = workoutName.isNotBlank() && totalSets > 0,
                         modifier = Modifier.weight(1f),
                     )
                 }

@@ -79,6 +79,7 @@ class AltarViewModel @Inject constructor(
                         recentWorkouts = recent,
                         currentStreak = streak,
                         workoutDaysThisWeek = weekDays,
+                        isLoading = false,
                     )
                 }
             }

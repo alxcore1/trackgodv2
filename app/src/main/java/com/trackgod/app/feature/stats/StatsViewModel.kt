@@ -135,8 +135,8 @@ class StatsViewModel @Inject constructor(
                         PersonalRecordData(pr.name, pr.estimated1rm, pr.weight, pr.reps)
                     }
 
-                // 4. Training Heatmap (always last 90 days)
-                val heatmapStart = today.minusDays(89)
+                // 4. Training Heatmap (use selected range, but cap at 90 days minimum)
+                val heatmapStart = if (range.days <= 90) startDate else today.minusDays(89)
                 val heatmap = buildHeatmap(allCompletedWorkouts, heatmapStart, today)
 
                 // 5. Strength Balance (grouped categories)

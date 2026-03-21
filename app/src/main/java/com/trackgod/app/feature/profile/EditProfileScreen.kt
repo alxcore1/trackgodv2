@@ -25,7 +25,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -127,7 +127,7 @@ fun EditProfileScreen(
                         contentDescription = "Avatar",
                         modifier = Modifier
                             .size(64.dp)
-                            .clip(CircleShape),
+                            .clip(RectangleShape),
                         contentScale = ContentScale.Crop,
                     )
                 } else {
@@ -141,7 +141,7 @@ fun EditProfileScreen(
                     Box(
                         modifier = Modifier
                             .size(64.dp)
-                            .clip(CircleShape)
+                            .clip(RectangleShape)
                             .background(Blood),
                         contentAlignment = Alignment.Center,
                     ) {

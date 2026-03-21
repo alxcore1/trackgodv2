@@ -116,6 +116,8 @@ fun WorkoutSessionScreen(
         state = state,
         onWeightChanged = viewModel::updateWeight,
         onRepsChanged = viewModel::updateReps,
+        onRpeChanged = viewModel::updateRpe,
+        onRirChanged = viewModel::updateRir,
         onNoteChanged = viewModel::updateNote,
         onLogSet = viewModel::logSet,
         onEditSet = viewModel::editSet,
@@ -146,6 +148,8 @@ private fun WorkoutSessionContent(
     state: WorkoutSessionState,
     onWeightChanged: (String) -> Unit,
     onRepsChanged: (String) -> Unit,
+    onRpeChanged: (String) -> Unit,
+    onRirChanged: (String) -> Unit,
     onNoteChanged: (String) -> Unit,
     onLogSet: () -> Unit,
     onEditSet: (Long) -> Unit,
@@ -222,6 +226,8 @@ private fun WorkoutSessionContent(
                         state = state,
                         onWeightChanged = onWeightChanged,
                         onRepsChanged = onRepsChanged,
+                        onRpeChanged = onRpeChanged,
+                        onRirChanged = onRirChanged,
                         onNoteChanged = onNoteChanged,
                         onLogSet = onLogSet,
                         onSaveEdit = onSaveEdit,
@@ -524,6 +530,8 @@ private fun ExerciseInputSection(
     state: WorkoutSessionState,
     onWeightChanged: (String) -> Unit,
     onRepsChanged: (String) -> Unit,
+    onRpeChanged: (String) -> Unit,
+    onRirChanged: (String) -> Unit,
     onNoteChanged: (String) -> Unit,
     onLogSet: () -> Unit,
     onSaveEdit: () -> Unit,
@@ -590,6 +598,36 @@ private fun ExerciseInputSection(
                 step = 1f,
                 modifier = Modifier.weight(1f),
             )
+        }
+
+        // RPE / RIR inputs (conditional)
+        if (state.showRpe || state.showRir) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                if (state.showRpe) {
+                    NumberInput(
+                        value = state.rpeInput?.toString() ?: "",
+                        onValueChange = onRpeChanged,
+                        label = "RPE (1-10)",
+                        unit = "RPE",
+                        step = 1f,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                if (state.showRir) {
+                    NumberInput(
+                        value = state.rirInput?.toString() ?: "",
+                        onValueChange = onRirChanged,
+                        label = "RIR (0-5)",
+                        unit = "RIR",
+                        step = 1f,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

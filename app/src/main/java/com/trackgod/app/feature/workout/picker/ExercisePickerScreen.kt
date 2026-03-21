@@ -123,12 +123,22 @@ private fun ExercisePickerContent(
 
         // 4. Exercise list (fills remaining space)
         if (state.exercises.isEmpty() && !state.isLoading) {
-            EmptyState(
-                icon = Icons.Default.Search,
-                title = "No Matches Found",
-                subtitle = "Try a different search or category.",
-                modifier = Modifier.weight(1f),
-            )
+            val isEmptyDb = state.searchQuery.isBlank() && state.selectedCategory == null
+            if (isEmptyDb) {
+                EmptyState(
+                    icon = Icons.Default.FitnessCenter,
+                    title = "NO EXERCISES LOADED",
+                    subtitle = "Add your first exercise to begin",
+                    modifier = Modifier.weight(1f),
+                )
+            } else {
+                EmptyState(
+                    icon = Icons.Default.Search,
+                    title = "No Matches Found",
+                    subtitle = "Try a different search or category.",
+                    modifier = Modifier.weight(1f),
+                )
+            }
         } else {
             LazyColumn(
                 modifier = Modifier.weight(1f),
@@ -147,6 +157,8 @@ private fun ExercisePickerContent(
         }
 
         // 5. Bottom action
+        val isEmptyDb = state.exercises.isEmpty() && !state.isLoading
+                && state.searchQuery.isBlank() && state.selectedCategory == null
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -154,9 +166,9 @@ private fun ExercisePickerContent(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
             TrackGodButton(
-                text = "+ Add Custom",
+                text = "+ ADD CUSTOM",
                 onClick = onToggleAddDialog,
-                variant = ButtonVariant.Secondary,
+                variant = if (isEmptyDb) ButtonVariant.Primary else ButtonVariant.Secondary,
                 icon = Icons.Default.Add,
                 modifier = Modifier.fillMaxWidth(),
             )

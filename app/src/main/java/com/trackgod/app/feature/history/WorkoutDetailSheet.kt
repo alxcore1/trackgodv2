@@ -20,10 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trackgod.app.ui.theme.Blood
+import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
+import java.text.NumberFormat
+import java.util.Locale
 
 /**
  * Inline expansion showing exercise-by-exercise breakdown for a workout.
@@ -106,6 +109,22 @@ private fun ExerciseSetGroup(
                 reps = set.reps,
                 weightUnit = weightUnit,
                 rpe = set.rpe,
+            )
+        }
+
+        // Total volume for this exercise
+        val totalVolume = exercise.sets.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
+        if (totalVolume > 0f) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "TOTAL: ${NumberFormat.getNumberInstance(Locale.US).format(totalVolume.toLong())} ${weightUnit.uppercase()}",
+                color = BloodBright,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 28.dp),
             )
         }
     }

@@ -59,6 +59,7 @@ data class WorkoutSessionState(
     val isLoading: Boolean = true,
     val restTimerCompleted: Boolean = false,
     val finishError: String? = null,
+    val inputError: String? = null,
 )
 
 // ── ViewModel ────────────────────────────────────────────────────────────────
@@ -253,6 +254,16 @@ class WorkoutSessionViewModel @Inject constructor(
         _state.update { it.copy(noteInput = value) }
     }
 
+    fun updateRpe(value: String) {
+        val rpe = value.toIntOrNull()?.coerceIn(1, 10)
+        _state.update { it.copy(rpeInput = if (value.isEmpty()) null else rpe) }
+    }
+
+    fun updateRir(value: String) {
+        val rir = value.toIntOrNull()?.coerceIn(0, 5)
+        _state.update { it.copy(rirInput = if (value.isEmpty()) null else rir) }
+    }
+
     fun incrementWeight(delta: Float) {
         val current = _state.value.weightInput.toFloatOrNull() ?: 0f
         val next = (current + delta).coerceIn(0f, MAX_WEIGHT)
@@ -270,9 +281,12 @@ class WorkoutSessionViewModel @Inject constructor(
     fun logSet() {
         val s = _state.value
         val exercise = s.currentExercise ?: return
-        val weight = (s.weightInput.toFloatOrNull() ?: return).coerceAtMost(MAX_WEIGHT)
-        val reps = (s.repsInput.toIntOrNull() ?: return).coerceAtMost(MAX_REPS)
-        if (weight <= 0f || reps <= 0) return
+        val weight = s.weightInput.toFloatOrNull()?.coerceAtMost(MAX_WEIGHT)
+        val reps = s.repsInput.toIntOrNull()?.coerceAtMost(MAX_REPS)
+        if (weight == null || reps == null || weight <= 0f || reps <= 0) {
+            _state.update { it.copy(inputError = "ENTER VALID WEIGHT AND REPS") }
+            return
+        }
 
         viewModelScope.launch {
             workoutRepository.addSet(
@@ -285,8 +299,8 @@ class WorkoutSessionViewModel @Inject constructor(
                 rir = s.rirInput,
             )
 
-            // Clear note after logging (weight/reps stay for easy repeat)
-            _state.update { it.copy(noteInput = "", rpeInput = null, rirInput = null) }
+            // Clear note and error after logging (weight/reps stay for easy repeat)
+            _state.update { it.copy(noteInput = "", rpeInput = null, rirInput = null, inputError = null) }
 
             // Auto-start rest timer
             if (s.restTimerEnabled && s.restTimerAutoStart) {

@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -139,7 +139,7 @@ private fun ProfileHeader(
                 contentDescription = "Profile avatar",
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(CircleShape),
+                    .clip(RectangleShape),
                 contentScale = ContentScale.Crop,
             )
         } else {
@@ -154,7 +154,7 @@ private fun ProfileHeader(
             Box(
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(CircleShape)
+                    .clip(RectangleShape)
                     .background(Blood),
                 contentAlignment = Alignment.Center,
             ) {
