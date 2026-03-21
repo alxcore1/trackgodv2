@@ -7,12 +7,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+import com.trackgod.app.ui.theme.TrackGodTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -21,18 +20,19 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFF131313)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "TRACKGOD v2",
-                    color = Color(0xFF8B0000),
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold
-                )
+            TrackGodTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "TRACKGOD v2",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.displaySmall,
+                    )
+                }
             }
         }
     }
