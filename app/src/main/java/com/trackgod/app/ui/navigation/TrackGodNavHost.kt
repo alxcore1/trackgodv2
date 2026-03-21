@@ -20,6 +20,7 @@ import com.trackgod.app.feature.profile.ProfileScreen
 import com.trackgod.app.feature.profile.SettingsScreen
 import com.trackgod.app.feature.splash.SplashScreen
 import com.trackgod.app.feature.stats.StatsScreen
+import com.trackgod.app.feature.weightloss.WeightLossScreen
 import com.trackgod.app.feature.workout.picker.ExercisePickerScreen
 import com.trackgod.app.feature.workout.session.WorkoutSessionScreen
 import com.trackgod.app.ui.component.BottomNavBar
@@ -110,7 +111,7 @@ fun TrackGodNavHost() {
                         navController.navigate(Screen.Settings.route)
                     },
                     onNavigateToWeightLoss = {
-                        // TODO: navigate to weight loss screen
+                        navController.navigate(Screen.WeightLoss.route)
                     },
                     onNavigateToBackup = {
                         // TODO: navigate to backup screen
@@ -173,6 +174,11 @@ fun TrackGodNavHost() {
             }
             composable(Screen.Settings.route) {
                 SettingsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                )
+            }
+            composable(Screen.WeightLoss.route) {
+                WeightLossScreen(
                     onNavigateBack = { navController.popBackStack() },
                 )
             }
