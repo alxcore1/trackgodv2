@@ -6,7 +6,7 @@ package com.trackgod.app.ui.navigation
  * Routes are grouped by context:
  * - Top-level (no bottom nav): splash, onboarding, seeding choice, v1 import
  * - Main tabs: altar, workout (history), stats, profile
- * - Workout flow: session, exercise picker, OCR scanner, detail
+ * - Workout flow: session, exercise picker, OCR scanner
  * - Profile sub-screens: edit profile, settings, weight loss, etc.
  */
 sealed class Screen(val route: String) {
@@ -33,10 +33,6 @@ sealed class Screen(val route: String) {
 
     data object ExercisePicker : Screen("exercise_picker")
     data object OcrScanner : Screen("ocr_scanner")
-
-    data object WorkoutDetail : Screen("workout_detail/{workoutId}") {
-        fun create(workoutId: Long) = "workout_detail/$workoutId"
-    }
 
     // ── Profile sub-screens ──────────────────────────────────────────────────
 

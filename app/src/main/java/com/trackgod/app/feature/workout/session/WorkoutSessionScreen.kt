@@ -662,6 +662,17 @@ private fun ExerciseInputSection(
                 )
             }
         } else {
+            // Input validation error
+            state.inputError?.let { error ->
+                Text(
+                    text = error,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = BloodBright,
+                    letterSpacing = 1.sp,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             TrackGodButton(
                 text = "LOG SET",
                 onClick = onLogSet,
