@@ -74,6 +74,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trackgod.app.ui.component.ButtonVariant
+import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodCard
@@ -84,7 +85,6 @@ import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
-import com.trackgod.app.ui.theme.Void
 import java.util.concurrent.Executors
 
 @Composable
@@ -118,10 +118,10 @@ fun OcrScannerScreen(
         if (!hasPermission) permissionLauncher.launch(Manifest.permission.CAMERA)
     }
 
+    MetalTextureBackground {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Void)
             .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         // Header
@@ -167,6 +167,7 @@ fun OcrScannerScreen(
             )
         }
     }
+    } // MetalTextureBackground
 }
 
 @Composable

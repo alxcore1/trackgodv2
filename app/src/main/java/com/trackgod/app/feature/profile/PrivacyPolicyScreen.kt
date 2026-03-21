@@ -1,6 +1,5 @@
 package com.trackgod.app.feature.profile
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 
@@ -30,10 +30,10 @@ import com.trackgod.app.ui.theme.TextSecondary
 fun PrivacyPolicyScreen(
     onNavigateBack: () -> Unit,
 ) {
+    MetalTextureBackground {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         // Top bar
@@ -101,6 +101,7 @@ fun PrivacyPolicyScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
+    } // MetalTextureBackground
 }
 
 @Composable

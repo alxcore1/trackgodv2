@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trackgod.app.core.database.SeedDatabase
 import com.trackgod.app.ui.component.ButtonVariant
+import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodCard
 import com.trackgod.app.ui.theme.Blood
@@ -41,7 +42,6 @@ import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
-import com.trackgod.app.ui.theme.Void
 import kotlinx.coroutines.launch
 
 @Composable
@@ -54,10 +54,10 @@ fun SeedingChoiceScreen(
     val context = LocalContext.current
     var isSeeding by remember { mutableStateOf(false) }
 
+    MetalTextureBackground {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Void)
             .verticalScroll(rememberScrollState()),
     ) {
         // ── Header ──────────────────────────────────────────────────────────
@@ -298,4 +298,5 @@ fun SeedingChoiceScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
+    } // MetalTextureBackground
 }

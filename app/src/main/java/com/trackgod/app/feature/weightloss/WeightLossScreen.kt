@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trackgod.app.core.database.entity.WeightLossMilestoneEntity
 import com.trackgod.app.ui.component.ButtonVariant
+import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodCard
@@ -52,10 +53,10 @@ fun WeightLossScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    MetalTextureBackground {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         // -- Top bar --
@@ -180,6 +181,7 @@ fun WeightLossScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
+    } // MetalTextureBackground
 
     // -- Bottom Sheets --
 

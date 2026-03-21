@@ -53,6 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.trackgod.app.core.database.entity.ExerciseEntity
 import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.EmptyState
+import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.SurfaceHighest
@@ -97,10 +98,10 @@ private fun ExercisePickerContent(
     onToggleAddDialog: () -> Unit,
     onCreateExercise: (name: String, category: String, equipmentType: String) -> Unit,
 ) {
+    MetalTextureBackground {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Void)
             .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         // 1. Header bar
@@ -174,6 +175,7 @@ private fun ExercisePickerContent(
             )
         }
     }
+    } // MetalTextureBackground
 
     // Add-exercise dialog
     if (state.showAddDialog) {

@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trackgod.app.ui.component.ButtonVariant
+import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.NumberInput
 import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.component.TrackGodButton
@@ -173,10 +174,10 @@ private fun WorkoutSessionContent(
         showBackConfirm = true
     }
 
+    MetalTextureBackground {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Void)
             .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         // Header
@@ -297,6 +298,7 @@ private fun WorkoutSessionContent(
             }
         }
     }
+    } // MetalTextureBackground
 
     // Completion dialog
     if (state.showCompleteDialog) {

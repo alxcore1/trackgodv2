@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.trackgod.app.core.database.entity.BodyMetricEntity
+import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.SurfaceHighest
@@ -93,10 +94,10 @@ fun PhotoComparisonScreen(
     // 0 = BEFORE, 1 = AFTER
     var selectingSlot by remember { mutableFloatStateOf(-1f) }
 
+    MetalTextureBackground {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         // -- Top bar --
@@ -297,6 +298,7 @@ fun PhotoComparisonScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
     }
+    } // MetalTextureBackground
 }
 
 // -- Comparison Viewport with drag divider ------------------------------------

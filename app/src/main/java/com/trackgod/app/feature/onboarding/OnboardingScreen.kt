@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trackgod.app.ui.component.ButtonVariant
+import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.NumberInput
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodTextField
@@ -60,8 +61,6 @@ import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
-import com.trackgod.app.ui.theme.Void
-import com.trackgod.app.ui.theme.VoidDeep
 
 @Composable
 fun OnboardingScreen(
@@ -70,10 +69,10 @@ fun OnboardingScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    MetalTextureBackground {
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Void),
+            .fillMaxSize(),
     ) {
         // ── Header ──────────────────────────────────────────────────────────
         Row(
@@ -225,6 +224,7 @@ fun OnboardingScreen(
             }
         }
     }
+    } // MetalTextureBackground
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

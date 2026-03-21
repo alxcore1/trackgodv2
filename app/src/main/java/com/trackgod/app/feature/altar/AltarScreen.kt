@@ -44,6 +44,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trackgod.app.core.database.entity.WorkoutEntity
 import com.trackgod.app.ui.component.ButtonVariant
+import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.component.StatCard
 import com.trackgod.app.ui.component.TrackGodButton
@@ -55,7 +56,6 @@ import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.TrackGodTheme
-import com.trackgod.app.ui.theme.Void
 import kotlinx.coroutines.launch
 
 @Composable
@@ -97,22 +97,21 @@ private fun AltarContent(
 ) {
     var showDiscardConfirm by remember { mutableStateOf(false) }
 
+    MetalTextureBackground {
     if (state.isLoading) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Void),
+                .fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator(color = Blood)
         }
-        return
+        return@MetalTextureBackground
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.statusBars)
             .verticalScroll(rememberScrollState()),
     ) {
@@ -316,6 +315,7 @@ private fun AltarContent(
 
         Spacer(modifier = Modifier.height(16.dp))
     }
+    } // MetalTextureBackground
 }
 
 // ── Weekly Ritual Content ───────────────────────────────────────────────────

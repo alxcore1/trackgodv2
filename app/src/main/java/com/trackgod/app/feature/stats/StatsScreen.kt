@@ -43,6 +43,7 @@ import com.trackgod.app.feature.stats.chart.PersonalRecordsSection
 import com.trackgod.app.feature.stats.chart.StrengthBalanceSection
 import com.trackgod.app.feature.stats.chart.VolumeChart
 import com.trackgod.app.ui.component.EmptyState
+import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.component.TrackGodCard
 import com.trackgod.app.ui.theme.Blood
@@ -51,7 +52,6 @@ import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.TrackGodTheme
-import com.trackgod.app.ui.theme.Void
 
 @Composable
 fun StatsScreen(
@@ -70,23 +70,22 @@ private fun StatsContent(
     state: StatsState,
     onTimeRangeChanged: (TimeRange) -> Unit = {},
 ) {
+    MetalTextureBackground {
     if (state.isLoading) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Void),
+                .fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator(color = Blood)
         }
-        return
+        return@MetalTextureBackground
     }
 
     if (!state.hasData) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Void)
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(horizontal = 16.dp),
         ) {
@@ -119,14 +118,13 @@ private fun StatsContent(
                 subtitle = "Complete your first ritual to see analytics.",
             )
         }
-        return
+        return@MetalTextureBackground
     }
 
     // Full scrollable analytics dashboard
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Void)
             .windowInsetsPadding(WindowInsets.statusBars)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
@@ -220,6 +218,7 @@ private fun StatsContent(
         // Bottom padding for nav bar clearance
         Spacer(modifier = Modifier.height(32.dp))
     }
+    } // MetalTextureBackground
 }
 
 // ── Hero Section ─────────────────────────────────────────────────────────────
