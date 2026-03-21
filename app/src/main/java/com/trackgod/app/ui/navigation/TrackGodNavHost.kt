@@ -6,15 +6,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.trackgod.app.feature.altar.AltarScreen
 import com.trackgod.app.feature.history.HistoryScreen
 import com.trackgod.app.feature.profile.ProfileScreen
 import com.trackgod.app.feature.splash.SplashScreen
 import com.trackgod.app.feature.stats.StatsScreen
+import com.trackgod.app.feature.workout.picker.ExercisePickerScreen
+import com.trackgod.app.feature.workout.session.WorkoutSessionScreen
 import com.trackgod.app.ui.component.BottomNavBar
 
 /** Routes where the bottom navigation bar should be visible. */
@@ -74,11 +78,59 @@ fun TrackGodNavHost() {
                 )
             }
 
-            // Main tabs
-            composable(Screen.Altar.route) { AltarScreen() }
+            // ── Main tabs ───────────────────────────────────────────────────
+            composable(Screen.Altar.route) {
+                AltarScreen(
+                    onStartWorkout = { workoutId ->
+                        navController.navigate(Screen.WorkoutSession.create(workoutId))
+                    },
+                    onResumeWorkout = { workoutId ->
+                        navController.navigate(Screen.WorkoutSession.create(workoutId))
+                    },
+                )
+            }
             composable(Screen.History.route) { HistoryScreen() }
             composable(Screen.Stats.route) { StatsScreen() }
             composable(Screen.Profile.route) { ProfileScreen() }
+
+            // ── Workout session ─────────────────────────────────────────────
+            composable(
+                route = Screen.WorkoutSession.route,
+                arguments = listOf(
+                    navArgument("workoutId") { type = NavType.LongType },
+                ),
+            ) { backStackEntry ->
+                val workoutId = backStackEntry.arguments?.getLong("workoutId") ?: return@composable
+                WorkoutSessionScreen(
+                    workoutId = workoutId,
+                    onNavigateToExercisePicker = {
+                        navController.navigate(Screen.ExercisePicker.route)
+                    },
+                    onWorkoutComplete = {
+                        navController.navigate(Screen.Altar.route) {
+                            popUpTo(Screen.Altar.route) { inclusive = true }
+                        }
+                    },
+                    onWorkoutDiscarded = {
+                        navController.navigate(Screen.Altar.route) {
+                            popUpTo(Screen.Altar.route) { inclusive = true }
+                        }
+                    },
+                )
+            }
+
+            // ── Exercise picker ─────────────────────────────────────────────
+            composable(Screen.ExercisePicker.route) {
+                ExercisePickerScreen(
+                    onExerciseSelected = { exercise ->
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("selectedExerciseId", exercise.id)
+                        navController.popBackStack()
+                    },
+                    onDismiss = { navController.popBackStack() },
+                )
+            }
         }
     }
 }

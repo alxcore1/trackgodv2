@@ -108,4 +108,13 @@ class WorkoutRepository @Inject constructor(
         val exerciseIds = setDao.getDistinctExerciseIds(workoutId)
         return exerciseIds.mapNotNull { exerciseDao.getById(it) }
     }
+
+    suspend fun getRecentCompletedWorkouts(limit: Int = 5): List<WorkoutEntity> =
+        workoutDao.getRecentCompleted(limit)
+
+    suspend fun getSetsForWorkoutIds(workoutIds: List<Long>): List<SetEntity> =
+        if (workoutIds.isEmpty()) emptyList() else setDao.getByWorkoutIds(workoutIds)
+
+    suspend fun getCompletedWorkoutDates(): List<String> =
+        workoutDao.getCompletedWorkoutDates()
 }

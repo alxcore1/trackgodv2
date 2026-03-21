@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +37,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.collectAsState
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.trackgod.app.R
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.theme.Blood
@@ -59,7 +62,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun SplashScreen(
     onEnter: () -> Unit = {},
+    viewModel: SplashViewModel = hiltViewModel(),
 ) {
+    val isReady by viewModel.isReady.collectAsState()
+
     // ── Animation states ─────────────────────────────────────────────────────
 
     val logoAlpha = remember { Animatable(0f) }
@@ -197,7 +203,7 @@ fun SplashScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "LOADING",
+                        text = if (isReady) "READY" else "LOADING",
                         style = MaterialTheme.typography.headlineMedium,
                         color = TextPrimary,
                     )
@@ -208,8 +214,9 @@ fun SplashScreen(
 
             // ── CTA button ───────────────────────────────────────────────
             TrackGodButton(
-                text = "TAP TO ENTER THE ALTAR",
+                text = if (isReady) "TAP TO ENTER THE ALTAR" else "INITIALIZING...",
                 onClick = onEnter,
+                enabled = isReady,
                 icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 modifier = Modifier
                     .fillMaxWidth()

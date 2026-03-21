@@ -82,4 +82,7 @@ interface SetDao {
 
     @Query("SELECT DISTINCT exercise_id FROM sets WHERE workout_id = :workoutId")
     suspend fun getDistinctExerciseIds(workoutId: Long): List<Long>
+
+    @Query("SELECT * FROM sets WHERE workout_id IN (:workoutIds)")
+    suspend fun getByWorkoutIds(workoutIds: List<Long>): List<SetEntity>
 }

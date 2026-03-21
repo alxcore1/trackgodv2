@@ -41,4 +41,10 @@ interface WorkoutDao {
 
     @Query("DELETE FROM workouts WHERE id = :workoutId")
     suspend fun deleteById(workoutId: Long)
+
+    @Query("SELECT * FROM workouts WHERE is_completed = 1 ORDER BY start_time DESC LIMIT :limit")
+    suspend fun getRecentCompleted(limit: Int = 5): List<WorkoutEntity>
+
+    @Query("SELECT DISTINCT date FROM workouts WHERE is_completed = 1 ORDER BY date DESC")
+    suspend fun getCompletedWorkoutDates(): List<String>
 }

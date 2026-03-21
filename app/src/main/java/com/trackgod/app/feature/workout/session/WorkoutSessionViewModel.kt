@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -113,6 +116,16 @@ class WorkoutSessionViewModel @Inject constructor(
                 _state.update { it.copy(isRestTimerRunning = running) }
             }
         }
+
+        // Observe exercise picker result via savedStateHandle
+        savedStateHandle.getStateFlow<Long?>("selectedExerciseId", null)
+            .filterNotNull()
+            .onEach { exerciseId ->
+                val exercise = exerciseRepository.getById(exerciseId)
+                if (exercise != null) selectExercise(exercise)
+                savedStateHandle["selectedExerciseId"] = null
+            }
+            .launchIn(viewModelScope)
     }
 
     // ── Settings ─────────────────────────────────────────────────────────────
