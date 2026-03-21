@@ -1,6 +1,10 @@
 package com.trackgod.app.core.repository
 
+import com.trackgod.app.core.database.dao.CategoryVolume
+import com.trackgod.app.core.database.dao.DateVolume
 import com.trackgod.app.core.database.dao.ExerciseDao
+import com.trackgod.app.core.database.dao.ExerciseFrequencyResult
+import com.trackgod.app.core.database.dao.PersonalRecordResult
 import com.trackgod.app.core.database.dao.SetDao
 import com.trackgod.app.core.database.dao.WorkoutDao
 import com.trackgod.app.core.database.entity.ExerciseEntity
@@ -136,4 +140,21 @@ class WorkoutRepository @Inject constructor(
 
     suspend fun getExerciseById(exerciseId: Long): ExerciseEntity? =
         exerciseDao.getById(exerciseId)
+
+    // -- Stats / Analytics queries ------------------------------------------------
+
+    suspend fun getAllCompletedWorkoutsOnce(): List<WorkoutEntity> =
+        workoutDao.getAllCompletedOnce()
+
+    suspend fun getVolumeByDate(startDate: String, endDate: String): List<DateVolume> =
+        workoutDao.getVolumeByDate(startDate, endDate)
+
+    suspend fun getVolumeByCategory(startDate: String, endDate: String): List<CategoryVolume> =
+        setDao.getVolumeByCategory(startDate, endDate)
+
+    suspend fun getPersonalRecords(): List<PersonalRecordResult> =
+        setDao.getPersonalRecords()
+
+    suspend fun getExerciseFrequency(startDate: String, endDate: String, limit: Int = 8): List<ExerciseFrequencyResult> =
+        setDao.getExerciseFrequency(startDate, endDate, limit)
 }

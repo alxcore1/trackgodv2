@@ -65,4 +65,22 @@ interface WorkoutDao {
 
     @Query("UPDATE workouts SET name = :name WHERE id = :workoutId")
     suspend fun updateName(workoutId: Long, name: String)
+
+    @Query("SELECT * FROM workouts WHERE is_completed = 1 ORDER BY date DESC")
+    suspend fun getAllCompletedOnce(): List<WorkoutEntity>
+
+    @Query(
+        """
+        SELECT date, total_volume AS totalVolume
+        FROM workouts
+        WHERE is_completed = 1 AND date BETWEEN :startDate AND :endDate
+        ORDER BY date ASC
+        """
+    )
+    suspend fun getVolumeByDate(startDate: String, endDate: String): List<DateVolume>
 }
+
+data class DateVolume(
+    val date: String,
+    val totalVolume: Float?
+)

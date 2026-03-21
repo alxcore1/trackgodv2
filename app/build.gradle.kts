@@ -88,6 +88,9 @@ dependencies {
     implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)
 
+    // Vico Charts
+    implementation(libs.vico.compose)
+
     // Core
     implementation(libs.core.ktx)
     implementation(libs.activity.compose)

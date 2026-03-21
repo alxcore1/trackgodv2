@@ -12,6 +12,7 @@ lifecycle = "2.8.7"
 coroutines = "1.9.0"
 coreKtx = "1.15.0"
 activityCompose = "1.9.3"
+vico = "2.0.0-beta.3"
 
 [libraries]
 # Compose BOM
@@ -49,6 +50,9 @@ lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-
 # Coroutines
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+
+# Vico Charts
+vico-compose = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
 
 # Core
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

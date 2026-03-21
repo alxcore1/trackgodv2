@@ -17,7 +17,14 @@ data class CategoryVolume(
 data class PersonalRecordResult(
     val exerciseId: Long,
     val name: String,
-    val estimated1rm: Float
+    val estimated1rm: Float,
+    val weight: Float,
+    val reps: Int
+)
+
+data class ExerciseFrequencyResult(
+    val name: String,
+    val count: Int
 )
 
 @Dao
@@ -64,11 +71,19 @@ interface SetDao {
     @Query(
         """
         SELECT s.exercise_id AS exerciseId, e.name AS name,
-               MAX(s.weight * (1 + 0.0333 * s.reps)) AS estimated1rm
+               s.weight * (1 + 0.0333 * s.reps) AS estimated1rm,
+               s.weight AS weight, s.reps AS reps
         FROM sets s
         INNER JOIN exercises e ON s.exercise_id = e.id
         INNER JOIN workouts w ON s.workout_id = w.id
         WHERE w.is_completed = 1
+          AND s.id = (
+              SELECT s2.id FROM sets s2
+              INNER JOIN workouts w2 ON s2.workout_id = w2.id
+              WHERE s2.exercise_id = s.exercise_id AND w2.is_completed = 1
+              ORDER BY s2.weight * (1 + 0.0333 * s2.reps) DESC
+              LIMIT 1
+          )
         GROUP BY s.exercise_id
         """
     )
@@ -85,4 +100,18 @@ interface SetDao {
 
     @Query("SELECT * FROM sets WHERE workout_id IN (:workoutIds)")
     suspend fun getByWorkoutIds(workoutIds: List<Long>): List<SetEntity>
+
+    @Query(
+        """
+        SELECT e.name AS name, COUNT(DISTINCT s.workout_id) AS count
+        FROM sets s
+        INNER JOIN exercises e ON s.exercise_id = e.id
+        INNER JOIN workouts w ON s.workout_id = w.id
+        WHERE w.date BETWEEN :startDate AND :endDate AND w.is_completed = 1
+        GROUP BY s.exercise_id
+        ORDER BY count DESC
+        LIMIT :limit
+        """
+    )
+    suspend fun getExerciseFrequency(startDate: String, endDate: String, limit: Int = 8): List<ExerciseFrequencyResult>
 }
