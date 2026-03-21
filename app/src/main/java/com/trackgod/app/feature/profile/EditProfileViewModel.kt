@@ -3,6 +3,7 @@ package com.trackgod.app.feature.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trackgod.app.core.database.entity.UserProfileEntity
+import com.trackgod.app.core.repository.SettingsRepository
 import com.trackgod.app.core.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +34,7 @@ data class EditProfileState(
 @HiltViewModel
 class EditProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EditProfileState())
@@ -144,6 +146,9 @@ class EditProfileViewModel @Inject constructor(
             } else {
                 userRepository.updateProfile(entity)
             }
+            // Sync units to app-wide settings so other screens pick them up
+            settingsRepository.setWeightUnit(current.weightUnit)
+            settingsRepository.setHeightUnit(current.heightUnit)
             onSuccess()
         }
     }

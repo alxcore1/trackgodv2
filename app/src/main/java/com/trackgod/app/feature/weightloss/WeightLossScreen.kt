@@ -173,6 +173,7 @@ fun WeightLossScreen(
                     photos = state.progressPhotos,
                     onPhotoAdded = viewModel::addProgressPhoto,
                     onCompare = onNavigateToPhotoComparison,
+                    onPhotoDeleted = viewModel::deletePhoto,
                 )
             }
 

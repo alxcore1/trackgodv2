@@ -139,6 +139,7 @@ fun WeighInSheet(
                         model = ImageRequest.Builder(context)
                             .data(Uri.parse(photoUri))
                             .crossfade(true)
+                            .error(android.R.drawable.ic_menu_gallery)
                             .build(),
                         contentDescription = "Selected photo",
                         contentScale = ContentScale.Crop,

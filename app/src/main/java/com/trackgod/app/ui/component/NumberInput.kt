@@ -66,6 +66,7 @@ fun NumberInput(
     label: String,
     unit: String = "",
     step: Float = 1f,
+    maxValue: Float = Float.MAX_VALUE,
     modifier: Modifier = Modifier,
 ) {
     var isEditing by remember { mutableStateOf(false) }
@@ -155,7 +156,7 @@ fun NumberInput(
                 contentDescription = "Increase",
                 onClick = {
                     val current = value.toFloatOrNull() ?: 0f
-                    val next = current + step
+                    val next = (current + step).coerceAtMost(maxValue)
                     onValueChange(formatNumber(next, step))
                 },
             )

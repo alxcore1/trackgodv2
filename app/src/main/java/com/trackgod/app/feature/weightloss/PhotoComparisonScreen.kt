@@ -333,6 +333,7 @@ private fun ComparisonViewport(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(Uri.parse(afterPhoto.photoUri))
                     .crossfade(true)
+                    .error(android.R.drawable.ic_menu_gallery)
                     .build(),
                 contentDescription = "After photo",
                 contentScale = ContentScale.Crop,
@@ -361,6 +362,7 @@ private fun ComparisonViewport(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(Uri.parse(beforePhoto.photoUri))
                         .crossfade(true)
+                        .error(android.R.drawable.ic_menu_gallery)
                         .build(),
                     contentDescription = "Before photo",
                     contentScale = ContentScale.Crop,
@@ -422,6 +424,7 @@ private fun SelectableThumbnail(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(Uri.parse(photo.photoUri))
                         .crossfade(true)
+                        .error(android.R.drawable.ic_menu_gallery)
                         .build(),
                     contentDescription = "Thumbnail ${photo.date}",
                     contentScale = ContentScale.Crop,

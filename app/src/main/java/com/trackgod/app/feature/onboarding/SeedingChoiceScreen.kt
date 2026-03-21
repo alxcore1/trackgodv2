@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +51,7 @@ fun SeedingChoiceScreen(
     onNavigateToV1Import: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     var isSeeding by remember { mutableStateOf(false) }
 
     Column(
@@ -105,8 +108,13 @@ fun SeedingChoiceScreen(
                     {
                         isSeeding = true
                         scope.launch {
-                            seedDatabase.seedIfNeeded()
-                            onComplete()
+                            try {
+                                seedDatabase.seedIfNeeded()
+                                onComplete()
+                            } catch (e: Exception) {
+                                isSeeding = false
+                                Toast.makeText(context, "Failed to load exercises. Please retry.", Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 } else null,
@@ -130,8 +138,13 @@ fun SeedingChoiceScreen(
                     onClick = {
                         isSeeding = true
                         scope.launch {
-                            seedDatabase.seedIfNeeded()
-                            onComplete()
+                            try {
+                                seedDatabase.seedIfNeeded()
+                                onComplete()
+                            } catch (e: Exception) {
+                                isSeeding = false
+                                Toast.makeText(context, "Failed to load exercises. Please retry.", Toast.LENGTH_LONG).show()
+                            }
                         }
                     },
                     enabled = !isSeeding,
@@ -147,8 +160,13 @@ fun SeedingChoiceScreen(
                     {
                         isSeeding = true
                         scope.launch {
-                            seedDatabase.seedBasicsOnly()
-                            onComplete()
+                            try {
+                                seedDatabase.seedBasicsOnly()
+                                onComplete()
+                            } catch (e: Exception) {
+                                isSeeding = false
+                                Toast.makeText(context, "Failed to load exercises. Please retry.", Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 } else null,
@@ -172,8 +190,13 @@ fun SeedingChoiceScreen(
                     onClick = {
                         isSeeding = true
                         scope.launch {
-                            seedDatabase.seedBasicsOnly()
-                            onComplete()
+                            try {
+                                seedDatabase.seedBasicsOnly()
+                                onComplete()
+                            } catch (e: Exception) {
+                                isSeeding = false
+                                Toast.makeText(context, "Failed to load exercises. Please retry.", Toast.LENGTH_LONG).show()
+                            }
                         }
                     },
                     enabled = !isSeeding,
@@ -190,8 +213,13 @@ fun SeedingChoiceScreen(
                     {
                         isSeeding = true
                         scope.launch {
-                            seedDatabase.markAsSeeded()
-                            onComplete()
+                            try {
+                                seedDatabase.markAsSeeded()
+                                onComplete()
+                            } catch (e: Exception) {
+                                isSeeding = false
+                                Toast.makeText(context, "Failed to initialize. Please retry.", Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 } else null,
@@ -215,8 +243,13 @@ fun SeedingChoiceScreen(
                     onClick = {
                         isSeeding = true
                         scope.launch {
-                            seedDatabase.markAsSeeded()
-                            onComplete()
+                            try {
+                                seedDatabase.markAsSeeded()
+                                onComplete()
+                            } catch (e: Exception) {
+                                isSeeding = false
+                                Toast.makeText(context, "Failed to initialize. Please retry.", Toast.LENGTH_LONG).show()
+                            }
                         }
                     },
                     enabled = !isSeeding,
