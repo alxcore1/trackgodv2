@@ -87,6 +87,13 @@ fun TrackGodNavHost() {
                     onResumeWorkout = { workoutId ->
                         navController.navigate(Screen.WorkoutSession.create(workoutId))
                     },
+                    onWorkoutTap = {
+                        navController.navigate(Screen.History.route) {
+                            popUpTo(Screen.Altar.route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                 )
             }
             composable(Screen.History.route) { HistoryScreen() }

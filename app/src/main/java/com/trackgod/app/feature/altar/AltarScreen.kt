@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -34,6 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,6 +50,7 @@ import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodCard
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
+import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
@@ -59,6 +62,7 @@ import kotlinx.coroutines.launch
 fun AltarScreen(
     onStartWorkout: (workoutId: Long) -> Unit = {},
     onResumeWorkout: (workoutId: Long) -> Unit = {},
+    onWorkoutTap: (workoutId: Long) -> Unit = {},
     viewModel: AltarViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -77,6 +81,7 @@ fun AltarScreen(
             if (id != null) onResumeWorkout(id)
         },
         onDiscardIncomplete = viewModel::discardIncompleteWorkout,
+        onWorkoutTap = onWorkoutTap,
     )
 }
 
@@ -88,6 +93,7 @@ private fun AltarContent(
     onStartNewWorkout: () -> Unit,
     onResumeWorkout: () -> Unit,
     onDiscardIncomplete: () -> Unit,
+    onWorkoutTap: (Long) -> Unit = {},
 ) {
     var showDiscardConfirm by remember { mutableStateOf(false) }
 
@@ -205,32 +211,13 @@ private fun AltarContent(
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Weekly ritual card
+            // Weekly ritual card with day dots
             TrackGodCard(
                 modifier = Modifier.weight(1f),
             ) {
-                Text(
-                    text = "WEEKLY RITUAL",
-                    color = TextTertiary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 3.sp,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "TODAY",
-                    color = TextTertiary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "${state.todayWorkoutCount} SESSION${if (state.todayWorkoutCount != 1) "S" else ""}",
-                    color = TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 1.sp,
+                WeeklyRitualContent(
+                    weeklyGoal = state.weeklyGoal,
+                    workoutDaysThisWeek = state.workoutDaysThisWeek,
                 )
             }
 
@@ -319,7 +306,10 @@ private fun AltarContent(
             )
         } else {
             state.recentWorkouts.forEach { workout ->
-                RecentWorkoutRow(workout = workout)
+                RecentWorkoutRow(
+                    workout = workout,
+                    onClick = { onWorkoutTap(workout.id) },
+                )
                 Spacer(modifier = Modifier.height(4.dp))
             }
         }
@@ -328,12 +318,100 @@ private fun AltarContent(
     }
 }
 
+// ── Weekly Ritual Content ───────────────────────────────────────────────────
+
+@Composable
+private fun WeeklyRitualContent(
+    weeklyGoal: Int,
+    workoutDaysThisWeek: Set<Int>,
+) {
+    val daysCompleted = workoutDaysThisWeek.size
+    val percent = if (weeklyGoal > 0) {
+        ((daysCompleted.toFloat() / weeklyGoal) * 100f).coerceAtMost(100f).toInt()
+    } else {
+        0
+    }
+
+    // Day labels: M T W T F S S correspond to DayOfWeek values 1-7
+    val dayLabels = listOf("M", "T", "W", "T", "F", "S", "S")
+
+    // Header row: "WEEKLY RITUAL"
+    Text(
+        text = "WEEKLY RITUAL",
+        color = TextTertiary,
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 3.sp,
+    )
+
+    Spacer(modifier = Modifier.height(6.dp))
+
+    // Goal + percentage row
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        Text(
+            text = "GOAL",
+            color = TextTertiary,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp,
+        )
+        Text(
+            text = "$percent%",
+            color = BloodBright,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Black,
+        )
+    }
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    // Day dots row
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        dayLabels.forEachIndexed { index, label ->
+            val dayOfWeek = index + 1 // 1=Monday .. 7=Sunday
+            val hasWorkout = workoutDaysThisWeek.contains(dayOfWeek)
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = label,
+                    color = if (hasWorkout) TextPrimary else TextTertiary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (hasWorkout) Blood else SurfaceHighest
+                        ),
+                )
+            }
+        }
+    }
+}
+
 // ── Recent Workout Row ──────────────────────────────────────────────────────
 
 @Composable
-private fun RecentWorkoutRow(workout: WorkoutEntity) {
+private fun RecentWorkoutRow(
+    workout: WorkoutEntity,
+    onClick: () -> Unit = {},
+) {
     TrackGodCard(
         accentBorder = true,
+        onClick = onClick,
         modifier = Modifier.padding(horizontal = 16.dp),
     ) {
         Text(
@@ -411,6 +489,8 @@ private fun AltarScreenPreview() {
                 todayDurationMinutes = 72,
                 currentStreak = 12,
                 hasIncompleteWorkout = false,
+                weeklyGoal = 4,
+                workoutDaysThisWeek = setOf(1, 3, 4),
                 recentWorkouts = listOf(
                     WorkoutEntity(
                         id = 1,
@@ -438,6 +518,7 @@ private fun AltarScreenPreview() {
             onStartNewWorkout = {},
             onResumeWorkout = {},
             onDiscardIncomplete = {},
+            onWorkoutTap = {},
         )
     }
 }
@@ -455,6 +536,7 @@ private fun AltarScreenIncompletePreview() {
             onStartNewWorkout = {},
             onResumeWorkout = {},
             onDiscardIncomplete = {},
+            onWorkoutTap = {},
         )
     }
 }

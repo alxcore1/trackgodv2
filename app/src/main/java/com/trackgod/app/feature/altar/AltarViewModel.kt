@@ -2,6 +2,7 @@ package com.trackgod.app.feature.altar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.trackgod.app.core.database.dao.UserProfileDao
 import com.trackgod.app.core.database.entity.WorkoutEntity
 import com.trackgod.app.core.repository.SettingsRepository
 import com.trackgod.app.core.repository.WorkoutRepository
@@ -12,8 +13,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 
 // ── State ────────────────────────────────────────────────────────────────────
@@ -27,6 +30,8 @@ data class AltarState(
     val hasIncompleteWorkout: Boolean = false,
     val incompleteWorkoutId: Long? = null,
     val recentWorkouts: List<WorkoutEntity> = emptyList(),
+    val weeklyGoal: Int = 4,
+    val workoutDaysThisWeek: Set<Int> = emptySet(),
     val isLoading: Boolean = true,
 )
 
@@ -36,6 +41,7 @@ data class AltarState(
 class AltarViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
     private val settingsRepository: SettingsRepository,
+    private val userProfileDao: UserProfileDao,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AltarState())
@@ -59,19 +65,31 @@ class AltarViewModel @Inject constructor(
                 val todayWorkoutIds = completedToday.map { it.id }
                 val todaySets = workoutRepository.getSetsForWorkoutIds(todayWorkoutIds)
 
+                // Refresh non-reactive data when today's workouts change
+                val recent = workoutRepository.getRecentCompletedWorkouts(5)
+                val streak = calculateStreak()
+                val weekDays = calculateWorkoutDaysThisWeek()
+
                 _state.update {
                     it.copy(
                         todayWorkoutCount = completedToday.size,
                         todaySets = todaySets.size,
                         todayVolume = totalVolume,
                         todayDurationMinutes = totalDurationSeconds / 60,
+                        recentWorkouts = recent,
+                        currentStreak = streak,
+                        workoutDaysThisWeek = weekDays,
                     )
                 }
             }
         }
 
-        // Load non-reactive data: streak, incomplete workout, recent workouts
+        // Load non-reactive data: streak, incomplete workout, recent workouts, weekly goal
         viewModelScope.launch {
+            // Load weekly target from user profile
+            val profile = userProfileDao.getProfileOnce()
+            val weeklyGoal = profile?.weeklyTarget ?: 4
+
             // Check SharedPreferences first for active workout ID (survives app kill)
             val activeId = settingsRepository.getActiveWorkoutId()
             var incompleteWorkout: WorkoutEntity? = null
@@ -95,6 +113,7 @@ class AltarViewModel @Inject constructor(
 
             val recent = workoutRepository.getRecentCompletedWorkouts(5)
             val streak = calculateStreak()
+            val weekDays = calculateWorkoutDaysThisWeek()
 
             _state.update {
                 it.copy(
@@ -102,6 +121,8 @@ class AltarViewModel @Inject constructor(
                     incompleteWorkoutId = incompleteWorkout?.id,
                     recentWorkouts = recent,
                     currentStreak = streak,
+                    weeklyGoal = weeklyGoal,
+                    workoutDaysThisWeek = weekDays,
                     isLoading = false,
                 )
             }
@@ -128,6 +149,26 @@ class AltarViewModel @Inject constructor(
             day = day.minusDays(1)
         }
         return streak
+    }
+
+    /**
+     * Calculate which days this week (Mon=1 .. Sun=7) have completed workouts.
+     */
+    private suspend fun calculateWorkoutDaysThisWeek(): Set<Int> {
+        val dates = workoutRepository.getCompletedWorkoutDates()
+        if (dates.isEmpty()) return emptySet()
+
+        val today = LocalDate.now()
+        val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val weekEnd = weekStart.plusDays(6)
+
+        return dates.mapNotNull { dateStr ->
+            runCatching { LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE) }.getOrNull()
+        }.filter { date ->
+            !date.isBefore(weekStart) && !date.isAfter(weekEnd)
+        }.map { date ->
+            date.dayOfWeek.value // Monday=1, Sunday=7
+        }.toSet()
     }
 
     // ── Actions ──────────────────────────────────────────────────────────────

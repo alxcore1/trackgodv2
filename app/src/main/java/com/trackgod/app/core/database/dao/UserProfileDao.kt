@@ -24,6 +24,9 @@ interface UserProfileDao {
     @Query("SELECT * FROM user_profile LIMIT 1")
     fun getProfile(): Flow<UserProfileEntity?>
 
+    @Query("SELECT * FROM user_profile LIMIT 1")
+    suspend fun getProfileOnce(): UserProfileEntity?
+
     @Query("SELECT EXISTS(SELECT 1 FROM user_profile LIMIT 1)")
     suspend fun hasProfile(): Boolean
 }
