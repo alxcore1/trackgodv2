@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Workout Session - Sonic Altar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Work+Sans:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "inverse-surface": "#e5e2e1",
+                        "on-primary-fixed": "#410000",
+                        "on-primary-fixed-variant": "#920703",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-container": "#ff907f",
+                        "surface-container-highest": "#353534",
+                        "surface-container-high": "#2a2a2a",
+                        "inverse-on-surface": "#313030",
+                        "surface-dim": "#131313",
+                        "secondary": "#c8c6c6",
+                        "on-secondary-container": "#b6b5b4",
+                        "outline": "#aa8984",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#313030",
+                        "on-surface-variant": "#e3beb8",
+                        "error-container": "#93000a",
+                        "tertiary-fixed": "#e5e2e1",
+                        "tertiary-container": "#434242",
+                        "primary-fixed-dim": "#ffb4a8",
+                        "on-primary": "#690000",
+                        "surface-container": "#201f1f",
+                        "primary-container": "#8b0000",
+                        "surface": "#131313",
+                        "tertiary": "#c8c6c5",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-secondary": "#303030",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "error": "#ffb4ab",
+                        "secondary-fixed-dim": "#c8c6c6",
+                        "on-error": "#690005",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "surface-variant": "#353534",
+                        "surface-bright": "#3a3939",
+                        "inverse-primary": "#b52619",
+                        "surface-tint": "#ffb4a8",
+                        "secondary-fixed": "#e4e2e1",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "background": "#131313",
+                        "secondary-container": "#474747",
+                        "primary": "#ffb4a8",
+                        "on-secondary-fixed-variant": "#474747",
+                        "surface-container-low": "#1c1b1b",
+                        "primary-fixed": "#ffdad4",
+                        "outline-variant": "#5a403c",
+                        "on-tertiary-container": "#b1aeae"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Work Sans"],
+                        "label": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .gritty-overlay {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.05;
+            pointer-events: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary overflow-hidden h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-[#131313] dark:bg-[#131313] flex justify-between items-center w-full px-4 h-16 shrink-0 relative z-10">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#ffb4a8]" data-icon="fitness_center">fitness_center</span>
+<h1 class="font-['Space_Grotesk'] uppercase tracking-tighter font-black text-2xl text-[#ffb4a8]">WORKOUT</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-label font-black text-[#ffb4a8] tracking-widest text-xs">LIVE</span>
+<div class="w-2 h-2 bg-primary animate-pulse"></div>
+</div>
+<div class="absolute inset-0 gritty-overlay"></div>
+</header>
+<!-- Main Content: Non-Scrolling Canvas -->
+<main class="flex-1 flex flex-col p-4 gap-4 relative">
+<div class="absolute inset-0 gritty-overlay"></div>
+<!-- Compact Stats Panel -->
+<section class="grid grid-cols-4 gap-0.5 bg-surface-container-lowest border border-outline-variant/20 shadow-2xl">
+<div class="bg-surface-container-low p-3 flex flex-col items-center justify-center">
+<span class="font-label text-[10px] tracking-[0.2em] text-on-surface-variant uppercase">Exercises</span>
+<span class="font-headline font-black text-2xl text-primary">08</span>
+</div>
+<div class="bg-surface-container-low p-3 flex flex-col items-center justify-center border-l border-outline-variant/10">
+<span class="font-label text-[10px] tracking-[0.2em] text-on-surface-variant uppercase">Sets</span>
+<span class="font-headline font-black text-2xl text-primary">24</span>
+</div>
+<div class="bg-surface-container-low p-3 flex flex-col items-center justify-center border-l border-outline-variant/10">
+<span class="font-label text-[10px] tracking-[0.2em] text-on-surface-variant uppercase">Volume</span>
+<span class="font-headline font-black text-2xl text-primary">12.4k</span>
+</div>
+<div class="bg-surface-container-low p-3 flex flex-col items-center justify-center border-l border-outline-variant/10">
+<span class="font-label text-[10px] tracking-[0.2em] text-on-surface-variant uppercase">Time</span>
+<span class="font-headline font-black text-2xl text-primary">48:12</span>
+</div>
+</section>
+<!-- Session Controls -->
+<section class="flex gap-2 shrink-0">
+<button class="flex-1 bg-primary-container hover:bg-red-800 text-on-primary-container h-16 flex items-center justify-center gap-2 font-headline font-black tracking-widest uppercase transition-all active:scale-95 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+<span class="material-symbols-outlined text-2xl" data-icon="pause">pause</span>
+                Pause
+            </button>
+<button class="flex-1 bg-surface-container-highest hover:bg-surface-bright text-on-surface h-16 flex items-center justify-center gap-2 font-headline font-black tracking-widest uppercase transition-all active:scale-95 border-l-4 border-primary/20">
+<span class="material-symbols-outlined text-2xl" data-icon="stop">stop</span>
+                End
+            </button>
+</section>
+<!-- Utility Section: Select Exercise -->
+<div class="mt-2 mb-1 flex items-center gap-3">
+<div class="h-px bg-primary/30 flex-1"></div>
+<h2 class="font-headline font-black text-xs tracking-[0.3em] text-on-surface-variant uppercase shrink-0">Select an Exercise</h2>
+<div class="h-px bg-primary/30 flex-1"></div>
+</div>
+<!-- High-Density Utilitarian List -->
+<section class="flex-1 grid grid-rows-2 gap-3 pb-20">
+<button class="group relative flex flex-col items-center justify-center bg-surface-container border-l-8 border-primary transition-all hover:bg-surface-container-high active:scale-[0.98] overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20">
+<span class="material-symbols-outlined text-8xl" data-icon="exercise">exercise</span>
+</div>
+<div class="relative z-10 flex flex-col items-center">
+<span class="material-symbols-outlined text-4xl text-primary mb-2" data-icon="add_circle">add_circle</span>
+<span class="font-headline font-black text-2xl tracking-tighter uppercase">+ Choose Exercise</span>
+<span class="font-label text-[10px] text-on-surface-variant tracking-[0.1em] mt-1 opacity-60">BROWSE MANUALLY</span>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-transparent opacity-30"></div>
+</button>
+<button class="group relative flex flex-col items-center justify-center bg-surface-container-low border-l-8 border-surface-container-highest transition-all hover:bg-surface-container active:scale-[0.98] overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20">
+<span class="material-symbols-outlined text-8xl" data-icon="precision_manufacturing">precision_manufacturing</span>
+</div>
+<div class="relative z-10 flex flex-col items-center">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant mb-2" data-icon="settings_input_component">settings_input_component</span>
+<span class="font-headline font-black text-2xl tracking-tighter uppercase">+ Choose Machine</span>
+<span class="font-label text-[10px] text-on-surface-variant tracking-[0.1em] mt-1 opacity-60">EQUIPMENT LOOKUP</span>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-surface-container-highest opacity-30"></div>
+</button>
+</section>
+</main>
+<!-- BottomNavBar (Hidden on main workout task screen as per "focused journey" logic, but implemented per JSON for completeness of the "shell" if needed. Given user prompt "All elements must fit on screen", we keep it minimal.) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-2 bg-[#0e0e0e] z-50 shadow-[0_-4px_20px_rgba(139,0,0,0.1)]">
+<a class="flex flex-col items-center justify-center bg-[#8b0000] text-[#ffb4a8] p-2 transition-all duration-150 flex-1 h-full scale-100" href="#">
+<span class="material-symbols-outlined" data-icon="exercise" style="font-variation-settings: 'FILL' 1;">exercise</span>
+<span class="font-['Space_Grotesk'] uppercase font-bold text-[10px] tracking-widest mt-1">TRAIN</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#353534] p-2 hover:text-[#e5e2e1] flex-1 h-full transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+<span class="font-['Space_Grotesk'] uppercase font-bold text-[10px] tracking-widest mt-1">LOG</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#353534] p-2 hover:text-[#e5e2e1] flex-1 h-full transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-['Space_Grotesk'] uppercase font-bold text-[10px] tracking-widest mt-1">STATS</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#353534] p-2 hover:text-[#e5e2e1] flex-1 h-full transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Space_Grotesk'] uppercase font-bold text-[10px] tracking-widest mt-1">GEAR</span>
+</a>
+<div class="absolute inset-0 gritty-overlay"></div>
+</nav>
+</body></html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&amp;family=Work+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary": "#303030",
+            "primary-container": "#8b0000",
+            "on-primary-fixed-variant": "#920703",
+            "inverse-on-surface": "#313030",
+            "primary-fixed": "#ffdad4",
+            "on-background": "#e5e2e1",
+            "on-tertiary-container": "#b1aeae",
+            "inverse-surface": "#e5e2e1",
+            "on-error-container": "#ffdad6",
+            "on-error": "#690005",
+            "surface-container-high": "#2a2a2a",
+            "surface-container": "#201f1f",
+            "secondary-container": "#474747",
+            "outline-variant": "#5a403c",
+            "surface-container-low": "#1c1b1b",
+            "on-tertiary-fixed-variant": "#474746",
+            "on-secondary-container": "#b6b5b4",
+            "inverse-primary": "#b52619",
+            "tertiary-container": "#434242",
+            "on-surface-variant": "#e3beb8",
+            "surface-container-lowest": "#0e0e0e",
+            "on-surface": "#e5e2e1",
+            "secondary": "#c8c6c6",
+            "tertiary-fixed": "#e5e2e1",
+            "on-secondary-fixed-variant": "#474747",
+            "primary": "#ffb4a8",
+            "surface": "#131313",
+            "surface-variant": "#353534",
+            "error": "#ffb4ab",
+            "primary-fixed-dim": "#ffb4a8",
+            "on-primary": "#690000",
+            "on-secondary-fixed": "#1b1c1c",
+            "surface-bright": "#3a3939",
+            "tertiary": "#c8c6c5",
+            "on-tertiary": "#313030",
+            "error-container": "#93000a",
+            "surface-container-highest": "#353534",
+            "secondary-fixed": "#e4e2e1",
+            "outline": "#aa8984",
+            "secondary-fixed-dim": "#c8c6c6",
+            "surface-dim": "#131313",
+            "on-primary-container": "#ff907f",
+            "tertiary-fixed-dim": "#c8c6c5",
+            "surface-tint": "#ffb4a8",
+            "background": "#131313",
+            "on-tertiary-fixed": "#1c1b1b",
+            "on-primary-fixed": "#410000"
+          },
+          fontFamily: {
+            "headline": ["Space Grotesk"],
+            "body": ["Work Sans"],
+            "label": ["Space Grotesk"]
+          },
+          borderRadius: { "DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .distressed-overlay {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      opacity: 0.05;
+      pointer-events: none;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-primary min-h-screen flex flex-col">
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 h-16 bg-[#0e0e0e] shadow-[0_4px_20px_rgba(139,0,0,0.15)]">
+<div class="flex items-center">
+<span class="material-symbols-outlined text-primary text-2xl cursor-pointer hover:bg-[#8b0000] hover:text-white transition-all duration-150 p-2 active:scale-90" data-icon="close">close</span>
+</div>
+<h1 class="font-headline uppercase tracking-tighter font-black text-2xl text-primary text-[#ffb4a8] italic">TRACKGOD</h1>
+<div class="w-10"></div>
+</header>
+<main class="flex-grow pt-24 pb-12 px-6 flex flex-col relative overflow-hidden">
+<div class="fixed inset-0 distressed-overlay z-0"></div>
+<section class="relative z-10 max-w-xl mx-auto w-full">
+<div class="mb-12">
+<h2 class="font-headline text-5xl md:text-7xl font-black italic tracking-tighter leading-none text-on-surface">
+          PHASE 02 <br/>
+<span class="text-primary-container">// STATS</span>
+</h2>
+<div class="h-1 w-24 bg-primary-container mt-4"></div>
+</div>
+<div class="space-y-10">
+<div class="group">
+<label class="block font-headline font-bold text-xs uppercase tracking-[0.2em] mb-3 text-outline" for="age">
+            AGE
+          </label>
+<div class="relative flex items-center">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary-container group-focus-within:w-2 transition-all duration-150"></div>
+<input class="w-full bg-surface-container-lowest border-none py-6 pl-8 pr-4 text-4xl font-headline font-black text-on-surface focus:ring-0 placeholder:text-surface-variant transition-colors" id="age" placeholder="00" type="number"/>
+<span class="absolute right-6 font-headline font-bold text-xs uppercase text-surface-variant">YEARS</span>
+</div>
+</div>
+<div class="group">
+<label class="block font-headline font-bold text-xs uppercase tracking-[0.2em] mb-3 text-outline" for="weight">
+            CURRENT WEIGHT (KG)
+          </label>
+<div class="relative flex items-center">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary-container group-focus-within:w-2 transition-all duration-150"></div>
+<input class="w-full bg-surface-container-lowest border-none py-6 pl-8 pr-4 text-4xl font-headline font-black text-on-surface focus:ring-0 placeholder:text-surface-variant transition-colors" id="weight" placeholder="00.0" step="0.1" type="number"/>
+<span class="absolute right-6 font-headline font-bold text-xs uppercase text-surface-variant">KILOGRAMS</span>
+</div>
+</div>
+</div>
+<div class="mt-16 bg-surface-container-low p-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+<h3 class="font-headline text-6xl font-black italic">TG-PRTCL</h3>
+</div>
+<p class="text-xs uppercase tracking-widest text-outline mb-4">DATA INTEGRITY CHECK</p>
+<p class="text-on-surface-variant text-sm leading-relaxed max-w-sm">
+          Physical parameters are essential for calculating the metabolic burn during intense sonic sessions. Accuracy ensures optimal progression.
+        </p>
+</div>
+</section>
+<div class="fixed bottom-0 left-0 w-full p-6 z-40 bg-gradient-to-t from-background via-background/90 to-transparent">
+<button class="w-full bg-primary-container text-on-primary py-5 font-headline font-black text-xl uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-primary-fixed-dim transition-all duration-150 active:scale-[0.98] shadow-[0_10px_40px_rgba(139,0,0,0.3)] group">
+        NEXT PROTOCOL
+        <span class="material-symbols-outlined group-hover:translate-x-2 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</main>
+<div class="hidden md:block fixed right-12 top-1/2 -translate-y-1/2 vertical-text z-0 opacity-10 select-none">
+<span class="font-headline font-black text-9xl leading-none rotate-90 inline-block uppercase tracking-tighter text-on-surface">RECRUIT_001</span>
+</div>
+<style>
+    .vertical-text {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+  </style>
+</body></html>

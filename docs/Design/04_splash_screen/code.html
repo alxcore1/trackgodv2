@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Work+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary": "#303030",
+              "primary-container": "#8b0000",
+              "on-primary-fixed-variant": "#920703",
+              "inverse-on-surface": "#313030",
+              "primary-fixed": "#ffdad4",
+              "on-background": "#e5e2e1",
+              "on-tertiary-container": "#b1aeae",
+              "inverse-surface": "#e5e2e1",
+              "on-error-container": "#ffdad6",
+              "on-error": "#690005",
+              "surface-container-high": "#2a2a2a",
+              "surface-container": "#201f1f",
+              "secondary-container": "#474747",
+              "outline-variant": "#5a403c",
+              "surface-container-low": "#1c1b1b",
+              "on-tertiary-fixed-variant": "#474746",
+              "on-secondary-container": "#b6b5b4",
+              "inverse-primary": "#b52619",
+              "tertiary-container": "#434242",
+              "on-surface-variant": "#e3beb8",
+              "surface-container-lowest": "#0e0e0e",
+              "on-surface": "#e5e2e1",
+              "secondary": "#c8c6c6",
+              "tertiary-fixed": "#e5e2e1",
+              "on-secondary-fixed-variant": "#474747",
+              "primary": "#ffb4a8",
+              "surface": "#131313",
+              "surface-variant": "#353534",
+              "error": "#ffb4ab",
+              "primary-fixed-dim": "#ffb4a8",
+              "on-primary": "#690000",
+              "on-secondary-fixed": "#1b1c1c",
+              "surface-bright": "#3a3939",
+              "tertiary": "#c8c6c5",
+              "on-tertiary": "#313030",
+              "error-container": "#93000a",
+              "surface-container-highest": "#353534",
+              "secondary-fixed": "#e4e2e1",
+              "outline": "#aa8984",
+              "secondary-fixed-dim": "#c8c6c6",
+              "surface-dim": "#131313",
+              "on-primary-container": "#ff907f",
+              "tertiary-fixed-dim": "#c8c6c5",
+              "surface-tint": "#ffb4a8",
+              "background": "#131313",
+              "on-tertiary-fixed": "#1c1b1b",
+              "on-primary-fixed": "#410000"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Work Sans"],
+              "label": ["Space Grotesk"]
+            },
+            borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .bg-noise {
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        opacity: 0.05;
+      }
+      .selected-glow {
+        box-shadow: 0 0 25px rgba(139, 0, 0, 0.4);
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body min-h-screen flex flex-col selection:bg-primary-container selection:text-primary overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 h-16 bg-[#131313] dark:bg-[#131313] bg-[#0e0e0e] shadow-[0_4px_20px_rgba(139,0,0,0.15)]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#ffb4a8] dark:text-[#ffb4a8] cursor-pointer hover:bg-[#8b0000] hover:text-white transition-all duration-150 scale-95 active:scale-90" data-icon="close">close</span>
+</div>
+<div class="absolute left-1/2 -translate-x-1/2">
+<h1 class="font-['Space_Grotesk'] uppercase tracking-tighter font-black text-2xl text-[#8b0000] dark:text-[#ffb4a8] italic">TRACKGOD</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-xs text-primary" data-icon="security">security</span>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col pt-24 pb-12 px-6 max-w-2xl mx-auto w-full relative">
+<!-- Background Texture -->
+<div class="fixed inset-0 bg-noise pointer-events-none z-0"></div>
+<!-- Progress Indicator -->
+<div class="flex gap-2 mb-12 z-10">
+<div class="h-1 flex-1 bg-primary-container"></div>
+<div class="h-1 flex-1 bg-primary-container"></div>
+<div class="h-1 flex-1 bg-primary"></div>
+<div class="h-1 flex-1 bg-surface-container-highest"></div>
+</div>
+<!-- Hero Heading -->
+<div class="mb-12 z-10">
+<p class="font-label text-primary font-bold tracking-widest text-xs mb-2">ONBOARDING // STAGE 03</p>
+<h2 class="font-headline font-black text-5xl md:text-7xl leading-none uppercase tracking-tighter text-on-background italic">
+                PHASE 03 <br/>
+<span class="text-primary-container">//</span> MISSION
+            </h2>
+</div>
+<!-- Selection Cards Grid -->
+<div class="space-y-4 z-10">
+<!-- Lose Weight -->
+<div class="group bg-surface-container-low hover:bg-surface-container-high transition-all duration-150 cursor-pointer p-6 flex items-center justify-between border-l-4 border-transparent hover:border-primary-container">
+<div class="flex items-center gap-6">
+<div class="w-14 h-14 bg-surface-container-lowest flex items-center justify-center group-hover:bg-primary-container/20 transition-colors">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="arrow_downward">arrow_downward</span>
+</div>
+<div>
+<h3 class="font-headline font-black text-xl uppercase tracking-tight">LOSE WEIGHT</h3>
+<p class="text-on-surface-variant text-sm font-medium uppercase opacity-60">Strategic Fat Reduction</p>
+</div>
+</div>
+<div class="w-6 h-6 border-2 border-outline-variant group-hover:border-primary-container"></div>
+</div>
+<!-- Get Fit -->
+<div class="group bg-surface-container-low hover:bg-surface-container-high transition-all duration-150 cursor-pointer p-6 flex items-center justify-between border-l-4 border-transparent hover:border-primary-container">
+<div class="flex items-center gap-6">
+<div class="w-14 h-14 bg-surface-container-lowest flex items-center justify-center group-hover:bg-primary-container/20 transition-colors">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="bolt">bolt</span>
+</div>
+<div>
+<h3 class="font-headline font-black text-xl uppercase tracking-tight">GET FIT</h3>
+<p class="text-on-surface-variant text-sm font-medium uppercase opacity-60">Endurance &amp; Performance</p>
+</div>
+</div>
+<div class="w-6 h-6 border-2 border-outline-variant group-hover:border-primary-container"></div>
+</div>
+<!-- Gain Muscle (Selected) -->
+<div class="bg-surface-container-high p-6 flex items-center justify-between border-l-4 border-primary selected-glow border border-primary/20 relative overflow-hidden">
+<!-- Selected Overlay -->
+<div class="absolute inset-0 bg-primary-container/5 pointer-events-none"></div>
+<div class="flex items-center gap-6 relative z-10">
+<div class="w-14 h-14 bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl text-on-primary" data-icon="fitness_center">fitness_center</span>
+</div>
+<div>
+<h3 class="font-headline font-black text-xl uppercase tracking-tight text-primary">GAIN MUSCLE</h3>
+<p class="text-on-surface-variant text-sm font-medium uppercase">Hypertrophy Protocol</p>
+</div>
+</div>
+<div class="w-6 h-6 bg-primary flex items-center justify-center relative z-10">
+<span class="material-symbols-outlined text-on-primary text-sm font-bold" data-icon="check">check</span>
+</div>
+</div>
+</div>
+<!-- Additional Mission Briefing -->
+<div class="mt-8 p-4 bg-surface-container-lowest border-l-2 border-outline-variant/30 z-10">
+<p class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant leading-relaxed">
+<span class="text-primary font-black mr-2">[SYSTEM NOTE]</span> Selecting "GAIN MUSCLE" will calibrate your macro-ratios for caloric surplus and high-intensity resistance training intervals.
+            </p>
+</div>
+<!-- Primary Action -->
+<div class="mt-12 z-10">
+<button class="w-full bg-primary-container py-5 flex items-center justify-center gap-4 group hover:bg-[#a30000] active:scale-[0.98] transition-all duration-150">
+<span class="font-headline font-black text-xl uppercase tracking-widest text-on-primary">INITIATE PROTOCOL</span>
+<span class="material-symbols-outlined text-on-primary group-hover:translate-x-2 transition-transform" data-icon="trending_flat">trending_flat</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation Shell (Suppressed as per Task-Focused Rule) -->
+<!-- Manual Shell Replacement for Onboarding -->
+<footer class="mt-auto py-8 px-6 text-center z-10">
+<p class="font-label text-[10px] text-surface-container-highest uppercase tracking-[0.3em]">Trackgod Industrial Interface v4.0.2</p>
+</footer>
+<!-- Decorative Background Elements -->
+<div class="fixed top-0 right-0 w-64 h-64 bg-primary-container/5 blur-[120px] pointer-events-none"></div>
+<div class="fixed bottom-0 left-0 w-96 h-96 bg-primary-container/5 blur-[150px] pointer-events-none"></div>
+</body></html>
