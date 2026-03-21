@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import com.trackgod.app.feature.altar.AltarScreen
 import com.trackgod.app.feature.history.HistoryScreen
 import com.trackgod.app.feature.profile.ProfileScreen
+import com.trackgod.app.feature.splash.SplashScreen
 import com.trackgod.app.feature.stats.StatsScreen
 import com.trackgod.app.ui.component.BottomNavBar
 
@@ -59,9 +60,20 @@ fun TrackGodNavHost() {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Altar.route, // Will change to Splash later
+            startDestination = Screen.Splash.route,
             modifier = Modifier.padding(paddingValues),
         ) {
+            // Splash / entry screen
+            composable(Screen.Splash.route) {
+                SplashScreen(
+                    onEnter = {
+                        navController.navigate(Screen.Altar.route) {
+                            popUpTo(Screen.Splash.route) { inclusive = true }
+                        }
+                    },
+                )
+            }
+
             // Main tabs
             composable(Screen.Altar.route) { AltarScreen() }
             composable(Screen.History.route) { HistoryScreen() }
