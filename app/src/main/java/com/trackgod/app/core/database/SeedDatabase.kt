@@ -60,6 +60,7 @@ class SeedDatabase @Inject constructor(
                     name = obj.getString("name"),
                     category = obj.getString("category"),
                     equipmentType = obj.getString("equipmentType"),
+                    brand = if (obj.has("brand")) obj.getString("brand") else null,
                     isCustom = false,
                     isActive = true,
                     usageCount = 0,

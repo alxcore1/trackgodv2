@@ -22,6 +22,7 @@ data class ExercisePickerState(
     val exercises: List<ExerciseEntity> = emptyList(),
     val searchQuery: String = "",
     val selectedCategory: String? = null, // null = All
+    val selectedEquipmentFilter: String? = null, // null = ALL, "machine" = machines, "free_weight" = free weights
     val categories: List<String> = listOf("Chest", "Back", "Shoulders", "Arms", "Legs", "Core"),
     val isLoading: Boolean = true,
     val showAddDialog: Boolean = false,
@@ -32,6 +33,7 @@ data class ExercisePickerState(
 sealed interface ExercisePickerEvent {
     data class SearchQueryChanged(val query: String) : ExercisePickerEvent
     data class CategorySelected(val category: String?) : ExercisePickerEvent
+    data class EquipmentFilterSelected(val filter: String?) : ExercisePickerEvent
     data object ToggleAddDialog : ExercisePickerEvent
     data class CreateExercise(
         val name: String,
@@ -50,7 +52,12 @@ class ExercisePickerViewModel @javax.inject.Inject constructor(
 
     private val searchQuery = MutableStateFlow("")
     private val selectedCategory = MutableStateFlow<String?>(null)
+    private val selectedEquipmentFilter = MutableStateFlow<String?>(null)
     private val showAddDialog = MutableStateFlow(false)
+
+    companion object {
+        private val FREE_WEIGHT_TYPES = setOf("barbell", "dumbbell", "bodyweight")
+    }
 
     /**
      * Reactive exercise list.
@@ -60,16 +67,30 @@ class ExercisePickerViewModel @javax.inject.Inject constructor(
      *  - query blank + category set -> getByCategory()
      *  - query set   + no category  -> search()
      *  - query set   + category set -> search() then filter client-side
+     *  - equipment filter applied client-side on top
      */
-    private val exercises = combine(searchQuery, selectedCategory) { query, category ->
-        query to category
-    }.flatMapLatest { (query, category) ->
-        when {
+    private val exercises = combine(searchQuery, selectedCategory, selectedEquipmentFilter) { query, category, equipFilter ->
+        Triple(query, category, equipFilter)
+    }.flatMapLatest { (query, category, equipFilter) ->
+        val baseFlow = when {
             query.isBlank() && category == null -> exerciseRepository.getAllActive()
             query.isBlank() -> exerciseRepository.getByCategory(category!!)
             category == null -> exerciseRepository.search(query)
             else -> exerciseRepository.search(query).map { list ->
                 list.filter { it.category.equals(category, ignoreCase = true) }
+            }
+        }
+        if (equipFilter == null) {
+            baseFlow
+        } else {
+            baseFlow.map { list ->
+                list.filter { exercise ->
+                    when (equipFilter) {
+                        "machine" -> exercise.equipmentType.equals("machine", ignoreCase = true)
+                        "free_weight" -> exercise.equipmentType.lowercase() in FREE_WEIGHT_TYPES
+                        else -> true
+                    }
+                }
             }
         }
     }
@@ -78,12 +99,14 @@ class ExercisePickerViewModel @javax.inject.Inject constructor(
         exercises,
         searchQuery,
         selectedCategory,
+        selectedEquipmentFilter,
         showAddDialog,
-    ) { exerciseList, query, category, addDialogVisible ->
+    ) { exerciseList, query, category, equipFilter, addDialogVisible ->
         ExercisePickerState(
             exercises = exerciseList,
             searchQuery = query,
             selectedCategory = category,
+            selectedEquipmentFilter = equipFilter,
             isLoading = false,
             showAddDialog = addDialogVisible,
         )
@@ -103,6 +126,10 @@ class ExercisePickerViewModel @javax.inject.Inject constructor(
 
             is ExercisePickerEvent.CategorySelected -> {
                 selectedCategory.update { event.category }
+            }
+
+            is ExercisePickerEvent.EquipmentFilterSelected -> {
+                selectedEquipmentFilter.update { event.filter }
             }
 
             is ExercisePickerEvent.ToggleAddDialog -> {

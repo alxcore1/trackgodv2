@@ -77,6 +77,7 @@ fun ExercisePickerScreen(
         state = state,
         onSearchQueryChanged = { viewModel.onEvent(ExercisePickerEvent.SearchQueryChanged(it)) },
         onCategorySelected = { viewModel.onEvent(ExercisePickerEvent.CategorySelected(it)) },
+        onEquipmentFilterSelected = { viewModel.onEvent(ExercisePickerEvent.EquipmentFilterSelected(it)) },
         onExerciseSelected = onExerciseSelected,
         onDismiss = onDismiss,
         onToggleAddDialog = { viewModel.onEvent(ExercisePickerEvent.ToggleAddDialog) },
@@ -93,6 +94,7 @@ private fun ExercisePickerContent(
     state: ExercisePickerState,
     onSearchQueryChanged: (String) -> Unit,
     onCategorySelected: (String?) -> Unit,
+    onEquipmentFilterSelected: (String?) -> Unit,
     onExerciseSelected: (ExerciseEntity) -> Unit,
     onDismiss: () -> Unit,
     onToggleAddDialog: () -> Unit,
@@ -113,7 +115,13 @@ private fun ExercisePickerContent(
             onQueryChange = onSearchQueryChanged,
         )
 
-        // 3. Category filter chips
+        // 3. Equipment type filter chips
+        EquipmentFilterChips(
+            selected = state.selectedEquipmentFilter,
+            onSelected = onEquipmentFilterSelected,
+        )
+
+        // 4. Category filter chips
         CategoryChips(
             categories = state.categories,
             selected = state.selectedCategory,
@@ -122,9 +130,9 @@ private fun ExercisePickerContent(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // 4. Exercise list (fills remaining space)
+        // 5. Exercise list (fills remaining space)
         if (state.exercises.isEmpty() && !state.isLoading) {
-            val isEmptyDb = state.searchQuery.isBlank() && state.selectedCategory == null
+            val isEmptyDb = state.searchQuery.isBlank() && state.selectedCategory == null && state.selectedEquipmentFilter == null
             if (isEmptyDb) {
                 EmptyState(
                     icon = Icons.Default.FitnessCenter,
@@ -157,9 +165,9 @@ private fun ExercisePickerContent(
             }
         }
 
-        // 5. Bottom action
+        // 6. Bottom action
         val isEmptyDb = state.exercises.isEmpty() && !state.isLoading
-                && state.searchQuery.isBlank() && state.selectedCategory == null
+                && state.searchQuery.isBlank() && state.selectedCategory == null && state.selectedEquipmentFilter == null
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -348,6 +356,37 @@ private fun CategoryChip(
     )
 }
 
+// ── Equipment Filter Chips ───────────────────────────────────────────────────
+
+@Composable
+private fun EquipmentFilterChips(
+    selected: String?,
+    onSelected: (String?) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        CategoryChip(
+            label = "All",
+            isActive = selected == null,
+            onClick = { onSelected(null) },
+        )
+        CategoryChip(
+            label = "Machine",
+            isActive = selected == "machine",
+            onClick = { onSelected("machine") },
+        )
+        CategoryChip(
+            label = "Free Weight",
+            isActive = selected == "free_weight",
+            onClick = { onSelected("free_weight") },
+        )
+    }
+}
+
 // ── Exercise Row ─────────────────────────────────────────────────────────────
 
 @Composable
@@ -401,7 +440,15 @@ private fun ExerciseRow(
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "${exercise.category} / ${exercise.equipmentType}".uppercase(),
+                text = buildString {
+                    append(exercise.category.uppercase())
+                    append(" \u00b7 ")
+                    append(exercise.equipmentType.uppercase())
+                    if (!exercise.brand.isNullOrBlank()) {
+                        append(" \u00b7 ")
+                        append(exercise.brand.uppercase())
+                    }
+                },
                 color = TextTertiary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
@@ -457,6 +504,7 @@ private fun ExercisePickerScreenPreview() {
             ),
             onSearchQueryChanged = {},
             onCategorySelected = {},
+            onEquipmentFilterSelected = {},
             onExerciseSelected = {},
             onDismiss = {},
             onToggleAddDialog = {},
@@ -477,6 +525,7 @@ private fun ExercisePickerEmptyPreview() {
             ),
             onSearchQueryChanged = {},
             onCategorySelected = {},
+            onEquipmentFilterSelected = {},
             onExerciseSelected = {},
             onDismiss = {},
             onToggleAddDialog = {},
