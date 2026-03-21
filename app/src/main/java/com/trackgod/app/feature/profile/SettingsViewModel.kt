@@ -3,6 +3,7 @@ package com.trackgod.app.feature.profile
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.trackgod.app.core.repository.SettingsRepository
+import com.trackgod.app.service.BackupScheduler
 import com.trackgod.app.service.WeighInReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -154,6 +155,11 @@ class SettingsViewModel @Inject constructor(
     fun setAutoBackup(enabled: Boolean) {
         settingsRepository.setAutoBackupEnabled(enabled)
         _state.value = _state.value.copy(autoBackup = enabled)
+        if (enabled) {
+            BackupScheduler.scheduleDaily(appContext)
+        } else {
+            BackupScheduler.cancel(appContext)
+        }
     }
 
     fun setMaxBackups(count: Int) {

@@ -104,7 +104,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
             ProfileMenuItem(label = "BACKUP & RESTORE", onClick = onNavigateToBackup)
             Spacer(modifier = Modifier.height(8.dp))
-            ProfileMenuItem(label = "EXPORT DATABASE", onClick = { /* TODO */ })
+            ProfileMenuItem(label = "EXPORT DATABASE", onClick = onNavigateToBackup)
 
             Spacer(modifier = Modifier.height(24.dp))
 

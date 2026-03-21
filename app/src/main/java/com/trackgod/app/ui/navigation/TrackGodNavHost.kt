@@ -15,6 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.trackgod.app.feature.altar.AltarScreen
+import com.trackgod.app.feature.backup.BackupScreen
 import com.trackgod.app.feature.history.HistoryScreen
 import com.trackgod.app.feature.profile.EditProfileScreen
 import com.trackgod.app.feature.profile.PrivacyPolicyScreen
@@ -118,7 +119,7 @@ fun TrackGodNavHost() {
                         navController.navigate(Screen.WeightLoss.route)
                     },
                     onNavigateToBackup = {
-                        // TODO: navigate to backup screen
+                        navController.navigate(Screen.Backup.route)
                     },
                     onNavigateToPrivacyPolicy = {
                         navController.navigate(Screen.PrivacyPolicy.route)
@@ -206,6 +207,11 @@ fun TrackGodNavHost() {
             }
             composable(Screen.PrivacyPolicy.route) {
                 PrivacyPolicyScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                )
+            }
+            composable(Screen.Backup.route) {
+                BackupScreen(
                     onNavigateBack = { navController.popBackStack() },
                 )
             }

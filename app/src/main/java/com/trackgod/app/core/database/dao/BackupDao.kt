@@ -20,9 +20,21 @@ interface BackupDao {
     @Query("SELECT * FROM backup_metadata ORDER BY created_at DESC")
     fun getAll(): Flow<List<BackupMetadataEntity>>
 
+    @Query("SELECT * FROM backup_metadata ORDER BY created_at DESC")
+    suspend fun getAllOnce(): List<BackupMetadataEntity>
+
     @Query("SELECT COUNT(*) FROM backup_metadata")
     suspend fun getCount(): Int
 
+    @Query("SELECT SUM(file_size) FROM backup_metadata")
+    suspend fun getTotalSize(): Long?
+
+    @Query("SELECT MAX(created_at) FROM backup_metadata")
+    suspend fun getLastBackupTime(): Long?
+
     @Query("DELETE FROM backup_metadata WHERE id NOT IN (SELECT id FROM backup_metadata ORDER BY created_at DESC LIMIT :keepCount)")
     suspend fun deleteOldest(keepCount: Int)
+
+    @Query("SELECT * FROM backup_metadata ORDER BY created_at ASC LIMIT :count")
+    suspend fun getOldestBackups(count: Int): List<BackupMetadataEntity>
 }

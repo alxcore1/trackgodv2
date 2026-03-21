@@ -10,7 +10,11 @@ import com.trackgod.app.core.database.dao.WorkoutDao
 import com.trackgod.app.core.database.entity.ExerciseEntity
 import com.trackgod.app.core.database.entity.SetEntity
 import com.trackgod.app.core.database.entity.WorkoutEntity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -20,8 +24,11 @@ import javax.inject.Singleton
 class WorkoutRepository @Inject constructor(
     private val workoutDao: WorkoutDao,
     private val setDao: SetDao,
-    private val exerciseDao: ExerciseDao
+    private val exerciseDao: ExerciseDao,
+    private val backupRepository: BackupRepository,
 ) {
+
+    private val backgroundScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     suspend fun createWorkout(): Long {
         val now = System.currentTimeMillis()
@@ -96,6 +103,15 @@ class WorkoutRepository @Inject constructor(
                 isCompleted = true
             )
         )
+
+        // Fire-and-forget backup after workout save
+        backgroundScope.launch {
+            try {
+                backupRepository.createBackup(type = "auto")
+            } catch (_: Exception) {
+                // Non-critical -- silent fail
+            }
+        }
     }
 
     suspend fun getIncompleteWorkout(): WorkoutEntity? =
