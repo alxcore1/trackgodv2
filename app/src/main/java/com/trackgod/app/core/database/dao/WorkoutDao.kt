@@ -47,4 +47,22 @@ interface WorkoutDao {
 
     @Query("SELECT DISTINCT date FROM workouts WHERE is_completed = 1 ORDER BY date DESC")
     suspend fun getCompletedWorkoutDates(): List<String>
+
+    @Query("SELECT * FROM workouts WHERE is_completed = 1 ORDER BY start_time DESC")
+    fun getAllCompleted(): Flow<List<WorkoutEntity>>
+
+    @Query("SELECT * FROM workouts WHERE is_completed = 1 AND date = :date ORDER BY start_time DESC")
+    suspend fun getCompletedByDate(date: String): List<WorkoutEntity>
+
+    @Query(
+        """
+        SELECT * FROM workouts
+        WHERE is_completed = 1 AND name LIKE '%' || :query || '%'
+        ORDER BY start_time DESC
+        """
+    )
+    suspend fun searchByName(query: String): List<WorkoutEntity>
+
+    @Query("UPDATE workouts SET name = :name WHERE id = :workoutId")
+    suspend fun updateName(workoutId: Long, name: String)
 }

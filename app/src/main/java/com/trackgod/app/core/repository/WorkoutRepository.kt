@@ -117,4 +117,23 @@ class WorkoutRepository @Inject constructor(
 
     suspend fun getCompletedWorkoutDates(): List<String> =
         workoutDao.getCompletedWorkoutDates()
+
+    fun getAllCompletedWorkouts(): Flow<List<WorkoutEntity>> =
+        workoutDao.getAllCompleted()
+
+    suspend fun getCompletedByDate(date: String): List<WorkoutEntity> =
+        workoutDao.getCompletedByDate(date)
+
+    suspend fun searchWorkoutsByName(query: String): List<WorkoutEntity> =
+        workoutDao.searchByName(query)
+
+    suspend fun updateWorkoutName(workoutId: Long, name: String) {
+        workoutDao.updateName(workoutId, name)
+    }
+
+    suspend fun getSetsForWorkoutOnce(workoutId: Long): List<SetEntity> =
+        setDao.getByWorkoutOnce(workoutId)
+
+    suspend fun getExerciseById(exerciseId: Long): ExerciseEntity? =
+        exerciseDao.getById(exerciseId)
 }
