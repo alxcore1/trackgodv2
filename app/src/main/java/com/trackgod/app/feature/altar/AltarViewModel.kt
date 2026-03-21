@@ -72,14 +72,34 @@ class AltarViewModel @Inject constructor(
 
         // Load non-reactive data: streak, incomplete workout, recent workouts
         viewModelScope.launch {
-            val incomplete = workoutRepository.getIncompleteWorkout()
+            // Check SharedPreferences first for active workout ID (survives app kill)
+            val activeId = settingsRepository.getActiveWorkoutId()
+            var incompleteWorkout: WorkoutEntity? = null
+            if (activeId != null) {
+                val workout = workoutRepository.getWorkout(activeId)
+                if (workout != null && !workout.isCompleted) {
+                    incompleteWorkout = workout
+                } else {
+                    // Stale ID -- workout was deleted or already completed
+                    settingsRepository.clearActiveWorkoutId()
+                }
+            }
+            // Fallback: also check DB in case prefs were cleared but DB has an incomplete workout
+            if (incompleteWorkout == null) {
+                incompleteWorkout = workoutRepository.getIncompleteWorkout()
+                if (incompleteWorkout != null) {
+                    // Sync prefs with DB state
+                    settingsRepository.setActiveWorkoutId(incompleteWorkout.id)
+                }
+            }
+
             val recent = workoutRepository.getRecentCompletedWorkouts(5)
             val streak = calculateStreak()
 
             _state.update {
                 it.copy(
-                    hasIncompleteWorkout = incomplete != null,
-                    incompleteWorkoutId = incomplete?.id,
+                    hasIncompleteWorkout = incompleteWorkout != null,
+                    incompleteWorkoutId = incompleteWorkout?.id,
                     recentWorkouts = recent,
                     currentStreak = streak,
                     isLoading = false,

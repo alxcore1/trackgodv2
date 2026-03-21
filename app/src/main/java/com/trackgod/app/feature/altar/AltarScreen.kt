@@ -22,14 +22,16 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -87,6 +89,8 @@ private fun AltarContent(
     onResumeWorkout: () -> Unit,
     onDiscardIncomplete: () -> Unit,
 ) {
+    var showDiscardConfirm by remember { mutableStateOf(false) }
+
     if (state.isLoading) {
         Box(
             modifier = Modifier
@@ -144,21 +148,51 @@ private fun AltarContent(
                     color = TextSecondary,
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    TrackGodButton(
-                        text = "DISCARD",
-                        onClick = onDiscardIncomplete,
-                        variant = ButtonVariant.Ghost,
-                        modifier = Modifier.weight(1f),
+
+                if (showDiscardConfirm) {
+                    Text(
+                        text = "DISCARD THIS WORKOUT?",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = BloodBright,
+                        letterSpacing = 2.sp,
                     )
-                    TrackGodButton(
-                        text = "RESUME",
-                        onClick = onResumeWorkout,
-                        modifier = Modifier.weight(1f),
-                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        TrackGodButton(
+                            text = "KEEP",
+                            onClick = { showDiscardConfirm = false },
+                            variant = ButtonVariant.Secondary,
+                            modifier = Modifier.weight(1f),
+                        )
+                        TrackGodButton(
+                            text = "DISCARD",
+                            onClick = {
+                                showDiscardConfirm = false
+                                onDiscardIncomplete()
+                            },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        TrackGodButton(
+                            text = "DISCARD",
+                            onClick = { showDiscardConfirm = true },
+                            variant = ButtonVariant.Ghost,
+                            modifier = Modifier.weight(1f),
+                        )
+                        TrackGodButton(
+                            text = "RESUME",
+                            onClick = onResumeWorkout,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))

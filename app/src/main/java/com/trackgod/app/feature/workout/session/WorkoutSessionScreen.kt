@@ -5,8 +5,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,13 +31,15 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -57,7 +62,6 @@ import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.Void
-import com.trackgod.app.ui.theme.VoidDeep
 
 // ── Screen (ViewModel-wired entry point) ────────────────────────────────────
 
@@ -65,6 +69,7 @@ import com.trackgod.app.ui.theme.VoidDeep
 fun WorkoutSessionScreen(
     workoutId: Long,
     onNavigateToExercisePicker: () -> Unit,
+    onNavigateBack: () -> Unit = {},
     onWorkoutComplete: () -> Unit,
     onWorkoutDiscarded: () -> Unit,
     viewModel: WorkoutSessionViewModel = hiltViewModel(),
@@ -97,6 +102,7 @@ fun WorkoutSessionScreen(
             viewModel.discardWorkout()
             onWorkoutDiscarded()
         },
+        onNavigateBack = onNavigateBack,
         onNavigateToExercisePicker = onNavigateToExercisePicker,
         generateWorkoutName = viewModel::generateWorkoutName,
     )
@@ -104,6 +110,7 @@ fun WorkoutSessionScreen(
 
 // ── Content (stateless, previewable) ────────────────────────────────────────
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun WorkoutSessionContent(
     state: WorkoutSessionState,
@@ -120,9 +127,18 @@ private fun WorkoutSessionContent(
     onDismissCompleteDialog: () -> Unit,
     onConfirmFinish: (String) -> Unit,
     onDiscardWorkout: () -> Unit,
+    onNavigateBack: () -> Unit,
     onNavigateToExercisePicker: () -> Unit,
     generateWorkoutName: () -> String,
 ) {
+    var showBackConfirm by remember { mutableStateOf(false) }
+    var deleteSetId by remember { mutableStateOf<Long?>(null) }
+
+    // Intercept system back button during active workout
+    BackHandler {
+        showBackConfirm = true
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -220,6 +236,7 @@ private fun WorkoutSessionContent(
                             weightIncrement = state.weightIncrement,
                             isEditing = state.editingSetId == set.id,
                             onClick = { onEditSet(set.id) },
+                            onLongClick = { deleteSetId = set.id },
                         )
                     }
                 }
@@ -256,6 +273,37 @@ private fun WorkoutSessionContent(
             onSave = onConfirmFinish,
             onDiscard = onDiscardWorkout,
             onDismiss = onDismissCompleteDialog,
+        )
+    }
+
+    // Back button confirmation dialog
+    if (showBackConfirm) {
+        ConfirmationDialog(
+            title = "LEAVE WORKOUT?",
+            message = "Your workout is still in progress. You can resume it later from the altar.",
+            confirmText = "LEAVE",
+            dismissText = "STAY",
+            onConfirm = {
+                showBackConfirm = false
+                onNavigateBack()
+            },
+            onDismiss = { showBackConfirm = false },
+        )
+    }
+
+    // Delete set confirmation dialog
+    val pendingDeleteId = deleteSetId
+    if (pendingDeleteId != null) {
+        ConfirmationDialog(
+            title = "DELETE THIS SET?",
+            message = "This action cannot be undone.",
+            confirmText = "DELETE",
+            dismissText = "CANCEL",
+            onConfirm = {
+                onDeleteSet(pendingDeleteId)
+                deleteSetId = null
+            },
+            onDismiss = { deleteSetId = null },
         )
     }
 }
@@ -596,6 +644,7 @@ private fun RestTimerSection(
 
 // ── Completed Set Row ───────────────────────────────────────────────────────
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CompletedSetRow(
     setNumber: Int,
@@ -606,6 +655,7 @@ private fun CompletedSetRow(
     weightIncrement: Float,
     isEditing: Boolean,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
 ) {
     val weightStr = if (weightIncrement % 1f == 0f) {
         weight.toInt().toString()
@@ -614,9 +664,13 @@ private fun CompletedSetRow(
     }
 
     TrackGodCard(
-        onClick = onClick,
         accentBorder = isEditing,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 2.dp)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -656,7 +710,6 @@ private fun CompletedSetRow(
 private fun formatVolumeShort(volume: Float): String {
     return when {
         volume >= 1_000_000 -> "%.1fM".format(volume / 1_000_000f)
-        volume >= 10_000 -> "%.1fK".format(volume / 1_000f)
         volume >= 1_000 -> "%.1fK".format(volume / 1_000f)
         else -> "%.0f".format(volume)
     }

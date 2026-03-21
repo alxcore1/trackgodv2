@@ -106,6 +106,11 @@ fun TrackGodNavHost() {
                     onNavigateToExercisePicker = {
                         navController.navigate(Screen.ExercisePicker.route)
                     },
+                    onNavigateBack = {
+                        navController.navigate(Screen.Altar.route) {
+                            popUpTo(Screen.Altar.route) { inclusive = true }
+                        }
+                    },
                     onWorkoutComplete = {
                         navController.navigate(Screen.Altar.route) {
                             popUpTo(Screen.Altar.route) { inclusive = true }
