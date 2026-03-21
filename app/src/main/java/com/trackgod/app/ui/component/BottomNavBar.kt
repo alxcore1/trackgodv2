@@ -75,7 +75,7 @@ fun BottomNavBar(
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val glowColor = BloodGlow.copy(alpha = 0.10f)
+    val glowColor = BloodGlow.copy(alpha = 0.15f)
 
     Column(
         modifier = modifier
@@ -133,7 +133,7 @@ private fun NavTabItem(
     modifier: Modifier = Modifier,
 ) {
     val iconTint = if (isActive) BloodBright else TextTertiary
-    val labelColor = if (isActive) BloodBright else TextTertiary
+    val labelColor = if (isActive) BloodBright else TextTertiary.copy(alpha = 0.7f)
 
     Column(
         modifier = modifier
@@ -145,11 +145,11 @@ private fun NavTabItem(
             .height(64.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Active top border
+        // Active top border (thicker for visibility)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(2.dp)
+                .height(if (isActive) 3.dp else 1.dp)
                 .background(if (isActive) Blood else Color.Transparent),
         )
 
@@ -167,8 +167,8 @@ private fun NavTabItem(
         Text(
             text = tab.label,
             color = labelColor,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 9.sp,
+            fontWeight = if (isActive) FontWeight.Black else FontWeight.Bold,
             letterSpacing = 2.sp,
         )
 

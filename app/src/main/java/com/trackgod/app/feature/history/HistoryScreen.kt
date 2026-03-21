@@ -76,6 +76,7 @@ import com.trackgod.app.ui.component.EmptyState
 import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.component.TrackGodButton
+import com.trackgod.app.ui.component.TrackGodHeader
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.SurfaceHighest
@@ -155,23 +156,9 @@ private fun HistoryContent(
             .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         // -- Header -----------------------------------------------------------
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(top = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "TRACKGOD",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 4.sp,
-            )
-        }
+        TrackGodHeader(modifier = Modifier.padding(horizontal = 16.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // -- Search bar -------------------------------------------------------
         SearchBar(
@@ -213,7 +200,7 @@ private fun HistoryContent(
                 subtitle = if (state.searchQuery.isNotBlank() || state.selectedDate != null) {
                     "No workouts match your filters."
                 } else {
-                    "Complete a workout to see it here."
+                    "The altar awaits your first offering."
                 },
             )
         } else {

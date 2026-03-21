@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -429,7 +430,7 @@ private fun StatsPanel(
         StatColumn(label = "EXERCISES", value = exerciseCount.toString())
         StatColumn(label = "SETS", value = setsCount.toString())
         StatColumn(label = "VOLUME", value = formatVolumeShort(totalVolume))
-        StatColumn(label = "TIME", value = formatTimeMMSS(durationSeconds))
+        StatColumn(label = "TIME", value = formatTimeMMSS(durationSeconds), monospace = true)
     }
 }
 
@@ -437,6 +438,7 @@ private fun StatsPanel(
 private fun StatColumn(
     label: String,
     value: String,
+    monospace: Boolean = false,
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -452,6 +454,7 @@ private fun StatColumn(
             color = TextPrimary,
             fontSize = 20.sp,
             fontWeight = FontWeight.Black,
+            fontFamily = if (monospace) FontFamily.Monospace else null,
         )
     }
 }
@@ -710,6 +713,7 @@ private fun RestTimerSection(
             style = MaterialTheme.typography.displaySmall,
             color = BloodBright,
             fontWeight = FontWeight.Black,
+            fontFamily = FontFamily.Monospace,
             textAlign = TextAlign.Center,
         )
 
@@ -805,5 +809,5 @@ private fun formatTimeMMSS(seconds: Long): String {
 private fun formatRestTime(seconds: Int): String {
     val m = seconds / 60
     val s = seconds % 60
-    return "%d:%02d".format(m, s)
+    return "%02d:%02d".format(m, s)
 }

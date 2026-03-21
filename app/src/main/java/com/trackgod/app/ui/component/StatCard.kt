@@ -49,7 +49,7 @@ fun StatCard(
     Column(
         modifier = modifier
             .background(color = SurfaceLow, shape = RectangleShape)
-            .padding(12.dp),
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Label

@@ -38,6 +38,7 @@ import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodCard
+import com.trackgod.app.ui.component.TrackGodHeader
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.TextPrimary
@@ -62,16 +63,10 @@ fun ProfileScreen(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
+        // ── Header ────────────────────────────────────────────────────────
+        TrackGodHeader()
 
-        // Screen title
-        Text(
-            text = "PROFILE",
-            style = MaterialTheme.typography.displayMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         if (state.profile == null && !state.isLoading) {
             // No profile -- show setup prompt

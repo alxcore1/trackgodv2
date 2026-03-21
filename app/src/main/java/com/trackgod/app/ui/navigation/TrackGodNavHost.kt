@@ -1,5 +1,8 @@
 package com.trackgod.app.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -80,6 +83,10 @@ fun TrackGodNavHost() {
             navController = navController,
             startDestination = Screen.Splash.route,
             modifier = Modifier.padding(paddingValues),
+            enterTransition = { fadeIn(animationSpec = tween(200)) },
+            exitTransition = { fadeOut(animationSpec = tween(200)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(200)) },
+            popExitTransition = { fadeOut(animationSpec = tween(200)) },
         ) {
             // Splash / entry screen
             composable(Screen.Splash.route) {

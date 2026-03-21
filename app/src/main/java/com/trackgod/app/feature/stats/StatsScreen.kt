@@ -46,6 +46,7 @@ import com.trackgod.app.ui.component.EmptyState
 import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.component.TrackGodCard
+import com.trackgod.app.ui.component.TrackGodHeader
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.SurfaceHighest
@@ -89,7 +90,9 @@ private fun StatsContent(
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(horizontal = 16.dp),
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
+            TrackGodHeader()
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Hero heading even in empty state
             Text(
@@ -114,8 +117,8 @@ private fun StatsContent(
 
             EmptyState(
                 icon = Icons.Default.BarChart,
-                title = "NO DATA YET",
-                subtitle = "Complete your first ritual to see analytics.",
+                title = "THE ALTAR AWAITS YOUR FIRST OFFERING",
+                subtitle = "Rage. Rip. Repeat.",
             )
         }
         return@MetalTextureBackground
@@ -129,7 +132,9 @@ private fun StatsContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
+        TrackGodHeader()
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         // ── Hero Section ─────────────────────────────────────────────────────
         HeroSection(

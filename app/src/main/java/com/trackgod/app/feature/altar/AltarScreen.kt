@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.trackgod.app.ui.component.TrackGodHeader
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trackgod.app.core.database.entity.WorkoutEntity
@@ -109,6 +110,8 @@ private fun AltarContent(
         return@MetalTextureBackground
     }
 
+    Box(modifier = Modifier.fillMaxSize()) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -116,23 +119,9 @@ private fun AltarContent(
             .verticalScroll(rememberScrollState()),
     ) {
         // ── Header ──────────────────────────────────────────────────────────
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(top = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "TRACKGOD",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 4.sp,
-            )
-        }
+        TrackGodHeader(modifier = Modifier.padding(horizontal = 16.dp))
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // ── Incomplete workout banner ───────────────────────────────────────
         if (state.hasIncompleteWorkout) {
@@ -293,28 +282,55 @@ private fun AltarContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         if (state.recentWorkouts.isEmpty()) {
-            Text(
-                text = "NO COMPLETED RITUALS YET.",
-                color = TextTertiary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 24.dp),
-            )
+                    .padding(horizontal = 16.dp, vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "THE ALTAR AWAITS",
+                    color = TextPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 3.sp,
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "RAGE. RIP. REPEAT.",
+                    color = BloodBright,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 4.sp,
+                )
+            }
         } else {
             state.recentWorkouts.forEach { workout ->
                 RecentWorkoutRow(
                     workout = workout,
                     onClick = { onWorkoutTap(workout.id) },
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
     }
+
+    // ── "GOD" watermark (design element) ──────────────────────────────
+    Text(
+        text = "GOD",
+        style = MaterialTheme.typography.displayLarge,
+        color = TextPrimary.copy(alpha = 0.03f),
+        fontWeight = FontWeight.Black,
+        fontSize = 120.sp,
+        letterSpacing = 12.sp,
+        modifier = Modifier
+            .align(Alignment.BottomEnd)
+            .padding(end = 16.dp, bottom = 8.dp),
+    )
+
+    } // Box
     } // MetalTextureBackground
 }
 
