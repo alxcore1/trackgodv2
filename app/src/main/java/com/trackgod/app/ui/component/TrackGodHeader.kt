@@ -44,7 +44,6 @@ import com.trackgod.app.ui.theme.Void
 @Composable
 fun TrackGodHeader(
     modifier: Modifier = Modifier,
-    initials: String? = null,
 ) {
     Box(
         modifier = modifier
@@ -74,39 +73,20 @@ fun TrackGodHeader(
                 ),
         )
 
-        // Header content on top
+        // Header content on top (padded so text doesn't touch edges)
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 0.dp),
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = "TRACKGOD",
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
+                color = TextPrimary,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 4.sp,
             )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // User avatar placeholder
-            val avatarText = initials ?: "TG"
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(color = Blood, shape = RectangleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = avatarText,
-                    color = TextPrimary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 1.sp,
-                )
-            }
         }
     }
 }
@@ -121,6 +101,6 @@ private fun TrackGodHeaderPreview() {
 
 @Preview(showBackground = true, backgroundColor = 0xFF131313)
 @Composable
-private fun TrackGodHeaderWithInitialsPreview() {
-    TrackGodHeader(initials = "JD")
+private fun TrackGodHeaderFullWidthPreview() {
+    TrackGodHeader()
 }

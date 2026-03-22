@@ -157,7 +157,7 @@ private fun HistoryContent(
             .padding(top = 4.dp),
     ) {
         // -- Header -----------------------------------------------------------
-        TrackGodHeader(modifier = Modifier.padding(horizontal = 16.dp))
+        TrackGodHeader()
 
         Spacer(modifier = Modifier.height(12.dp))
 
