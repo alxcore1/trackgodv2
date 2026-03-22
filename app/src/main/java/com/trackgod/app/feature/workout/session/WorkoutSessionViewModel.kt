@@ -207,6 +207,22 @@ class WorkoutSessionViewModel @Inject constructor(
         }
     }
 
+    fun closeExercise() {
+        _state.update {
+            it.copy(
+                currentExercise = null,
+                editingSetId = null,
+                weightInput = "",
+                repsInput = "",
+                noteInput = "",
+                rpeInput = null,
+                rirInput = null,
+                lastSessionHint = null,
+                inputError = null,
+            )
+        }
+    }
+
     fun selectExercise(exercise: ExerciseEntity) {
         viewModelScope.launch {
             _state.update {

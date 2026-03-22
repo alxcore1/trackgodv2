@@ -25,8 +25,11 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import com.trackgod.app.core.database.entity.ExerciseEntity
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Pause
@@ -138,6 +141,8 @@ fun WorkoutSessionScreen(
         },
         onNavigateBack = onNavigateBack,
         onNavigateToExercisePicker = onNavigateToExercisePicker,
+        onCloseExercise = viewModel::closeExercise,
+        onResumeExercise = { exercise -> viewModel.selectExercise(exercise) },
         generateWorkoutName = viewModel::generateWorkoutName,
     )
 }
@@ -165,6 +170,8 @@ private fun WorkoutSessionContent(
     onDiscardWorkout: () -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToExercisePicker: () -> Unit,
+    onCloseExercise: () -> Unit,
+    onResumeExercise: (ExerciseEntity) -> Unit,
     generateWorkoutName: () -> String,
 ) {
     var showBackConfirm by remember { mutableStateOf(false) }
@@ -210,10 +217,38 @@ private fun WorkoutSessionContent(
                 .weight(1f),
         ) {
             if (state.currentExercise == null) {
-                // No exercise selected
+                // No exercise selected -- show session log + choose tile
+
+                // Previously logged exercises in this session
+                if (state.allExercisesInSession.isNotEmpty()) {
+                    item {
+                        SectionDivider(
+                            text = "SESSION LOG",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    items(
+                        items = state.allExercisesInSession,
+                        key = { it.exercise.id },
+                    ) { exerciseWithSets ->
+                        SessionExerciseCard(
+                            name = exerciseWithSets.exercise.name,
+                            setCount = exerciseWithSets.setCount,
+                            category = exerciseWithSets.exercise.category,
+                            onClick = { onResumeExercise(exerciseWithSets.exercise) },
+                        )
+                    }
+
+                    item { Spacer(modifier = Modifier.height(16.dp)) }
+                }
+
                 item {
                     SectionDivider(
-                        text = "SELECT AN EXERCISE",
+                        text = if (state.allExercisesInSession.isEmpty()) "SELECT AN EXERCISE" else "ADD ANOTHER",
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
@@ -279,7 +314,7 @@ private fun WorkoutSessionContent(
                     }
                 }
 
-                // Next exercise button
+                // Close exercise button (return to session hub)
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
                     Box(
@@ -288,9 +323,9 @@ private fun WorkoutSessionContent(
                             .padding(horizontal = 16.dp),
                     ) {
                         TrackGodButton(
-                            text = "NEXT EXERCISE",
-                            onClick = onNavigateToExercisePicker,
-                            variant = ButtonVariant.Secondary,
+                            text = "CLOSE EXERCISE",
+                            onClick = onCloseExercise,
+                            variant = ButtonVariant.Ghost,
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -489,6 +524,46 @@ private fun ControlButtons(
 }
 
 // ── Choose Exercise Tile ────────────────────────────────────────────────────
+
+@Composable
+private fun SessionExerciseCard(
+    name: String,
+    setCount: Int,
+    category: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .background(SurfaceLow, RectangleShape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = name.uppercase(),
+                style = MaterialTheme.typography.titleSmall,
+                color = TextPrimary,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp,
+            )
+            Text(
+                text = "${category.uppercase()} · $setCount SETS",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextTertiary,
+                letterSpacing = 2.sp,
+            )
+        }
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = "Resume",
+            tint = BloodBright,
+            modifier = Modifier.size(20.dp),
+        )
+    }
+}
 
 @Composable
 private fun ChooseExerciseTile(onClick: () -> Unit) {
