@@ -236,41 +236,60 @@ fun SplashScreen(
                     .alpha(initAlpha.value),
                 horizontalAlignment = Alignment.Start,
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .width(3.dp)
-                            .height(14.dp)
-                            .background(Blood),
-                    )
-                    Spacer(Modifier.width(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .width(3.dp)
+                                .height(14.dp)
+                                .background(Blood),
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "SYSTEM_INIT // PHASE $initPhase",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                letterSpacing = 2.sp,
+                            ),
+                            color = TextTertiary,
+                        )
+                    }
                     Text(
-                        text = "SYSTEM_INIT // PHASE $initPhase",
+                        text = if (initStatus.isNotEmpty()) "[ACTIVE]" else "",
                         style = MaterialTheme.typography.labelSmall.copy(
-                            letterSpacing = 2.sp,
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 1.sp,
                         ),
-                        color = TextTertiary,
+                        color = Blood.copy(alpha = 0.5f),
                     )
                 }
 
                 Spacer(Modifier.height(6.dp))
 
-                Text(
-                    text = hexLine1,
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontFamily = FontFamily.Monospace,
-                        letterSpacing = 1.sp,
-                    ),
-                    color = Blood.copy(alpha = 0.6f),
-                )
-                Text(
-                    text = hexLine2,
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontFamily = FontFamily.Monospace,
-                        letterSpacing = 1.sp,
-                    ),
-                    color = TextTertiary.copy(alpha = 0.5f),
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = hexLine1,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 1.sp,
+                        ),
+                        color = Blood.copy(alpha = 0.6f),
+                    )
+                    Text(
+                        text = hexLine2,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 1.sp,
+                        ),
+                        color = TextTertiary.copy(alpha = 0.5f),
+                    )
+                }
 
                 Spacer(Modifier.height(8.dp))
 
