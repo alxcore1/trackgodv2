@@ -214,9 +214,9 @@ fun SplashScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.weight(0.55f))
+            Spacer(modifier = Modifier.weight(0.08f))
 
-            // ── Blockbuster tagline: word by word ──────────────────────
+            // ── Blockbuster tagline: ABOVE the logo ────────────────────
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth(),
@@ -270,9 +270,10 @@ fun SplashScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            // Logo area -- the background image has the TG logo baked in
+            Spacer(modifier = Modifier.weight(1f))
 
-            // ── Cyberpunk init sequence ─────────────────────────────────
+            // ── Cyberpunk init sequence: BELOW the logo ────────────────
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -330,7 +331,7 @@ fun SplashScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.weight(0.45f))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // ── CTA button ───────────────────────────────────────────────
             TrackGodButton(
