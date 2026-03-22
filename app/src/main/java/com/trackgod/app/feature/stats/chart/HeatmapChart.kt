@@ -37,9 +37,9 @@ fun HeatmapChart(
     val rows = (totalCells + cols - 1) / cols
 
     // Calculate height: label row + grid rows with fixed cell size
-    val cellSizeDp = 28.dp
+    val cellSizeDp = 16.dp
     val cellSpacingDp = 3.dp
-    val labelHeight = 20.dp
+    val labelHeight = 18.dp
     val canvasHeight = labelHeight + (cellSizeDp + cellSpacingDp) * rows + 4.dp
 
     Column(modifier = modifier) {
@@ -61,8 +61,7 @@ fun HeatmapChart(
                 .height(canvasHeight),
         ) {
             val cellSpacing = cellSpacingDp.toPx()
-            val availableWidth = size.width - (cols + 1) * cellSpacing
-            val cellSize = (availableWidth / cols).coerceAtLeast(8.dp.toPx())
+            val cellSize = cellSizeDp.toPx()
             // Center the grid if cells don't fill the full width
             val gridWidth = cols * cellSize + (cols + 1) * cellSpacing
             val offsetX = (size.width - gridWidth) / 2f
