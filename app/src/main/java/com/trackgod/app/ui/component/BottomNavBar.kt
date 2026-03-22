@@ -56,7 +56,7 @@ data class NavTab(
 /** The four primary navigation destinations. */
 val NavTabs = listOf(
     NavTab(route = "altar", label = "ALTAR", iconRes = com.trackgod.app.R.drawable.ic_pentagram),
-    NavTab(route = "workout", label = "WORKOUT", icon = Icons.Default.FitnessCenter),
+    NavTab(route = "workout", label = "WORKOUT", iconRes = com.trackgod.app.R.drawable.ic_barbell),
     NavTab(route = "stats", label = "STATS", icon = Icons.Default.BarChart),
     NavTab(route = "profile", label = "PROFILE", icon = Icons.Default.Person),
 )
