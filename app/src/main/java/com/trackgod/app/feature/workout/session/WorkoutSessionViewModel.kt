@@ -122,7 +122,9 @@ class WorkoutSessionViewModel @Inject constructor(
         savedStateHandle.getStateFlow<Long?>("selectedExerciseId", null)
             .filterNotNull()
             .onEach { exerciseId ->
+                android.util.Log.d("WorkoutSession", "Received exerciseId from picker: $exerciseId")
                 val exercise = exerciseRepository.getById(exerciseId)
+                android.util.Log.d("WorkoutSession", "Loaded exercise: ${exercise?.name ?: "NULL"}")
                 if (exercise != null) selectExercise(exercise)
                 savedStateHandle["selectedExerciseId"] = null
             }
@@ -197,6 +199,13 @@ class WorkoutSessionViewModel @Inject constructor(
     }
 
     // ── Exercise Selection ───────────────────────────────────────────────────
+
+    fun onExerciseSelectedFromPicker(exerciseId: Long) {
+        viewModelScope.launch {
+            val exercise = exerciseRepository.getById(exerciseId)
+            if (exercise != null) selectExercise(exercise)
+        }
+    }
 
     fun selectExercise(exercise: ExerciseEntity) {
         viewModelScope.launch {

@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
@@ -185,6 +187,22 @@ fun TrackGodNavHost() {
                 ),
             ) { backStackEntry ->
                 val workoutId = backStackEntry.arguments?.getLong("workoutId") ?: return@composable
+
+                // Observe exercise picker result from the backstack entry's savedStateHandle
+                val selectedExerciseId = backStackEntry.savedStateHandle
+                    .getStateFlow<Long?>("selectedExerciseId", null)
+                    .collectAsStateWithLifecycle()
+
+                // Forward picked exercise to the ViewModel
+                val sessionViewModel: com.trackgod.app.feature.workout.session.WorkoutSessionViewModel =
+                    hiltViewModel()
+                LaunchedEffect(selectedExerciseId.value) {
+                    selectedExerciseId.value?.let { exerciseId ->
+                        sessionViewModel.onExerciseSelectedFromPicker(exerciseId)
+                        backStackEntry.savedStateHandle["selectedExerciseId"] = null
+                    }
+                }
+
                 WorkoutSessionScreen(
                     workoutId = workoutId,
                     onNavigateToExercisePicker = {
