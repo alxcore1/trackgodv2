@@ -4,12 +4,19 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -39,20 +46,27 @@ import com.trackgod.app.feature.ocr.OcrScannerScreen
 import com.trackgod.app.feature.workout.picker.ExercisePickerScreen
 import com.trackgod.app.feature.workout.session.WorkoutSessionScreen
 import com.trackgod.app.ui.component.BottomNavBar
+import com.trackgod.app.ui.component.NavTabs
+import kotlinx.coroutines.launch
 
-/** Routes where the bottom navigation bar should be visible. */
-private val mainTabRoutes = setOf(
-    Screen.Altar.route,
-    Screen.History.route,
-    Screen.Stats.route,
-    Screen.Profile.route,
+/** Map tab route strings to pager indices. */
+private val tabRouteToIndex = mapOf(
+    Screen.Altar.route   to 0,
+    Screen.History.route  to 1,
+    Screen.Stats.route    to 2,
+    Screen.Profile.route  to 3,
 )
+
+/** Map pager indices back to tab route strings. */
+private val tabIndexToRoute = tabRouteToIndex.entries.associate { (k, v) -> v to k }
 
 /**
  * Root navigation host that combines a [NavHost] with the [BottomNavBar].
  *
- * The bottom bar is only shown on main-tab destinations; it hides
- * automatically for flows like splash, onboarding, or workout session.
+ * The four main tabs (Altar, History, Stats, Profile) are hosted inside a
+ * [HorizontalPager] so the user can swipe between them. The bottom bar is
+ * only shown on the pager destination; it hides automatically for flows
+ * like splash, onboarding, or workout session.
  */
 @Composable
 fun TrackGodNavHost() {
@@ -60,20 +74,33 @@ fun TrackGodNavHost() {
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
 
-    val showBottomNav = currentRoute in mainTabRoutes
+    val showBottomNav = currentRoute == Screen.Altar.route
+
+    // Pager state -- persisted so it survives recomposition but lives
+    // at the TrackGodNavHost level so BottomNavBar can read it.
+    val pagerState = rememberPagerState(pageCount = { 4 })
+    val coroutineScope = rememberCoroutineScope()
+
+    // Track which page index the bottom nav should highlight.
+    // Derived from pager swipes via snapshotFlow below.
+    var currentTabIndex by rememberSaveable { mutableIntStateOf(0) }
+
+    // Sync: pager swipe -> update tab index (for BottomNavBar highlight)
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            currentTabIndex = page
+        }
+    }
 
     Scaffold(
         bottomBar = {
             if (showBottomNav) {
                 BottomNavBar(
-                    currentRoute = currentRoute ?: Screen.Altar.route,
+                    currentRoute = tabIndexToRoute[currentTabIndex] ?: Screen.Altar.route,
                     onNavigate = { route ->
-                        navController.navigate(route) {
-                            // Pop back to the altar (graph root) so the back stack
-                            // never grows beyond one entry per tab.
-                            popUpTo(Screen.Altar.route) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
+                        val targetIndex = tabRouteToIndex[route] ?: 0
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(targetIndex)
                         }
                     },
                 )
@@ -144,44 +171,46 @@ fun TrackGodNavHost() {
                 )
             }
 
-            // ── Main tabs ───────────────────────────────────────────────────
+            // ── Main tabs (HorizontalPager) ─────────────────────────────────
             composable(Screen.Altar.route) {
-                AltarScreen(
-                    onStartWorkout = { workoutId ->
-                        navController.navigate(Screen.WorkoutSession.create(workoutId))
-                    },
-                    onResumeWorkout = { workoutId ->
-                        navController.navigate(Screen.WorkoutSession.create(workoutId))
-                    },
-                    onWorkoutTap = {
-                        navController.navigate(Screen.History.route) {
-                            popUpTo(Screen.Altar.route) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                )
-            }
-            composable(Screen.History.route) { HistoryScreen() }
-            composable(Screen.Stats.route) { StatsScreen() }
-            composable(Screen.Profile.route) {
-                ProfileScreen(
-                    onNavigateToEditProfile = {
-                        navController.navigate(Screen.EditProfile.route)
-                    },
-                    onNavigateToSettings = {
-                        navController.navigate(Screen.Settings.route)
-                    },
-                    onNavigateToWeightLoss = {
-                        navController.navigate(Screen.WeightLoss.route)
-                    },
-                    onNavigateToBackup = {
-                        navController.navigate(Screen.Backup.route)
-                    },
-                    onNavigateToPrivacyPolicy = {
-                        navController.navigate(Screen.PrivacyPolicy.route)
-                    },
-                )
+                HorizontalPager(
+                    state = pagerState,
+                ) { page ->
+                    when (page) {
+                        0 -> AltarScreen(
+                            onStartWorkout = { workoutId ->
+                                navController.navigate(Screen.WorkoutSession.create(workoutId))
+                            },
+                            onResumeWorkout = { workoutId ->
+                                navController.navigate(Screen.WorkoutSession.create(workoutId))
+                            },
+                            onWorkoutTap = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(1)
+                                }
+                            },
+                        )
+                        1 -> HistoryScreen()
+                        2 -> StatsScreen()
+                        3 -> ProfileScreen(
+                            onNavigateToEditProfile = {
+                                navController.navigate(Screen.EditProfile.route)
+                            },
+                            onNavigateToSettings = {
+                                navController.navigate(Screen.Settings.route)
+                            },
+                            onNavigateToWeightLoss = {
+                                navController.navigate(Screen.WeightLoss.route)
+                            },
+                            onNavigateToBackup = {
+                                navController.navigate(Screen.Backup.route)
+                            },
+                            onNavigateToPrivacyPolicy = {
+                                navController.navigate(Screen.PrivacyPolicy.route)
+                            },
+                        )
+                    }
+                }
             }
 
             // ── Workout session ─────────────────────────────────────────────
@@ -241,6 +270,7 @@ fun TrackGodNavHost() {
                         navController.popBackStack()
                     },
                     onDismiss = { navController.popBackStack() },
+                    onNavigateToOcr = { navController.navigate(Screen.OcrScanner.route) },
                 )
             }
 

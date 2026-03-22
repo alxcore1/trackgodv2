@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Search
@@ -69,6 +70,7 @@ import com.trackgod.app.ui.theme.VoidDeep
 fun ExercisePickerScreen(
     onExerciseSelected: (ExerciseEntity) -> Unit,
     onDismiss: () -> Unit,
+    onNavigateToOcr: () -> Unit = {},
     viewModel: ExercisePickerViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -82,6 +84,7 @@ fun ExercisePickerScreen(
         onClearBrands = { viewModel.onEvent(ExercisePickerEvent.ClearBrands) },
         onExerciseSelected = onExerciseSelected,
         onDismiss = onDismiss,
+        onNavigateToOcr = onNavigateToOcr,
         onToggleAddDialog = { viewModel.onEvent(ExercisePickerEvent.ToggleAddDialog) },
         onCreateExercise = { name, category, equipment ->
             viewModel.onEvent(ExercisePickerEvent.CreateExercise(name, category, equipment))
@@ -101,6 +104,7 @@ private fun ExercisePickerContent(
     onClearBrands: () -> Unit,
     onExerciseSelected: (ExerciseEntity) -> Unit,
     onDismiss: () -> Unit,
+    onNavigateToOcr: () -> Unit,
     onToggleAddDialog: () -> Unit,
     onCreateExercise: (name: String, category: String, equipmentType: String) -> Unit,
 ) {
@@ -111,7 +115,7 @@ private fun ExercisePickerContent(
             .padding(top = 4.dp),
     ) {
         // 1. Header bar
-        HeaderBar(onDismiss = onDismiss)
+        HeaderBar(onDismiss = onDismiss, onScanMachine = onNavigateToOcr)
 
         // 2. Search bar
         SearchBar(
@@ -211,7 +215,10 @@ private fun ExercisePickerContent(
 // ── Header Bar ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun HeaderBar(onDismiss: () -> Unit) {
+private fun HeaderBar(
+    onDismiss: () -> Unit,
+    onScanMachine: () -> Unit = {},
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -237,6 +244,14 @@ private fun HeaderBar(onDismiss: () -> Unit) {
             letterSpacing = 2.sp,
             modifier = Modifier.weight(1f),
         )
+
+        IconButton(onClick = onScanMachine) {
+            Icon(
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = "Scan Machine",
+                tint = Blood,
+            )
+        }
 
         IconButton(onClick = onDismiss) {
             Icon(
@@ -554,6 +569,7 @@ private fun ExercisePickerScreenPreview() {
             onEquipmentFilterSelected = {},
             onExerciseSelected = {},
             onDismiss = {},
+            onNavigateToOcr = {},
             onToggleAddDialog = {},
             onBrandToggled = {},
             onClearBrands = {},
@@ -579,6 +595,7 @@ private fun ExercisePickerEmptyPreview() {
             onClearBrands = {},
             onExerciseSelected = {},
             onDismiss = {},
+            onNavigateToOcr = {},
             onToggleAddDialog = {},
             onCreateExercise = { _, _, _ -> },
         )
