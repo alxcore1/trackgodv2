@@ -21,23 +21,26 @@ import com.trackgod.app.feature.stats.HeatmapDay
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodDeep
 import com.trackgod.app.ui.theme.BloodGlow
-import com.trackgod.app.ui.theme.SurfaceBright
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
-import com.trackgod.app.ui.theme.VoidDeep
 
-/**
- * 90-day consistency heatmap grid.
- *
- * 7 columns (Mon-Sun) x ~13 rows. Each cell colored by workout intensity.
- * Most recent day is at the bottom-right of the grid.
- */
 @Composable
 fun HeatmapChart(
     data: List<HeatmapDay>,
     modifier: Modifier = Modifier,
 ) {
     if (data.isEmpty()) return
+
+    val cols = 7
+    val firstDayCol = (data.first().date.dayOfWeek.value - 1) // Mon=0
+    val totalCells = data.size + firstDayCol
+    val rows = (totalCells + cols - 1) / cols
+
+    // Calculate height: label row + grid rows with fixed cell size
+    val cellSizeDp = 28.dp
+    val cellSpacingDp = 3.dp
+    val labelHeight = 20.dp
+    val canvasHeight = labelHeight + (cellSizeDp + cellSpacingDp) * rows + 4.dp
 
     Column(modifier = modifier) {
         Text(
@@ -48,26 +51,25 @@ fun HeatmapChart(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Day-of-week labels
         val dayLabels = listOf("M", "T", "W", "T", "F", "S", "S")
-
         val textMeasurer = rememberTextMeasurer()
         val labelStyle = MaterialTheme.typography.labelSmall.copy(color = TextTertiary)
 
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp),
+                .height(canvasHeight),
         ) {
-            val cols = 7
-            val labelRowHeight = 16.dp.toPx()
-            val cellSpacing = 3.dp.toPx()
+            val cellSpacing = cellSpacingDp.toPx()
             val availableWidth = size.width - (cols + 1) * cellSpacing
             val cellSize = (availableWidth / cols).coerceAtLeast(8.dp.toPx())
+            // Center the grid if cells don't fill the full width
+            val gridWidth = cols * cellSize + (cols + 1) * cellSpacing
+            val offsetX = (size.width - gridWidth) / 2f
 
-            // Draw day-of-week labels at top
+            // Day-of-week labels
             for (col in 0 until cols) {
-                val x = cellSpacing + col * (cellSize + cellSpacing) + cellSize / 2
+                val x = offsetX + cellSpacing + col * (cellSize + cellSpacing) + cellSize / 2
                 val layoutResult = textMeasurer.measure(
                     text = dayLabels[col],
                     style = labelStyle,
@@ -83,27 +85,18 @@ fun HeatmapChart(
                 )
             }
 
-            val gridTop = labelRowHeight + 4.dp.toPx()
-
-            // We want to fill in columns left-to-right with the first day at top-left
-            // and the most recent at bottom-right. The first day's DayOfWeek determines
-            // its column. Subsequent days fill row-by-row.
-            if (data.isEmpty()) return@Canvas
-
-            val firstDayCol = (data.first().date.dayOfWeek.value - 1) // Mon=0, Sun=6
+            val gridTop = labelHeight.toPx() + 4.dp.toPx()
 
             for ((index, day) in data.withIndex()) {
                 val gridIndex = index + firstDayCol
                 val col = gridIndex % cols
                 val row = gridIndex / cols
 
-                val x = cellSpacing + col * (cellSize + cellSpacing)
+                val x = offsetX + cellSpacing + col * (cellSize + cellSpacing)
                 val y = gridTop + row * (cellSize + cellSpacing)
 
-                val color = intensityColor(day.intensity)
-
                 drawRect(
-                    color = color,
+                    color = intensityColor(day.intensity),
                     topLeft = Offset(x, y),
                     size = Size(cellSize, cellSize),
                 )
@@ -113,10 +106,10 @@ fun HeatmapChart(
 }
 
 private fun intensityColor(intensity: Int): Color = when (intensity) {
-    0 -> Color(0xFF1E1E1E)             // Visible dark cell (not invisible)
+    0 -> Color(0xFF1C1C1C)             // Visible dark cell
     1 -> Color(0xFF3D1515)             // Faint red tint
     2 -> BloodDeep                     // Medium red
     3 -> Blood                         // Strong red
-    4 -> BloodGlow                     // Bright red/glow
-    else -> Color(0xFF1E1E1E)
+    4 -> BloodGlow                     // Bright glow
+    else -> Color(0xFF1C1C1C)
 }
