@@ -188,7 +188,7 @@ fun SplashScreen(
             contentDescription = null,
             modifier = Modifier
                 .fillMaxSize()
-                .alpha(0.35f),
+                .alpha(0.55f),
             contentScale = ContentScale.Crop,
         )
 
@@ -214,7 +214,7 @@ fun SplashScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.weight(0.08f))
+            Spacer(modifier = Modifier.height(48.dp))
 
             // ── Blockbuster tagline: ABOVE the logo ────────────────────
             Row(
@@ -244,7 +244,7 @@ fun SplashScreen(
                             fontWeight = FontWeight.Black,
                             letterSpacing = 4.sp,
                         ),
-                        color = BloodBright,
+                        color = TextPrimary,
                         modifier = Modifier.graphicsLayer {
                             alpha = ripAlpha.value
                             scaleX = ripScale.value
