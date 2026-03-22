@@ -49,12 +49,13 @@ import com.trackgod.app.ui.theme.VoidDeep
 data class NavTab(
     val route: String,
     val label: String,
-    val icon: ImageVector,
+    val icon: ImageVector? = null,
+    val iconRes: Int? = null,
 )
 
 /** The four primary navigation destinations. */
 val NavTabs = listOf(
-    NavTab(route = "altar", label = "ALTAR", icon = Icons.Default.Whatshot),
+    NavTab(route = "altar", label = "ALTAR", iconRes = com.trackgod.app.R.drawable.ic_pentagram),
     NavTab(route = "workout", label = "WORKOUT", icon = Icons.Default.FitnessCenter),
     NavTab(route = "stats", label = "STATS", icon = Icons.Default.BarChart),
     NavTab(route = "profile", label = "PROFILE", icon = Icons.Default.Person),
@@ -155,12 +156,21 @@ private fun NavTabItem(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Icon(
-            imageVector = tab.icon,
-            contentDescription = tab.label,
-            tint = iconTint,
-            modifier = Modifier.size(22.dp),
-        )
+        if (tab.iconRes != null) {
+            Icon(
+                painter = androidx.compose.ui.res.painterResource(tab.iconRes),
+                contentDescription = tab.label,
+                tint = iconTint,
+                modifier = Modifier.size(22.dp),
+            )
+        } else if (tab.icon != null) {
+            Icon(
+                imageVector = tab.icon,
+                contentDescription = tab.label,
+                tint = iconTint,
+                modifier = Modifier.size(22.dp),
+            )
+        }
 
         Spacer(modifier = Modifier.height(4.dp))
 

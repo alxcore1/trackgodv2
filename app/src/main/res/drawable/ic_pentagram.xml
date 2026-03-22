@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="256"
+    android:viewportHeight="256">
+    <!-- Pentagram flipped upside down (rotate 180° around center 128,128) -->
+    <group
+        android:pivotX="128"
+        android:pivotY="128"
+        android:rotation="180">
+        <path
+            android:pathData="m174.7,154.8 l76.08,-55.55h-94.56l-28.45,-88.95 -28.46,88.95h-94.11l75.68,55.66 -29.32,90.83 76.08,-56.21 75.92,56.21 -28.86,-90.94zM213.93,111.21l-43.37,32.02 -9.94,-32.02h53.31zM127.71,48.57l16.35,50.26h-32.74l16.39,-50.26zM40.95,111.21h54.31l-10.4,32.09 -43.91,-32.09zM73.98,213.51l17.38,-50.69 26.6,19.92 -43.98,30.77zM127.71,174.69l-32.78,-24.46 12.74,-39.02h40.2l12.75,38.6 -32.91,24.88zM137.21,182.63l27.67,-19.81 16.96,50.62 -44.63,-30.81z"
+            android:fillColor="#FFFFFF"/>
+    </group>
+</vector>
