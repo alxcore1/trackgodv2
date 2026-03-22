@@ -136,6 +136,11 @@ fun TrackGodNavHost() {
             composable(Screen.V1Import.route) {
                 V1ImportScreen(
                     onNavigateBack = { navController.popBackStack() },
+                    onImportComplete = {
+                        navController.navigate(Screen.Altar.route) {
+                            popUpTo(Screen.SeedingChoice.route) { inclusive = true }
+                        }
+                    },
                 )
             }
 
