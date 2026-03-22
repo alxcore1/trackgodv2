@@ -58,10 +58,18 @@ fun VolumeChart(
             val maxVolume = data.maxOf { it.volume }.coerceAtLeast(1f)
             val barCount = data.size
             val totalWidth = size.width
-            val chartHeight = size.height - 24.dp.toPx() // Reserve space for labels
-            val barSpacing = 4.dp.toPx()
+            val chartHeight = size.height - 24.dp.toPx()
+            val barSpacing = if (barCount > 20) 1.dp.toPx() else 4.dp.toPx()
             val barWidth = ((totalWidth - barSpacing * (barCount + 1)) / barCount)
-                .coerceAtLeast(4.dp.toPx())
+                .coerceAtLeast(2.dp.toPx())
+
+            // Show labels only every Nth bar to prevent overlap
+            val labelEvery = when {
+                barCount <= 8 -> 1
+                barCount <= 16 -> 2
+                barCount <= 30 -> 4
+                else -> (barCount / 8).coerceAtLeast(3)
+            }
 
             data.forEachIndexed { index, point ->
                 val barHeight = if (maxVolume > 0f) {
@@ -81,7 +89,6 @@ fun VolumeChart(
                         size = Size(barWidth, barHeight),
                     )
                 } else {
-                    // Draw thin line for zero-volume bars
                     drawRect(
                         color = SurfaceHighest,
                         topLeft = Offset(x, chartHeight - 2.dp.toPx()),
@@ -89,15 +96,17 @@ fun VolumeChart(
                     )
                 }
 
-                // X-axis label
-                drawLabel(
-                    textMeasurer = textMeasurer,
-                    text = point.label,
-                    style = labelStyle,
-                    x = x + barWidth / 2,
-                    y = chartHeight + 6.dp.toPx(),
-                    maxWidth = barWidth + barSpacing,
-                )
+                // X-axis label (skip some to prevent overlap)
+                if (index % labelEvery == 0 || index == barCount - 1) {
+                    drawLabel(
+                        textMeasurer = textMeasurer,
+                        text = point.label,
+                        style = labelStyle,
+                        x = x + barWidth / 2,
+                        y = chartHeight + 6.dp.toPx(),
+                        maxWidth = (barWidth + barSpacing) * labelEvery,
+                    )
+                }
             }
         }
     }

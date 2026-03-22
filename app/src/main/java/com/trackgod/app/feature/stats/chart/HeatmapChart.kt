@@ -113,10 +113,10 @@ fun HeatmapChart(
 }
 
 private fun intensityColor(intensity: Int): Color = when (intensity) {
-    0 -> VoidDeep
-    1 -> SurfaceBright
-    2 -> BloodDeep
-    3 -> Blood
-    4 -> BloodGlow
-    else -> VoidDeep
+    0 -> Color(0xFF1E1E1E)             // Visible dark cell (not invisible)
+    1 -> Color(0xFF3D1515)             // Faint red tint
+    2 -> BloodDeep                     // Medium red
+    3 -> Blood                         // Strong red
+    4 -> BloodGlow                     // Bright red/glow
+    else -> Color(0xFF1E1E1E)
 }
