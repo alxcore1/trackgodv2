@@ -87,7 +87,7 @@ private fun StatsContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(top = 4.dp)
                 .padding(horizontal = 16.dp),
         ) {
             TrackGodHeader()
@@ -128,7 +128,7 @@ private fun StatsContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.statusBars)
+            .padding(top = 4.dp)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
     ) {

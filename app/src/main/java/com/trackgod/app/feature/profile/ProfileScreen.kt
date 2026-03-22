@@ -59,7 +59,7 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.statusBars)
+            .padding(top = 4.dp)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
     ) {

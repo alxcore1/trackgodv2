@@ -122,7 +122,7 @@ fun OcrScannerScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.statusBars),
+            .padding(top = 4.dp),
     ) {
         // Header
         Row(

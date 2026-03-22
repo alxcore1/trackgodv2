@@ -40,7 +40,7 @@ fun TrackGodHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp),
+            .height(44.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(

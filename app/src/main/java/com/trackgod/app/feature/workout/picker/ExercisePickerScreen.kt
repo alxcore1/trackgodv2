@@ -104,7 +104,7 @@ private fun ExercisePickerContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.statusBars),
+            .padding(top = 4.dp),
     ) {
         // 1. Header bar
         HeaderBar(onDismiss = onDismiss)

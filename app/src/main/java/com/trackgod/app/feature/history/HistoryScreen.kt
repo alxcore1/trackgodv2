@@ -153,7 +153,7 @@ private fun HistoryContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.statusBars),
+            .padding(top = 4.dp),
     ) {
         // -- Header -----------------------------------------------------------
         TrackGodHeader(modifier = Modifier.padding(horizontal = 16.dp))
