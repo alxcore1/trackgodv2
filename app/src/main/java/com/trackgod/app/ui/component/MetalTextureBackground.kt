@@ -22,7 +22,7 @@ import com.trackgod.app.ui.theme.Void
 @Composable
 fun MetalTextureBackground(
     modifier: Modifier = Modifier,
-    textureAlpha: Float = 0.06f,
+    textureAlpha: Float = 0.12f,
     content: @Composable () -> Unit,
 ) {
     Box(

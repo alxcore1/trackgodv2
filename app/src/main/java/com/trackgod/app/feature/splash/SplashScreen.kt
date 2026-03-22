@@ -120,13 +120,13 @@ fun SplashScreen(
             .fillMaxSize()
             .background(Void),
     ) {
-        // Subtle texture overlay
+        // Original v1 start screen background
         Image(
-            painter = painterResource(R.drawable.screen_bg),
+            painter = painterResource(R.drawable.start_screen_bg),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxSize()
-                .alpha(0.05f),
+                .alpha(0.35f),
             contentScale = ContentScale.Crop,
         )
 
