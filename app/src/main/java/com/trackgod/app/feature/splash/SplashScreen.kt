@@ -104,9 +104,9 @@ fun SplashScreen(
             word3Alpha.animateTo(1f, tween(500))
         }
 
-        // Cyberpunk init starts at 3200ms (after words finish)
+        // Cyberpunk init starts simultaneously with words
         launch {
-            delay(3200)
+            delay(1200)
             initAlpha.animateTo(1f, tween(200))
 
             val phases = listOf(
@@ -137,13 +137,13 @@ fun SplashScreen(
 
         // CTA slides up after init
         launch {
-            delay(5200)
+            delay(3600)
             launch { ctaAlpha.animateTo(1f, tween(400)) }
             launch { ctaOffsetY.animateTo(0f, tween(400)) }
         }
 
         launch {
-            delay(5400)
+            delay(3800)
             footerAlpha.animateTo(1f, tween(300))
         }
     }
@@ -180,41 +180,41 @@ fun SplashScreen(
                 ),
         )
 
-        // ── Words: stacked vertically at top (v1 style) ──────────────
-        Column(
+        // ── Words: single line at top ──────────────────────────────
+        Row(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 80.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .padding(top = 56.dp),
+            horizontalArrangement = Arrangement.Center,
         ) {
             Text(
                 text = "RAGE.",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp,
-                    fontSize = 28.sp,
+                    letterSpacing = 3.sp,
+                    fontSize = 24.sp,
                 ),
                 color = TextPrimary.copy(alpha = 0.65f),
                 modifier = Modifier.alpha(word1Alpha.value),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.width(12.dp))
             Text(
                 text = "RIP.",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp,
-                    fontSize = 28.sp,
+                    letterSpacing = 3.sp,
+                    fontSize = 24.sp,
                 ),
                 color = TextPrimary.copy(alpha = 0.65f),
                 modifier = Modifier.alpha(word2Alpha.value),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.width(12.dp))
             Text(
                 text = "REPEAT.",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp,
-                    fontSize = 28.sp,
+                    letterSpacing = 3.sp,
+                    fontSize = 24.sp,
                 ),
                 color = TextPrimary.copy(alpha = 0.65f),
                 modifier = Modifier.alpha(word3Alpha.value),
