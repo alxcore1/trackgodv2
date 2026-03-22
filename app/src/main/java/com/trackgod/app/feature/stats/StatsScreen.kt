@@ -30,7 +30,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -97,13 +99,17 @@ private fun StatsContent(
             // Hero heading even in empty state
             Text(
                 text = "ARSENAL",
-                style = MaterialTheme.typography.displayLarge,
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Black,
                 color = TextPrimary,
+                maxLines = 1,
             )
             Text(
                 text = "ANALYTICS",
-                style = MaterialTheme.typography.displayLarge,
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Black,
                 color = BloodBright,
+                maxLines = 1,
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -242,13 +248,17 @@ private fun HeroSection(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "ARSENAL",
-                    style = MaterialTheme.typography.displayLarge,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Black,
                     color = TextPrimary,
+                    maxLines = 1,
                 )
                 Text(
                     text = "ANALYTICS",
-                    style = MaterialTheme.typography.displayLarge,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Black,
                     color = BloodBright,
+                    maxLines = 1,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -267,6 +277,8 @@ private fun HeroSection(
                     style = MaterialTheme.typography.displayMedium,
                     color = TextPrimary,
                     textAlign = TextAlign.End,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = "TOTAL ${weightUnit.uppercase()}",
@@ -334,6 +346,8 @@ private fun TimeRangeChip(
             text = label,
             style = MaterialTheme.typography.labelMedium,
             color = textColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

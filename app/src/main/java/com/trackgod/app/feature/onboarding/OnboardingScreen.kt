@@ -1,5 +1,8 @@
 package com.trackgod.app.feature.onboarding
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -27,6 +30,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material3.Icon
@@ -37,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -46,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trackgod.app.ui.component.ButtonVariant
@@ -53,7 +59,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import coil.compose.AsyncImage
 import com.trackgod.app.R
+import com.trackgod.app.core.util.ImageCropper
 import com.trackgod.app.ui.theme.Void
 import com.trackgod.app.ui.component.NumberInput
 import com.trackgod.app.ui.component.TrackGodButton
@@ -253,27 +261,49 @@ private fun StepNameAvatar(
     state: OnboardingState,
     viewModel: OnboardingViewModel,
 ) {
+    val context = LocalContext.current
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+    ) { uri: Uri? ->
+        uri?.let {
+            val cropped = ImageCropper.cropToSquare(context, it)
+            viewModel.updateAvatarUri((cropped ?: it).toString())
+        }
+    }
+
     Spacer(modifier = Modifier.height(16.dp))
 
-    // Avatar placeholder
+    // Avatar picker
     Box(
         modifier = Modifier
             .size(80.dp)
-            .background(SurfaceLow, RectangleShape),
+            .background(SurfaceLow, RectangleShape)
+            .clip(RectangleShape)
+            .clickable { imagePickerLauncher.launch("image/*") },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = Icons.Default.Person,
-            contentDescription = "Avatar",
-            tint = TextTertiary,
-            modifier = Modifier.size(40.dp),
-        )
+        if (!state.avatarUri.isNullOrBlank()) {
+            AsyncImage(
+                model = state.avatarUri,
+                contentDescription = "Avatar",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = "Set avatar",
+                tint = TextTertiary,
+                modifier = Modifier.size(32.dp),
+            )
+        }
     }
 
     Spacer(modifier = Modifier.height(8.dp))
 
     Text(
-        text = "TAP TO SET AVATAR",
+        text = if (state.avatarUri.isNullOrBlank()) "TAP TO SET AVATAR" else "TAP TO CHANGE",
         style = MaterialTheme.typography.labelMedium,
         color = TextTertiary,
         letterSpacing = 2.sp,

@@ -1,9 +1,11 @@
 package com.trackgod.app.ui.component
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -13,14 +15,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.trackgod.app.R
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
+import com.trackgod.app.ui.theme.Void
 
 /**
  * Standardised TRACKGOD wordmark header used on all main tab screens.
@@ -37,37 +46,67 @@ fun TrackGodHeader(
     modifier: Modifier = Modifier,
     initials: String? = null,
 ) {
-    Row(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .height(44.dp),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = "TRACKGOD",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Black,
-            letterSpacing = 4.sp,
+        // Red scratched texture background
+        Image(
+            painter = painterResource(R.drawable.topbar_bg),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(0.25f),
         )
 
-        Spacer(modifier = Modifier.weight(1f))
-
-        // User avatar placeholder
-        val avatarText = initials ?: "TG"
+        // Bottom gradient fade into Void
         Box(
             modifier = Modifier
-                .size(32.dp)
-                .background(color = Blood, shape = RectangleShape),
-            contentAlignment = Alignment.Center,
+                .fillMaxWidth()
+                .height(8.dp)
+                .align(Alignment.BottomCenter)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Void),
+                    ),
+                ),
+        )
+
+        // Header content on top
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = avatarText,
-                color = TextPrimary,
-                fontSize = 11.sp,
+                text = "TRACKGOD",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp,
+                letterSpacing = 4.sp,
             )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // User avatar placeholder
+            val avatarText = initials ?: "TG"
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(color = Blood, shape = RectangleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = avatarText,
+                    color = TextPrimary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp,
+                )
+            }
         }
     }
 }

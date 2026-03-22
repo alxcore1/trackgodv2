@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.trackgod.app.core.util.ImageCropper
 import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
@@ -72,14 +73,8 @@ fun EditProfileScreen(
         contract = ActivityResultContracts.GetContent(),
     ) { uri: Uri? ->
         uri?.let {
-            // Take persistent permission so the URI survives process death
-            runCatching {
-                context.contentResolver.takePersistableUriPermission(
-                    it,
-                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                )
-            }
-            viewModel.onAvatarUriChanged(it.toString())
+            val cropped = ImageCropper.cropToSquare(context, it)
+            viewModel.onAvatarUriChanged((cropped ?: it).toString())
         }
     }
 

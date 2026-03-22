@@ -54,10 +54,10 @@ data class StatsState(
 )
 
 enum class TimeRange(val label: String, val days: Int) {
-    WEEK("WEEK", 7),
-    MONTH("MONTH", 30),
-    QUARTER("QUARTER", 90),
-    YEAR("YEAR", 365),
+    WEEK("WK", 7),
+    MONTH("MO", 30),
+    QUARTER("QTR", 90),
+    YEAR("YR", 365),
     ALL("ALL", Int.MAX_VALUE),
 }
 

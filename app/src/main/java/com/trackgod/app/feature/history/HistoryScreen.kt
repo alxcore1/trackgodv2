@@ -79,6 +79,7 @@ import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodHeader
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
+import com.trackgod.app.ui.theme.BloodDeep
 import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
@@ -215,7 +216,7 @@ private fun HistoryContent(
                 ) { index, item ->
                     WorkoutCard(
                         item = item,
-                        isFirst = index == 0,
+                        index = index,
                         isExpanded = state.expandedWorkoutId == item.workout.id,
                         isEditing = state.editingWorkoutId == item.workout.id,
                         editingName = state.editingName,
@@ -426,7 +427,7 @@ private fun DateChip(
 @Composable
 private fun WorkoutCard(
     item: WorkoutWithDetails,
-    isFirst: Boolean,
+    index: Int,
     isExpanded: Boolean,
     isEditing: Boolean,
     editingName: String,
@@ -440,6 +441,7 @@ private fun WorkoutCard(
 ) {
     val workout = item.workout
     var showContextMenu by remember { mutableStateOf(false) }
+    val accentColor = if (index % 2 == 0) Blood else BloodDeep
 
     val rootModifier = Modifier
         .fillMaxWidth()
@@ -452,36 +454,17 @@ private fun WorkoutCard(
         )
 
     Box {
-        if (isFirst) {
-            // Card with red left accent border
-            Row(modifier = rootModifier) {
-                Box(
-                    modifier = Modifier
-                        .width(4.dp)
-                        .fillMaxHeight()
-                        .background(Blood),
-                )
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                ) {
-                    WorkoutCardContent(
-                        item = item,
-                        isExpanded = isExpanded,
-                        isEditing = isEditing,
-                        editingName = editingName,
-                        weightUnit = weightUnit,
-                        onEditingNameChanged = onEditingNameChanged,
-                        onSaveEditingName = onSaveEditingName,
-                        onCancelEditing = onCancelEditing,
-                    )
-                }
-            }
-        } else {
-            // Card without accent border
+        // All cards get accent bar, alternating Blood/BloodDeep
+        Row(modifier = rootModifier) {
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight()
+                    .background(accentColor),
+            )
             Column(
-                modifier = rootModifier
+                modifier = Modifier
+                    .weight(1f)
                     .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 WorkoutCardContent(
@@ -594,7 +577,7 @@ private fun WorkoutCardContent(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.sp,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(modifier = Modifier.height(2.dp))
@@ -655,6 +638,12 @@ private fun WorkoutCardContent(
                 .background(Blood),
         )
 
+        Icon(
+            imageVector = Icons.Default.FitnessCenter,
+            contentDescription = null,
+            tint = TextTertiary,
+            modifier = Modifier.size(12.dp),
+        )
         Text(
             text = "${item.totalSets} SETS",
             color = TextTertiary,
@@ -776,8 +765,18 @@ private fun DeleteConfirmDialog(
 private fun formatVolume(volume: Float): String {
     return when {
         volume >= 1_000_000 -> "%.1fM".format(volume / 1_000_000f)
-        volume >= 1_000 -> "%,.0f".format(volume)
-        else -> "%.0f".format(volume)
+        else -> {
+            val whole = volume.toLong()
+            val str = whole.toString()
+            val result = StringBuilder()
+            var count = 0
+            for (i in str.length - 1 downTo 0) {
+                if (count > 0 && count % 3 == 0) result.insert(0, ' ')
+                result.insert(0, str[i])
+                count++
+            }
+            result.toString()
+        }
     }
 }
 
@@ -786,8 +785,12 @@ private fun formatDate(dateStr: String): String {
         val date = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE)
         val month = date.month.getDisplayName(JavaTextStyle.SHORT, Locale.ENGLISH).uppercase()
         val day = date.dayOfMonth
-        val year = date.year
-        "$month $day, $year"
+        val currentYear = LocalDate.now().year
+        if (date.year != currentYear) {
+            "$month $day, ${date.year}"
+        } else {
+            "$month $day"
+        }
     } catch (_: Exception) {
         dateStr.uppercase()
     }
