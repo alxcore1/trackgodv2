@@ -68,19 +68,10 @@ fun SplashScreen(
 
     // ── Animation states ─────────────────────────────────────────────────────
 
-    val logoAlpha = remember { Animatable(0f) }
-    val logoScale = remember { Animatable(0.85f) }
-
-    // Blockbuster word-by-word tagline
-    var showRage by remember { mutableStateOf(false) }
-    var showRip by remember { mutableStateOf(false) }
-    var showRepeat by remember { mutableStateOf(false) }
-    val rageAlpha = remember { Animatable(0f) }
-    val ripAlpha = remember { Animatable(0f) }
-    val repeatAlpha = remember { Animatable(0f) }
-    val rageScale = remember { Animatable(1.4f) }
-    val ripScale = remember { Animatable(1.4f) }
-    val repeatScale = remember { Animatable(1.4f) }
+    // Blockbuster word-by-word (v1 timings: 600ms gap, 500ms fade each)
+    val word1Alpha = remember { Animatable(0f) }
+    val word2Alpha = remember { Animatable(0f) }
+    val word3Alpha = remember { Animatable(0f) }
 
     // Cyberpunk init sequence
     val initAlpha = remember { Animatable(0f) }
@@ -93,47 +84,31 @@ fun SplashScreen(
     val ctaOffsetY = remember { Animatable(60f) }
     val footerAlpha = remember { Animatable(0f) }
 
-    // Cyberpunk hex generator
     fun randomHex(len: Int): String {
         val chars = "0123456789ABCDEF"
         return (1..len).map { chars.random() }.joinToString("")
     }
 
     LaunchedEffect(Unit) {
-        // Phase 1: Logo fades in (0-600ms)
+        // v1 timings: words at 1200ms, 1800ms, 2400ms with 500ms fade
         launch {
-            logoAlpha.animateTo(1f, animationSpec = tween(600))
+            delay(1200)
+            word1Alpha.animateTo(1f, tween(500))
         }
         launch {
-            logoScale.animateTo(1f, animationSpec = tween(700))
-        }
-
-        // Phase 2: Blockbuster word drops (600ms, 900ms, 1200ms)
-        launch {
-            delay(500)
-            showRage = true
-            launch { rageAlpha.animateTo(1f, tween(200)) }
-            launch { rageScale.animateTo(1f, tween(250)) }
+            delay(1800)
+            word2Alpha.animateTo(1f, tween(500))
         }
         launch {
-            delay(800)
-            showRip = true
-            launch { ripAlpha.animateTo(1f, tween(200)) }
-            launch { ripScale.animateTo(1f, tween(250)) }
-        }
-        launch {
-            delay(1100)
-            showRepeat = true
-            launch { repeatAlpha.animateTo(1f, tween(200)) }
-            launch { repeatScale.animateTo(1f, tween(250)) }
+            delay(2400)
+            word3Alpha.animateTo(1f, tween(500))
         }
 
-        // Phase 3: Cyberpunk init sequence (1400ms+)
+        // Cyberpunk init starts at 3200ms (after words finish)
         launch {
-            delay(1300)
+            delay(3200)
             initAlpha.animateTo(1f, tween(200))
 
-            // Rapid hex cycling
             val phases = listOf(
                 "LOADING KERNEL" to 6,
                 "MOUNTING /dev/altar" to 5,
@@ -155,22 +130,20 @@ fun SplashScreen(
                 }
             }
 
-            // Final state
             hexLine1 = "0xDEAD BEEF C0DE"
             hexLine2 = ">> ALL SYSTEMS NOMINAL"
             initStatus = "READY"
         }
 
-        // Phase 4: CTA slides up
+        // CTA slides up after init
         launch {
-            delay(2800)
+            delay(5200)
             launch { ctaAlpha.animateTo(1f, tween(400)) }
             launch { ctaOffsetY.animateTo(0f, tween(400)) }
         }
 
-        // Footer
         launch {
-            delay(3000)
+            delay(5400)
             footerAlpha.animateTo(1f, tween(300))
         }
     }
@@ -182,7 +155,7 @@ fun SplashScreen(
             .fillMaxSize()
             .background(Void),
     ) {
-        // Original v1 start screen background (has TG logo baked in)
+        // Original v1 start screen background
         Image(
             painter = painterResource(R.drawable.start_screen_bg),
             contentDescription = null,
@@ -207,80 +180,61 @@ fun SplashScreen(
                 ),
         )
 
-        // Main content
+        // ── Words: stacked vertically at top (v1 style) ──────────────
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .align(Alignment.TopCenter)
+                .padding(top = 80.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "RAGE.",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp,
+                    fontSize = 28.sp,
+                ),
+                color = TextPrimary.copy(alpha = 0.65f),
+                modifier = Modifier.alpha(word1Alpha.value),
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "RIP.",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp,
+                    fontSize = 28.sp,
+                ),
+                color = TextPrimary.copy(alpha = 0.65f),
+                modifier = Modifier.alpha(word2Alpha.value),
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "REPEAT.",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp,
+                    fontSize = 28.sp,
+                ),
+                color = TextPrimary.copy(alpha = 0.65f),
+                modifier = Modifier.alpha(word3Alpha.value),
+            )
+        }
+
+        // ── Init sequence + CTA at bottom ────────────────────────────
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(48.dp))
-
-            // ── Blockbuster tagline: ABOVE the logo ────────────────────
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                if (showRage) {
-                    Text(
-                        text = "RAGE.",
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 4.sp,
-                        ),
-                        color = TextPrimary,
-                        modifier = Modifier.graphicsLayer {
-                            alpha = rageAlpha.value
-                            scaleX = rageScale.value
-                            scaleY = rageScale.value
-                        },
-                    )
-                }
-                if (showRage) Spacer(Modifier.width(16.dp))
-                if (showRip) {
-                    Text(
-                        text = "RIP.",
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 4.sp,
-                        ),
-                        color = TextPrimary,
-                        modifier = Modifier.graphicsLayer {
-                            alpha = ripAlpha.value
-                            scaleX = ripScale.value
-                            scaleY = ripScale.value
-                        },
-                    )
-                }
-                if (showRip) Spacer(Modifier.width(16.dp))
-                if (showRepeat) {
-                    Text(
-                        text = "REPEAT.",
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 4.sp,
-                        ),
-                        color = TextPrimary,
-                        modifier = Modifier.graphicsLayer {
-                            alpha = repeatAlpha.value
-                            scaleX = repeatScale.value
-                            scaleY = repeatScale.value
-                        },
-                    )
-                }
-            }
-
-            // Logo area -- the background image has the TG logo baked in
-            Spacer(modifier = Modifier.weight(1f))
-
-            // ── Cyberpunk init sequence: BELOW the logo ────────────────
+            // Cyberpunk init
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .alpha(initAlpha.value),
                 horizontalAlignment = Alignment.Start,
             ) {
-                // Status label
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -300,7 +254,6 @@ fun SplashScreen(
 
                 Spacer(Modifier.height(6.dp))
 
-                // Hex lines (monospace cyberpunk feel)
                 Text(
                     text = hexLine1,
                     style = MaterialTheme.typography.labelSmall.copy(
@@ -320,7 +273,6 @@ fun SplashScreen(
 
                 Spacer(Modifier.height(8.dp))
 
-                // Current status
                 Text(
                     text = initStatus,
                     style = MaterialTheme.typography.titleMedium.copy(
@@ -331,9 +283,9 @@ fun SplashScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // ── CTA button ───────────────────────────────────────────────
+            // CTA
             TrackGodButton(
                 text = if (isReady && initStatus == "READY") "TAP TO ENTER THE ALTAR" else "INITIALIZING...",
                 onClick = {
@@ -347,9 +299,9 @@ fun SplashScreen(
                     .offset { IntOffset(0, ctaOffsetY.value.dp.roundToPx()) },
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Footer ───────────────────────────────────────────────────
+            // Footer
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -363,17 +315,13 @@ fun SplashScreen(
                     style = MaterialTheme.typography.labelSmall,
                     color = TextTertiary,
                 )
-
                 Spacer(modifier = Modifier.width(8.dp))
-
                 Box(
                     modifier = Modifier
                         .size(4.dp)
                         .background(Blood, shape = RectangleShape),
                 )
-
                 Spacer(modifier = Modifier.width(8.dp))
-
                 Text(
                     text = "SECURE ACCESS ONLY",
                     style = MaterialTheme.typography.labelSmall,
