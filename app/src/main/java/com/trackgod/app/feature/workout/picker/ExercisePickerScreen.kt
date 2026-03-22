@@ -5,7 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -395,18 +395,19 @@ private fun ExerciseRow(
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
+    val isPressed by interactionSource.collectIsPressedAsState()
 
-    val accentColor by animateColorAsState(
-        targetValue = if (isFocused) Blood else Color.Transparent,
-        animationSpec = tween(durationMillis = 120),
-        label = "rowAccent",
+    val rowBackground by animateColorAsState(
+        targetValue = if (isPressed) Blood.copy(alpha = 0.15f) else Color.Transparent,
+        animationSpec = tween(durationMillis = 80),
+        label = "rowBg",
     )
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
+            .background(rowBackground)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -420,7 +421,7 @@ private fun ExerciseRow(
             modifier = Modifier
                 .width(2.dp)
                 .fillMaxHeight()
-                .background(accentColor),
+                .background(if (isPressed) Blood else Color.Transparent),
         )
 
         Spacer(modifier = Modifier.width(14.dp))
