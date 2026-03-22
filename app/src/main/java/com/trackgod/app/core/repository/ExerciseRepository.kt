@@ -23,6 +23,9 @@ class ExerciseRepository @Inject constructor(
     fun search(query: String): Flow<List<ExerciseEntity>> =
         exerciseDao.search(query)
 
+    suspend fun getDistinctBrands(): List<String> =
+        exerciseDao.getDistinctBrands()
+
     suspend fun getById(id: Long): ExerciseEntity? =
         exerciseDao.getById(id)
 

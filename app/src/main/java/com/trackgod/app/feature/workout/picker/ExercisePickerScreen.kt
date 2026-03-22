@@ -78,6 +78,8 @@ fun ExercisePickerScreen(
         onSearchQueryChanged = { viewModel.onEvent(ExercisePickerEvent.SearchQueryChanged(it)) },
         onCategorySelected = { viewModel.onEvent(ExercisePickerEvent.CategorySelected(it)) },
         onEquipmentFilterSelected = { viewModel.onEvent(ExercisePickerEvent.EquipmentFilterSelected(it)) },
+        onBrandToggled = { viewModel.onEvent(ExercisePickerEvent.BrandToggled(it)) },
+        onClearBrands = { viewModel.onEvent(ExercisePickerEvent.ClearBrands) },
         onExerciseSelected = onExerciseSelected,
         onDismiss = onDismiss,
         onToggleAddDialog = { viewModel.onEvent(ExercisePickerEvent.ToggleAddDialog) },
@@ -95,6 +97,8 @@ private fun ExercisePickerContent(
     onSearchQueryChanged: (String) -> Unit,
     onCategorySelected: (String?) -> Unit,
     onEquipmentFilterSelected: (String?) -> Unit,
+    onBrandToggled: (String) -> Unit,
+    onClearBrands: () -> Unit,
     onExerciseSelected: (ExerciseEntity) -> Unit,
     onDismiss: () -> Unit,
     onToggleAddDialog: () -> Unit,
@@ -120,6 +124,16 @@ private fun ExercisePickerContent(
             selected = state.selectedEquipmentFilter,
             onSelected = onEquipmentFilterSelected,
         )
+
+        // 3b. Brand filter (shown only when MACHINE is selected)
+        if (state.selectedEquipmentFilter == "machine" && state.availableBrands.isNotEmpty()) {
+            BrandFilterChips(
+                brands = state.availableBrands,
+                selectedBrands = state.selectedBrands,
+                onBrandToggled = onBrandToggled,
+                onClearAll = onClearBrands,
+            )
+        }
 
         // 4. Category filter chips
         CategoryChips(
@@ -387,6 +401,38 @@ private fun EquipmentFilterChips(
     }
 }
 
+@Composable
+private fun BrandFilterChips(
+    brands: List<String>,
+    selectedBrands: Set<String>,
+    onBrandToggled: (String) -> Unit,
+    onClearAll: () -> Unit,
+) {
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        item {
+            CategoryChip(
+                label = if (selectedBrands.isEmpty()) "All Brands" else "Clear",
+                isActive = selectedBrands.isEmpty(),
+                onClick = onClearAll,
+            )
+        }
+        items(brands.size) { index ->
+            val brand = brands[index]
+            CategoryChip(
+                label = brand,
+                isActive = brand in selectedBrands,
+                onClick = { onBrandToggled(brand) },
+            )
+        }
+    }
+}
+
 // ── Exercise Row ─────────────────────────────────────────────────────────────
 
 @Composable
@@ -509,6 +555,8 @@ private fun ExercisePickerScreenPreview() {
             onExerciseSelected = {},
             onDismiss = {},
             onToggleAddDialog = {},
+            onBrandToggled = {},
+            onClearBrands = {},
             onCreateExercise = { _, _, _ -> },
         )
     }
@@ -527,6 +575,8 @@ private fun ExercisePickerEmptyPreview() {
             onSearchQueryChanged = {},
             onCategorySelected = {},
             onEquipmentFilterSelected = {},
+            onBrandToggled = {},
+            onClearBrands = {},
             onExerciseSelected = {},
             onDismiss = {},
             onToggleAddDialog = {},

@@ -44,4 +44,7 @@ interface ExerciseDao {
 
     @Query("SELECT COUNT(*) FROM exercises")
     suspend fun getCount(): Int
+
+    @Query("SELECT DISTINCT brand FROM exercises WHERE brand IS NOT NULL AND brand != '' AND is_active = 1 ORDER BY brand ASC")
+    suspend fun getDistinctBrands(): List<String>
 }

@@ -173,4 +173,13 @@ class SettingsRepository @Inject constructor(
     fun setDatabaseSeeded() {
         prefs.edit().putBoolean(KEY_DATABASE_SEEDED, true).apply()
     }
+
+    // --- Brand Filter (persisted machine brand selection) ---
+
+    fun getSelectedBrands(): Set<String> =
+        prefs.getStringSet("selected_brands", emptySet()) ?: emptySet()
+
+    fun setSelectedBrands(brands: Set<String>) {
+        prefs.edit().putStringSet("selected_brands", brands).apply()
+    }
 }
