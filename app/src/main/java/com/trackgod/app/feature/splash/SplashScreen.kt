@@ -155,12 +155,13 @@ fun SplashScreen(
             .fillMaxSize()
             .background(Void),
     ) {
-        // Original v1 start screen background
+        // Original v1 start screen background -- shifted up to center logo
         Image(
             painter = painterResource(R.drawable.start_screen_bg),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxSize()
+                .offset(y = (-60).dp)
                 .alpha(0.55f),
             contentScale = ContentScale.Crop,
         )
