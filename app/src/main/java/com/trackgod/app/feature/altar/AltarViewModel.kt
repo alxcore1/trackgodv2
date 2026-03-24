@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trackgod.app.core.database.dao.UserProfileDao
 import com.trackgod.app.core.database.entity.WorkoutEntity
+import com.trackgod.app.core.repository.ExerciseRepository
 import com.trackgod.app.core.repository.SettingsRepository
 import com.trackgod.app.core.repository.WorkoutRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,6 +41,7 @@ data class AltarState(
 @HiltViewModel
 class AltarViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
+    private val exerciseRepository: ExerciseRepository,
     private val settingsRepository: SettingsRepository,
     private val userProfileDao: UserProfileDao,
 ) : ViewModel() {
@@ -53,6 +55,20 @@ class AltarViewModel @Inject constructor(
 
     private fun loadData() {
         val todayDate = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
+
+        // One-time V1 workout rename
+        viewModelScope.launch {
+            if (!settingsRepository.getBooleanFlag("v1_workouts_renamed_v2")) {
+                workoutRepository.renameV1Workouts()
+                settingsRepository.setBooleanFlag("v1_workouts_renamed_v2", true)
+            }
+
+            // One-time: populate series field for machine exercises
+            if (!settingsRepository.getBooleanFlag("exercise_series_populated_v2")) {
+                exerciseRepository.populateSeriesFromNames()
+                settingsRepository.setBooleanFlag("exercise_series_populated_v2", true)
+            }
+        }
 
         // Observe today's workouts reactively (updates when workout completes)
         viewModelScope.launch {

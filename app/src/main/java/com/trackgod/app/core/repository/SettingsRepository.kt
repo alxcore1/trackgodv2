@@ -32,6 +32,8 @@ class SettingsRepository @Inject constructor(
         private const val KEY_MAX_BACKUPS = "max_backups"
         private const val KEY_FIRST_LAUNCH = "first_launch"
         private const val KEY_DATABASE_SEEDED = "database_seeded"
+        private const val KEY_SELECTED_CATEGORY = "selected_category"
+        private const val KEY_SELECTED_EQUIPMENT_FILTER = "selected_equipment_filter"
         private const val NO_ACTIVE_WORKOUT = -1L
     }
 
@@ -181,5 +183,38 @@ class SettingsRepository @Inject constructor(
 
     fun setSelectedBrands(brands: Set<String>) {
         prefs.edit().putStringSet("selected_brands", brands).apply()
+    }
+
+    // --- Exercise Search Filters (persisted category & equipment selection) ---
+
+    fun getSelectedCategory(): String? =
+        prefs.getString(KEY_SELECTED_CATEGORY, null)
+
+    fun setSelectedCategory(category: String?) {
+        if (category == null) {
+            prefs.edit().remove(KEY_SELECTED_CATEGORY).apply()
+        } else {
+            prefs.edit().putString(KEY_SELECTED_CATEGORY, category).apply()
+        }
+    }
+
+    // --- Generic Boolean Flags (one-time migrations, etc.) ---
+
+    fun getBooleanFlag(key: String): Boolean =
+        prefs.getBoolean(key, false)
+
+    fun setBooleanFlag(key: String, value: Boolean) {
+        prefs.edit().putBoolean(key, value).apply()
+    }
+
+    fun getSelectedEquipmentFilter(): String? =
+        prefs.getString(KEY_SELECTED_EQUIPMENT_FILTER, null)
+
+    fun setSelectedEquipmentFilter(filter: String?) {
+        if (filter == null) {
+            prefs.edit().remove(KEY_SELECTED_EQUIPMENT_FILTER).apply()
+        } else {
+            prefs.edit().putString(KEY_SELECTED_EQUIPMENT_FILTER, filter).apply()
+        }
     }
 }

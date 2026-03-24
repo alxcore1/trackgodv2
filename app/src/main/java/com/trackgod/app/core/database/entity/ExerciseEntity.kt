@@ -26,6 +26,8 @@ data class ExerciseEntity(
 
     val brand: String? = null,
 
+    val series: String? = null,
+
     @ColumnInfo(name = "alternative_names")
     val alternativeNames: String? = null,
 

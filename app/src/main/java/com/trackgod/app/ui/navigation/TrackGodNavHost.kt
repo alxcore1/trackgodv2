@@ -28,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.trackgod.app.feature.altar.AltarScreen
 import com.trackgod.app.feature.backup.BackupScreen
+import com.trackgod.app.feature.history.EditWorkoutScreen
 import com.trackgod.app.feature.history.HistoryScreen
 import com.trackgod.app.feature.onboarding.OnboardingScreen
 import com.trackgod.app.feature.onboarding.SeedingChoiceScreen
@@ -190,7 +191,11 @@ fun TrackGodNavHost() {
                                 }
                             },
                         )
-                        1 -> HistoryScreen()
+                        1 -> HistoryScreen(
+                            onEditWorkout = { workoutId ->
+                                navController.navigate(Screen.EditWorkout.create(workoutId))
+                            },
+                        )
                         2 -> StatsScreen()
                         3 -> ProfileScreen(
                             onNavigateToEditProfile = {
@@ -284,6 +289,18 @@ fun TrackGodNavHost() {
                         navController.popBackStack()
                     },
                     onDismiss = { navController.popBackStack() },
+                )
+            }
+
+            // ── Edit workout ─────────────────────────────────────────────────
+            composable(
+                route = Screen.EditWorkout.route,
+                arguments = listOf(
+                    navArgument("workoutId") { type = NavType.LongType },
+                ),
+            ) {
+                EditWorkoutScreen(
+                    onNavigateBack = { navController.popBackStack() },
                 )
             }
 

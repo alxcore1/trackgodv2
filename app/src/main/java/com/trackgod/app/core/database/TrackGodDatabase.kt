@@ -31,11 +31,19 @@ import com.trackgod.app.core.database.entity.WorkoutEntity
         WeightLossMilestoneEntity::class,
         BackupMetadataEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class TrackGodDatabase : RoomDatabase() {
+
+    companion object {
+        val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE exercises ADD COLUMN series TEXT DEFAULT NULL")
+            }
+        }
+    }
 
     abstract fun userProfileDao(): UserProfileDao
     abstract fun exerciseDao(): ExerciseDao

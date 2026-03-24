@@ -58,4 +58,75 @@ class ExerciseRepository @Inject constructor(
 
     suspend fun getCount(): Int =
         exerciseDao.getCount()
+
+    /**
+     * One-time migration: parse machine exercise names to extract series.
+     * E.g., "Hammer Strength MTS Iso-Lateral Front Lat Pulldown"
+     * → brand="Hammer Strength", series="MTS", name stays the same (for compatibility)
+     */
+    suspend fun populateSeriesFromNames() {
+        val machines = exerciseDao.getAllMachinesOnce()
+        val knownSeries = mapOf(
+            "Hammer Strength" to listOf("MTS", "Select", "Plate-Loaded", "HD Elite"),
+            "Life Fitness" to listOf("Insignia", "Signature", "Optima", "Circuit", "Axiom"),
+            "Gym80" to listOf("Sygnum", "Pure Kraft", "Plate Loaded"),
+        )
+
+        for (exercise in machines) {
+            val brand = exercise.brand ?: continue
+            val seriesList = knownSeries[brand] ?: continue
+            val nameLower = exercise.name.lowercase()
+
+            // Find which series matches in the name
+            val matchedSeries = seriesList.firstOrNull { series ->
+                nameLower.contains(series.lowercase())
+            }
+
+            if (matchedSeries != null && exercise.series == null) {
+                exerciseDao.updateSeries(exercise.id, matchedSeries)
+            }
+        }
+
+        // Deduplicate: when a machine exists both with and without series extracted,
+        // keep the one with series and deactivate the duplicate.
+        deduplicateMachines(machines)
+    }
+
+    /**
+     * Deactivate duplicate machine exercises where one has series extracted
+     * and the other still has the series baked into the name.
+     * E.g., "Insignia Back Extension" (no series) vs "Back Extension" (series=Insignia)
+     */
+    private suspend fun deduplicateMachines(machines: List<ExerciseEntity>) {
+        // Reload after series population
+        val allMachines = exerciseDao.getAllMachinesOnce()
+        val byBrand = allMachines.groupBy { it.brand ?: "" }
+
+        for ((brand, exercises) in byBrand) {
+            if (brand.isBlank()) continue
+            val withSeries = exercises.filter { it.series != null }
+            val withoutSeries = exercises.filter { it.series == null }
+
+            for (clean in withSeries) {
+                // The duplicate has the series prefix still in the name
+                val seriesPrefix = clean.series ?: continue
+                for (dirty in withoutSeries) {
+                    val dirtyNameClean = dirty.name.lowercase()
+                        .removePrefix(brand.lowercase()).trim()
+                    val cleanNameClean = clean.name.lowercase()
+                        .removePrefix(brand.lowercase()).trim()
+                        .removePrefix(seriesPrefix.lowercase()).trim()
+
+                    // "insignia back extension" vs "back extension"
+                    if (dirtyNameClean.removePrefix(seriesPrefix.lowercase()).trim() == cleanNameClean) {
+                        // Transfer usage count to the clean version, deactivate dirty
+                        if (dirty.usageCount > 0 && clean.usageCount == 0) {
+                            exerciseDao.transferUsage(clean.id, dirty.usageCount, dirty.lastUsedAt)
+                        }
+                        exerciseDao.deactivate(dirty.id)
+                    }
+                }
+            }
+        }
+    }
 }

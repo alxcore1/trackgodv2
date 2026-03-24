@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.stats.chart
 
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,12 +46,16 @@ fun PersonalRecordsSection(
                 TrackGodCard(
                     modifier = Modifier.weight(1f),
                 ) {
-                    // Exercise name
+                    // Exercise name (marquee if too long)
                     Text(
                         text = pr.exerciseName.uppercase(),
                         style = MaterialTheme.typography.labelMedium,
                         color = TextTertiary,
                         maxLines = 1,
+                        modifier = Modifier.basicMarquee(
+                            iterations = Int.MAX_VALUE,
+                            velocity = 30.dp,
+                        ),
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))

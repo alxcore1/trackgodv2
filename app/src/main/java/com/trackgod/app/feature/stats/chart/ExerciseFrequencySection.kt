@@ -1,6 +1,7 @@
 package com.trackgod.app.feature.stats.chart
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -63,12 +64,17 @@ private fun ExerciseFrequencyRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Exercise name
+        // Exercise name (marquee if too long)
         Text(
             text = name,
             style = MaterialTheme.typography.labelMedium,
             color = TextPrimary,
-            modifier = Modifier.width(120.dp),
+            modifier = Modifier
+                .width(120.dp)
+                .basicMarquee(
+                    iterations = Int.MAX_VALUE,
+                    velocity = 30.dp,
+                ),
             maxLines = 1,
         )
 

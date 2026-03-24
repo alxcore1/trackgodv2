@@ -235,6 +235,7 @@ private fun AltarContent(
                 value = state.currentStreak.toString(),
                 unit = "DAYS",
                 modifier = Modifier.weight(1f),
+                backgroundAlignment = Alignment.TopStart,
             )
             StatCard(
                 icon = Icons.Default.FitnessCenter,
@@ -242,6 +243,7 @@ private fun AltarContent(
                 value = formatVolume(state.todayVolume),
                 unit = if (state.todayVolume >= 1000) "TONS" else "KG",
                 modifier = Modifier.weight(1f),
+                backgroundAlignment = Alignment.TopEnd,
             )
         }
 
@@ -259,6 +261,7 @@ private fun AltarContent(
                 value = state.todaySets.toString(),
                 unit = "TODAY",
                 modifier = Modifier.weight(1f),
+                backgroundAlignment = Alignment.BottomStart,
             )
             StatCard(
                 icon = Icons.Default.AccessTime,
@@ -266,6 +269,7 @@ private fun AltarContent(
                 value = state.todayDurationMinutes.toString(),
                 unit = "MIN",
                 modifier = Modifier.weight(1f),
+                backgroundAlignment = Alignment.BottomEnd,
             )
         }
 

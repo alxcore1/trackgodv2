@@ -94,6 +94,7 @@ import java.util.Locale
 
 @Composable
 fun HistoryScreen(
+    onEditWorkout: (Long) -> Unit = {},
     viewModel: HistoryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -111,6 +112,7 @@ fun HistoryScreen(
         onRequestDelete = viewModel::onRequestDelete,
         onCancelDelete = viewModel::onCancelDelete,
         onConfirmDelete = viewModel::onConfirmDelete,
+        onEditWorkout = onEditWorkout,
     )
 }
 
@@ -130,6 +132,7 @@ private fun HistoryContent(
     onRequestDelete: (Long) -> Unit,
     onCancelDelete: () -> Unit,
     onConfirmDelete: () -> Unit,
+    onEditWorkout: (Long) -> Unit = {},
 ) {
     MetalTextureBackground {
     if (state.isLoading) {
@@ -227,6 +230,7 @@ private fun HistoryContent(
                         onSaveEditingName = onSaveEditingName,
                         onCancelEditing = onCancelEditing,
                         onRequestDelete = { onRequestDelete(item.workout.id) },
+                        onEditWorkout = { onEditWorkout(item.workout.id) },
                     )
                 }
             }
@@ -438,6 +442,7 @@ private fun WorkoutCard(
     onSaveEditingName: () -> Unit,
     onCancelEditing: () -> Unit,
     onRequestDelete: () -> Unit,
+    onEditWorkout: () -> Unit = {},
 ) {
     val workout = item.workout
     var showContextMenu by remember { mutableStateOf(false) }
@@ -509,6 +514,30 @@ private fun WorkoutCard(
                 onClick = {
                     showContextMenu = false
                     onStartEditing()
+                },
+            )
+            DropdownMenuItem(
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.FitnessCenter,
+                            contentDescription = null,
+                            tint = TextPrimary,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "EDIT SETS",
+                            color = TextPrimary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp,
+                        )
+                    }
+                },
+                onClick = {
+                    showContextMenu = false
+                    onEditWorkout()
                 },
             )
             DropdownMenuItem(

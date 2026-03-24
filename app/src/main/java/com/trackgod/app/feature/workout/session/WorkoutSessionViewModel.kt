@@ -9,7 +9,11 @@ import com.trackgod.app.core.database.entity.WorkoutEntity
 import com.trackgod.app.core.repository.ExerciseRepository
 import com.trackgod.app.core.repository.SettingsRepository
 import com.trackgod.app.core.repository.WorkoutRepository
+import android.content.Context
+import com.trackgod.app.service.RestTimerAlarmScheduler
+import com.trackgod.app.service.WorkoutForegroundService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +25,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.trackgod.app.core.util.WorkoutNaming
 import javax.inject.Inject
 
 // ── State ────────────────────────────────────────────────────────────────────
@@ -43,6 +48,7 @@ data class WorkoutSessionState(
     val lastSessionHint: String? = null,
     val restTimeRemaining: Int = 0,
     val isRestTimerRunning: Boolean = false,
+    val isRestTimerPaused: Boolean = false,
     val sessionDurationSeconds: Long = 0,
     val totalSetsCount: Int = 0,
     val totalVolume: Float = 0f,
@@ -69,6 +75,7 @@ class WorkoutSessionViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
     private val exerciseRepository: ExerciseRepository,
     private val settingsRepository: SettingsRepository,
+    @ApplicationContext private val appContext: Context,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -99,8 +106,12 @@ class WorkoutSessionViewModel @Inject constructor(
             val workout = workoutRepository.getWorkout(workoutId)
             _state.update { it.copy(workout = workout, isLoading = false) }
 
+            // Start foreground service to keep app alive
+            val startTime = workout?.startTime ?: System.currentTimeMillis()
+            WorkoutForegroundService.start(appContext, startTime)
+
             // Start session timer
-            startSessionTimer(workout?.startTime ?: System.currentTimeMillis())
+            startSessionTimer(startTime)
 
             // Observe all sets for this workout (for stats)
             observeSets()
@@ -115,6 +126,11 @@ class WorkoutSessionViewModel @Inject constructor(
         viewModelScope.launch {
             restTimerManager.isRunning.collectLatest { running ->
                 _state.update { it.copy(isRestTimerRunning = running) }
+            }
+        }
+        viewModelScope.launch {
+            restTimerManager.isPaused.collectLatest { paused ->
+                _state.update { it.copy(isRestTimerPaused = paused) }
             }
         }
 
@@ -336,6 +352,8 @@ class WorkoutSessionViewModel @Inject constructor(
                         _state.update { it.copy(restTimerCompleted = true) }
                     },
                 )
+                // Schedule alarm for screen-off notification
+                RestTimerAlarmScheduler.schedule(appContext, s.restTimerDuration)
             }
         }
     }
@@ -422,6 +440,40 @@ class WorkoutSessionViewModel @Inject constructor(
 
     fun skipRestTimer() {
         restTimerManager.skip()
+        RestTimerAlarmScheduler.cancel(appContext)
+    }
+
+    fun pauseRestTimer() {
+        restTimerManager.pause()
+        RestTimerAlarmScheduler.cancel(appContext)
+    }
+
+    fun resumeRestTimer() {
+        restTimerManager.resume()
+        // Reschedule alarm for the remaining time
+        val remaining = _state.value.restTimeRemaining
+        if (remaining > 0) {
+            RestTimerAlarmScheduler.schedule(appContext, remaining)
+        }
+    }
+
+    fun adjustRestTimer(deltaSeconds: Int) {
+        restTimerManager.adjustTime(deltaSeconds)
+        // Reschedule alarm with new remaining time
+        val remaining = _state.value.restTimeRemaining + deltaSeconds
+        if (remaining > 0 && _state.value.isRestTimerRunning && !_state.value.isRestTimerPaused) {
+            RestTimerAlarmScheduler.schedule(appContext, remaining.coerceAtLeast(0))
+        }
+    }
+
+    /** Toggle rest timer on/off for the current session only (not persisted). */
+    fun toggleRestTimerForSession() {
+        val wasEnabled = _state.value.restTimerEnabled
+        if (wasEnabled) {
+            restTimerManager.skip()
+            RestTimerAlarmScheduler.cancel(appContext)
+        }
+        _state.update { it.copy(restTimerEnabled = !wasEnabled) }
     }
 
     /** Called by the UI after handling the rest-timer-completed vibration. */
@@ -446,13 +498,7 @@ class WorkoutSessionViewModel @Inject constructor(
     fun generateWorkoutName(): String {
         val categories = _state.value.allExercisesInSession
             .map { it.exercise.category }
-            .distinct()
-        return when {
-            categories.isEmpty() -> "Workout"
-            categories.size == 1 -> categories.first()
-            categories.size == 2 -> "${categories[0]} & ${categories[1]}"
-            else -> categories.take(2).joinToString(" & ") + " +"
-        }
+        return WorkoutNaming.generateName(categories)
     }
 
     fun confirmFinish(name: String, onSuccess: () -> Unit) {
@@ -462,6 +508,8 @@ class WorkoutSessionViewModel @Inject constructor(
                 settingsRepository.clearActiveWorkoutId()
                 sessionTimerJob?.cancel()
                 restTimerManager.stop()
+                RestTimerAlarmScheduler.cancel(appContext)
+                WorkoutForegroundService.stop(appContext)
                 _state.update { it.copy(finishError = null) }
                 onSuccess()
             } catch (e: Exception) {
@@ -480,6 +528,8 @@ class WorkoutSessionViewModel @Inject constructor(
             settingsRepository.clearActiveWorkoutId()
             sessionTimerJob?.cancel()
             restTimerManager.stop()
+            RestTimerAlarmScheduler.cancel(appContext)
+            WorkoutForegroundService.stop(appContext)
         }
     }
 

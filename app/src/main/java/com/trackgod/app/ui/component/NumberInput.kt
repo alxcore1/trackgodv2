@@ -23,10 +23,12 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -102,8 +104,8 @@ fun NumberInput(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .defaultMinSize(minWidth = 72.dp)
-                    .padding(horizontal = 8.dp),
+                    .weight(1f)
+                    .padding(horizontal = 4.dp),
             ) {
                 if (isEditing) {
                     BasicTextField(
@@ -132,6 +134,7 @@ fun NumberInput(
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
                         textAlign = TextAlign.Center,
+                        maxLines = 1,
                         modifier = Modifier.clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
@@ -165,7 +168,7 @@ fun NumberInput(
 }
 
 /**
- * 40x40 step button with press-scale animation.
+ * 44x44 step button with press-scale animation and long-press auto-repeat.
  */
 @Composable
 private fun StepButton(
@@ -176,6 +179,17 @@ private fun StepButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
+    // Auto-repeat while pressed: waits 400ms then fires onClick every 80ms.
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            delay(400L)
+            while (true) {
+                onClick()
+                delay(80L)
+            }
+        }
+    }
+
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.90f else 1f,
         animationSpec = tween(durationMillis = 60),
@@ -184,7 +198,7 @@ private fun StepButton(
 
     Box(
         modifier = Modifier
-            .size(40.dp)
+            .size(44.dp)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
@@ -201,7 +215,7 @@ private fun StepButton(
             imageVector = icon,
             contentDescription = contentDescription,
             tint = BloodBright,
-            modifier = Modifier.size(20.dp),
+            modifier = Modifier.size(24.dp),
         )
     }
 }

@@ -148,6 +148,14 @@ fun SplashScreen(
         }
     }
 
+    // Auto-navigate for returning users (skip the button tap)
+    LaunchedEffect(isReady, hasProfile, initStatus) {
+        if (isReady && hasProfile && initStatus == "READY") {
+            delay(400) // Brief pause after "READY" so user sees it
+            onEnter()
+        }
+    }
+
     // ── Layout ───────────────────────────────────────────────────────────────
 
     Box(
@@ -305,19 +313,19 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // CTA
-            TrackGodButton(
-                text = if (isReady && initStatus == "READY") "TAP TO ENTER THE ALTAR" else "INITIALIZING...",
-                onClick = {
-                    if (hasProfile) onEnter() else onEnterOnboarding()
-                },
-                enabled = isReady && initStatus == "READY",
-                icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .alpha(ctaAlpha.value)
-                    .offset { IntOffset(0, ctaOffsetY.value.dp.roundToPx()) },
-            )
+            // CTA - only show button for first-time users (no profile yet)
+            if (!hasProfile) {
+                TrackGodButton(
+                    text = if (isReady && initStatus == "READY") "TAP TO ENTER THE ALTAR" else "INITIALIZING...",
+                    onClick = { onEnterOnboarding() },
+                    enabled = isReady && initStatus == "READY",
+                    icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(ctaAlpha.value)
+                        .offset { IntOffset(0, ctaOffsetY.value.dp.roundToPx()) },
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

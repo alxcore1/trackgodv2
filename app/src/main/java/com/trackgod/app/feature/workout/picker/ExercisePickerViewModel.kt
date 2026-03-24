@@ -40,6 +40,7 @@ sealed interface ExercisePickerEvent {
         val name: String,
         val category: String,
         val equipmentType: String,
+        val brand: String? = null,
     ) : ExercisePickerEvent
 }
 
@@ -62,8 +63,10 @@ class ExercisePickerViewModel @javax.inject.Inject constructor(
     }
 
     init {
-        // Load persisted brand filter
+        // Load persisted filters
         selectedBrands.value = settingsRepository.getSelectedBrands()
+        selectedCategory.value = settingsRepository.getSelectedCategory()
+        selectedEquipmentFilter.value = settingsRepository.getSelectedEquipmentFilter()
 
         // Load available brands from DB
         viewModelScope.launch {
@@ -139,8 +142,14 @@ class ExercisePickerViewModel @javax.inject.Inject constructor(
     fun onEvent(event: ExercisePickerEvent) {
         when (event) {
             is ExercisePickerEvent.SearchQueryChanged -> searchQuery.update { event.query }
-            is ExercisePickerEvent.CategorySelected -> selectedCategory.update { event.category }
-            is ExercisePickerEvent.EquipmentFilterSelected -> selectedEquipmentFilter.update { event.filter }
+            is ExercisePickerEvent.CategorySelected -> {
+                selectedCategory.update { event.category }
+                settingsRepository.setSelectedCategory(event.category)
+            }
+            is ExercisePickerEvent.EquipmentFilterSelected -> {
+                selectedEquipmentFilter.update { event.filter }
+                settingsRepository.setSelectedEquipmentFilter(event.filter)
+            }
 
             is ExercisePickerEvent.BrandToggled -> {
                 selectedBrands.update { current ->
@@ -165,6 +174,7 @@ class ExercisePickerViewModel @javax.inject.Inject constructor(
                         name = event.name,
                         category = event.category,
                         equipmentType = event.equipmentType,
+                        brand = event.brand,
                     )
                     showAddDialog.update { false }
                 }

@@ -86,8 +86,8 @@ fun ExercisePickerScreen(
         onDismiss = onDismiss,
         onNavigateToOcr = onNavigateToOcr,
         onToggleAddDialog = { viewModel.onEvent(ExercisePickerEvent.ToggleAddDialog) },
-        onCreateExercise = { name, category, equipment ->
-            viewModel.onEvent(ExercisePickerEvent.CreateExercise(name, category, equipment))
+        onCreateExercise = { name, category, equipment, brand ->
+            viewModel.onEvent(ExercisePickerEvent.CreateExercise(name, category, equipment, brand))
         },
     )
 }
@@ -106,7 +106,7 @@ private fun ExercisePickerContent(
     onDismiss: () -> Unit,
     onNavigateToOcr: () -> Unit,
     onToggleAddDialog: () -> Unit,
-    onCreateExercise: (name: String, category: String, equipmentType: String) -> Unit,
+    onCreateExercise: (name: String, category: String, equipmentType: String, brand: String?) -> Unit,
 ) {
     MetalTextureBackground {
     Column(
@@ -193,7 +193,7 @@ private fun ExercisePickerContent(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
             TrackGodButton(
-                text = "+ ADD CUSTOM",
+                text = "ADD CUSTOM",
                 onClick = onToggleAddDialog,
                 variant = if (isEmptyDb) ButtonVariant.Primary else ButtonVariant.Secondary,
                 icon = Icons.Default.Add,
@@ -208,6 +208,7 @@ private fun ExercisePickerContent(
         AddExerciseDialog(
             onSave = onCreateExercise,
             onDismiss = onToggleAddDialog,
+            availableBrands = state.availableBrands,
         )
     }
 }
@@ -494,7 +495,7 @@ private fun ExerciseRow(
                 .padding(vertical = 14.dp),
         ) {
             Text(
-                text = exercise.name.uppercase(),
+                text = exercise.displayName().uppercase(),
                 color = TextPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
@@ -509,6 +510,10 @@ private fun ExerciseRow(
                     if (!exercise.brand.isNullOrBlank()) {
                         append(" \u00b7 ")
                         append(exercise.brand.uppercase())
+                    }
+                    if (!exercise.series.isNullOrBlank()) {
+                        append(" \u00b7 ")
+                        append(exercise.series.uppercase())
                     }
                 },
                 color = TextTertiary,
@@ -532,6 +537,21 @@ private fun ExerciseRow(
             )
         }
     }
+}
+
+/**
+ * Strip brand and series prefix from the exercise name for display,
+ * since they are already shown in the subtitle line.
+ */
+private fun ExerciseEntity.displayName(): String {
+    var result = name
+    if (!brand.isNullOrBlank()) {
+        result = result.removePrefix(brand).trim()
+    }
+    if (!series.isNullOrBlank()) {
+        result = result.removePrefix(series).trim()
+    }
+    return result.ifBlank { name }
 }
 
 // ── Previews ─────────────────────────────────────────────────────────────────
@@ -573,7 +593,7 @@ private fun ExercisePickerScreenPreview() {
             onToggleAddDialog = {},
             onBrandToggled = {},
             onClearBrands = {},
-            onCreateExercise = { _, _, _ -> },
+            onCreateExercise = { _, _, _, _ -> },
         )
     }
 }
@@ -597,7 +617,7 @@ private fun ExercisePickerEmptyPreview() {
             onDismiss = {},
             onNavigateToOcr = {},
             onToggleAddDialog = {},
-            onCreateExercise = { _, _, _ -> },
+            onCreateExercise = { _, _, _, _ -> },
         )
     }
 }

@@ -69,6 +69,15 @@ interface WorkoutDao {
     @Query("UPDATE workouts SET name = :name WHERE id = :workoutId")
     suspend fun updateName(workoutId: Long, name: String)
 
+    @Query("UPDATE workouts SET total_volume = :volume WHERE id = :id")
+    suspend fun updateVolume(id: Long, volume: Float)
+
+    @Query("SELECT * FROM workouts WHERE name = :name AND is_completed = 1")
+    suspend fun getByName(name: String): List<WorkoutEntity>
+
+    @Query("SELECT * FROM workouts WHERE name IN (:names) AND is_completed = 1")
+    suspend fun getByNames(names: List<String>): List<WorkoutEntity>
+
     @Query("SELECT * FROM workouts WHERE is_completed = 1 ORDER BY date DESC")
     suspend fun getAllCompletedOnce(): List<WorkoutEntity>
 

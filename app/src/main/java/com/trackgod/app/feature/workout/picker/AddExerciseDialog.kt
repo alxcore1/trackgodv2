@@ -75,13 +75,16 @@ private val EQUIPMENT_TYPES = listOf("Barbell", "Dumbbell", "Machine", "Cable", 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AddExerciseDialog(
-    onSave: (name: String, category: String, equipmentType: String) -> Unit,
+    onSave: (name: String, category: String, equipmentType: String, brand: String?) -> Unit,
     onDismiss: () -> Unit,
+    availableBrands: List<String> = emptyList(),
 ) {
     var name by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     var selectedEquipment by remember { mutableStateOf<String?>(null) }
+    var selectedBrand by remember { mutableStateOf<String?>(null) }
 
+    val isMachine = selectedEquipment?.equals("Machine", ignoreCase = true) == true
     val canSave = name.isNotBlank() && selectedCategory != null && selectedEquipment != null
 
     Dialog(
@@ -163,6 +166,33 @@ fun AddExerciseDialog(
                 }
             }
 
+            // Brand selection (only visible when Machine is selected)
+            if (isMachine && availableBrands.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    text = "BRAND (OPTIONAL)",
+                    color = TextTertiary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 3.sp,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    availableBrands.forEach { brand ->
+                        SelectionChip(
+                            label = brand,
+                            selected = selectedBrand == brand,
+                            onClick = {
+                                selectedBrand = if (selectedBrand == brand) null else brand
+                            },
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(28.dp))
 
             // Action buttons
@@ -180,7 +210,7 @@ fun AddExerciseDialog(
                     text = "Save",
                     onClick = {
                         if (canSave) {
-                            onSave(name.trim(), selectedCategory!!, selectedEquipment!!)
+                            onSave(name.trim(), selectedCategory!!, selectedEquipment!!, selectedBrand)
                         }
                     },
                     enabled = canSave,
@@ -198,7 +228,7 @@ fun AddExerciseDialog(
 private fun AddExerciseDialogPreview() {
     TrackGodTheme {
         AddExerciseDialog(
-            onSave = { _, _, _ -> },
+            onSave = { _, _, _, _ -> },
             onDismiss = {},
         )
     }

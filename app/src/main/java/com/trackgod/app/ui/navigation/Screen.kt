@@ -31,6 +31,10 @@ sealed class Screen(val route: String) {
         fun create(workoutId: Long) = "workout_session/$workoutId"
     }
 
+    data object EditWorkout : Screen("edit_workout/{workoutId}") {
+        fun create(workoutId: Long) = "edit_workout/$workoutId"
+    }
+
     data object ExercisePicker : Screen("exercise_picker")
     data object OcrScanner : Screen("ocr_scanner")
 

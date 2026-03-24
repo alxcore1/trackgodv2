@@ -92,6 +92,12 @@ interface SetDao {
     @Query("SELECT * FROM sets WHERE workout_id = :workoutId ORDER BY set_number ASC")
     suspend fun getByWorkoutOnce(workoutId: Long): List<SetEntity>
 
+    @Query("DELETE FROM sets WHERE id = :setId")
+    suspend fun deleteById(setId: Long)
+
+    @Query("UPDATE sets SET weight = :weight, reps = :reps WHERE id = :setId")
+    suspend fun updateWeightAndReps(setId: Long, weight: Float, reps: Int)
+
     @Query("SELECT COUNT(*) FROM sets WHERE workout_id = :workoutId AND exercise_id = :exerciseId")
     suspend fun countSetsForExercise(workoutId: Long, exerciseId: Long): Int
 

@@ -6,6 +6,8 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.ui.window.Dialog
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -73,6 +76,7 @@ import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.Void
+import com.trackgod.app.ui.theme.VoidDeep
 
 // ── Screen (ViewModel-wired entry point) ────────────────────────────────────
 
@@ -87,6 +91,21 @@ fun WorkoutSessionScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    // Request notification permission on Android 13+ (needed for foreground service + rest timer)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val notifPermissionLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+        ) { /* granted or not, we proceed either way */ }
+
+        LaunchedEffect(Unit) {
+            val granted = context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                notifPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
 
     // Vibrate when rest timer completes
     LaunchedEffect(state.restTimerCompleted) {
@@ -130,6 +149,10 @@ fun WorkoutSessionScreen(
         onCancelEdit = viewModel::cancelEdit,
         onDeleteSet = viewModel::deleteSet,
         onSkipRest = viewModel::skipRestTimer,
+        onPauseRest = viewModel::pauseRestTimer,
+        onResumeRest = viewModel::resumeRestTimer,
+        onAdjustRest = viewModel::adjustRestTimer,
+        onToggleRestTimerForSession = viewModel::toggleRestTimerForSession,
         onFinishWorkout = viewModel::finishWorkout,
         onDismissCompleteDialog = viewModel::dismissCompleteDialog,
         onConfirmFinish = { name ->
@@ -164,6 +187,10 @@ private fun WorkoutSessionContent(
     onCancelEdit: () -> Unit,
     onDeleteSet: (Long) -> Unit,
     onSkipRest: () -> Unit,
+    onPauseRest: () -> Unit,
+    onResumeRest: () -> Unit,
+    onAdjustRest: (Int) -> Unit,
+    onToggleRestTimerForSession: () -> Unit,
     onFinishWorkout: () -> Unit,
     onDismissCompleteDialog: () -> Unit,
     onConfirmFinish: (String) -> Unit,
@@ -272,17 +299,6 @@ private fun WorkoutSessionContent(
                     )
                 }
 
-                // Rest timer
-                if (state.isRestTimerRunning) {
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        RestTimerSection(
-                            restTimeRemaining = state.restTimeRemaining,
-                            onSkip = onSkipRest,
-                        )
-                    }
-                }
-
                 // Completed sets
                 if (state.completedSets.isNotEmpty()) {
                     item {
@@ -378,6 +394,19 @@ private fun WorkoutSessionContent(
                 deleteSetId = null
             },
             onDismiss = { deleteSetId = null },
+        )
+    }
+
+    // Rest timer popup dialog
+    if (state.isRestTimerRunning || state.isRestTimerPaused) {
+        RestTimerDialog(
+            timeRemaining = state.restTimeRemaining,
+            isPaused = state.isRestTimerPaused,
+            onSkip = onSkipRest,
+            onPause = onPauseRest,
+            onResume = onResumeRest,
+            onAdjust = onAdjustRest,
+            onDisableForSession = onToggleRestTimerForSession,
         )
     }
 }
@@ -670,6 +699,7 @@ private fun ExerciseInputSection(
                 step = state.weightIncrement,
                 modifier = Modifier.weight(1f),
             )
+            Spacer(modifier = Modifier.width(16.dp))
             NumberInput(
                 value = state.repsInput,
                 onValueChange = onRepsChanged,
@@ -762,43 +792,110 @@ private fun ExerciseInputSection(
     }
 }
 
-// ── Rest Timer Section ──────────────────────────────────────────────────────
+// ── Rest Timer Dialog ───────────────────────────────────────────────────────
 
 @Composable
-private fun RestTimerSection(
-    restTimeRemaining: Int,
+private fun RestTimerDialog(
+    timeRemaining: Int,
+    isPaused: Boolean,
     onSkip: () -> Unit,
+    onPause: () -> Unit,
+    onResume: () -> Unit,
+    onAdjust: (Int) -> Unit,
+    onDisableForSession: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        SectionDivider(
-            text = "REST TIMER",
-            modifier = Modifier.fillMaxWidth(),
-        )
+    Dialog(onDismissRequest = { /* user must skip or wait */ }) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = VoidDeep, shape = RectangleShape)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            // Title
+            Text(
+                text = "REST TIMER",
+                color = TextTertiary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 4.sp,
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-        // Large countdown
-        Text(
-            text = formatRestTime(restTimeRemaining),
-            style = MaterialTheme.typography.displaySmall,
-            color = BloodBright,
-            fontWeight = FontWeight.Black,
-            fontFamily = FontFamily.Monospace,
-            textAlign = TextAlign.Center,
-        )
+            // Large countdown
+            Text(
+                text = formatRestTime(timeRemaining),
+                style = MaterialTheme.typography.displayLarge,
+                color = if (isPaused) TextTertiary else BloodBright,
+                fontWeight = FontWeight.Black,
+                fontFamily = FontFamily.Monospace,
+                textAlign = TextAlign.Center,
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
+            if (isPaused) {
+                Text(
+                    text = "PAUSED",
+                    color = TextTertiary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 3.sp,
+                )
+            }
 
-        TrackGodButton(
-            text = "SKIP",
-            onClick = onSkip,
-            variant = ButtonVariant.Ghost,
-        )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // +/- 15s adjust buttons
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TrackGodButton(
+                    text = "-15s",
+                    onClick = { onAdjust(-15) },
+                    variant = ButtonVariant.Ghost,
+                    modifier = Modifier.weight(1f),
+                )
+                TrackGodButton(
+                    text = "+15s",
+                    onClick = { onAdjust(15) },
+                    variant = ButtonVariant.Ghost,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Pause / Resume button
+            TrackGodButton(
+                text = if (isPaused) "RESUME" else "PAUSE",
+                onClick = if (isPaused) onResume else onPause,
+                variant = ButtonVariant.Ghost,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Skip button
+            TrackGodButton(
+                text = "SKIP",
+                onClick = onSkip,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Disable for session toggle
+            Text(
+                text = "DISABLE REST TIMER",
+                color = TextTertiary,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.clickable { onDisableForSession() },
+            )
+        }
     }
 }
 

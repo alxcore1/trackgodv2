@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,6 +32,8 @@ import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.Void
+
+private val CrucifixionFont = FontFamily(Font(R.font.crucifixion))
 
 /**
  * Standardised TRACKGOD wordmark header used on all main tab screens.
@@ -84,7 +88,8 @@ fun TrackGodHeader(
                 text = "TRACKGOD",
                 style = MaterialTheme.typography.headlineMedium,
                 color = TextPrimary,
-                fontWeight = FontWeight.Black,
+                fontFamily = CrucifixionFont,
+                fontWeight = FontWeight.Normal,
                 letterSpacing = 4.sp,
             )
         }

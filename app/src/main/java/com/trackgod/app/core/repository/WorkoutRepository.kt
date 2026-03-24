@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import com.trackgod.app.core.util.WorkoutNaming
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -157,6 +158,20 @@ class WorkoutRepository @Inject constructor(
     suspend fun getExerciseById(exerciseId: Long): ExerciseEntity? =
         exerciseDao.getById(exerciseId)
 
+    suspend fun deleteSetById(setId: Long) {
+        setDao.deleteById(setId)
+    }
+
+    suspend fun updateSetWeightAndReps(setId: Long, weight: Float, reps: Int) {
+        setDao.updateWeightAndReps(setId, weight, reps)
+    }
+
+    suspend fun recalculateVolume(workoutId: Long) {
+        val sets = setDao.getByWorkoutOnce(workoutId)
+        val volume = sets.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
+        workoutDao.updateVolume(workoutId, volume)
+    }
+
     suspend fun getCompletedWorkoutCount(): Int =
         workoutDao.getCompletedWorkoutCount()
 
@@ -176,4 +191,30 @@ class WorkoutRepository @Inject constructor(
 
     suspend fun getExerciseFrequency(startDate: String, endDate: String, limit: Int = 8): List<ExerciseFrequencyResult> =
         setDao.getExerciseFrequency(startDate, endDate, limit)
+
+    /**
+     * One-time migration: rename all workouts with generic names
+     * by analysing the muscle-group categories of their sets.
+     */
+    suspend fun renameV1Workouts() {
+        val genericNames = listOf(
+            "V1 Workout",
+            "Workout",
+            "Completed workout session",
+            "Completed Workout Session",
+            "completed workout session",
+        )
+        val v1Workouts = workoutDao.getByNames(genericNames)
+        for (workout in v1Workouts) {
+            val sets = setDao.getByWorkoutOnce(workout.id)
+            val exerciseIds = sets.map { it.exerciseId }.distinct()
+            val categories = exerciseIds.mapNotNull { id ->
+                exerciseDao.getById(id)?.category
+            }
+            if (categories.isNotEmpty()) {
+                val name = WorkoutNaming.generateName(categories)
+                workoutDao.updateName(workout.id, name)
+            }
+        }
+    }
 }

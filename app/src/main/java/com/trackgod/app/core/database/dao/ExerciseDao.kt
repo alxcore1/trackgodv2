@@ -47,4 +47,16 @@ interface ExerciseDao {
 
     @Query("SELECT DISTINCT brand FROM exercises WHERE brand IS NOT NULL AND brand != '' AND is_active = 1 ORDER BY brand ASC")
     suspend fun getDistinctBrands(): List<String>
+
+    @Query("SELECT * FROM exercises WHERE equipment_type = 'machine' AND is_active = 1")
+    suspend fun getAllMachinesOnce(): List<ExerciseEntity>
+
+    @Query("UPDATE exercises SET series = :series WHERE id = :id")
+    suspend fun updateSeries(id: Long, series: String)
+
+    @Query("UPDATE exercises SET is_active = 0 WHERE id = :id")
+    suspend fun deactivate(id: Long)
+
+    @Query("UPDATE exercises SET usage_count = usage_count + :count, last_used_at = CASE WHEN :lastUsed IS NOT NULL AND (last_used_at IS NULL OR :lastUsed > last_used_at) THEN :lastUsed ELSE last_used_at END WHERE id = :id")
+    suspend fun transferUsage(id: Long, count: Int, lastUsed: Long?)
 }

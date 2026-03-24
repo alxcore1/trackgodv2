@@ -28,7 +28,8 @@ object DatabaseModule {
             context,
             TrackGodDatabase::class.java,
             "trackgod.db"
-        ).build()
+        ).addMigrations(TrackGodDatabase.MIGRATION_1_2)
+            .build()
     }
 
     @Provides
