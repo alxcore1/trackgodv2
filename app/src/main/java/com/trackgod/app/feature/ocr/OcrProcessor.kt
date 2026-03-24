@@ -1,6 +1,10 @@
 package com.trackgod.app.feature.ocr
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.Paint
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -53,29 +57,32 @@ class OcrProcessor @Inject constructor(
     suspend fun processImage(bitmap: Bitmap): OcrResult {
         val startTime = System.currentTimeMillis()
 
-        // 1. Run ML Kit
-        val image = InputImage.fromBitmap(bitmap, 0)
+        // 1. Preprocess image for better OCR on metallic gym machine labels
+        val preprocessed = preprocessForOcr(bitmap)
+
+        // 2. Run ML Kit
+        val image = InputImage.fromBitmap(preprocessed, 0)
         val visionText = recognizer.process(image).await()
 
-        // 2. Extract all text blocks into a single string
+        // 3. Extract all text blocks into a single string
         val rawText = visionText.textBlocks
             .joinToString(" ") { it.text }
             .trim()
 
-        // 3. Clean and normalize
+        // 4. Clean and normalize
         val cleanedText = rawText
             .replace(Regex("[^A-Za-z0-9 ]"), "")
             .replace(Regex("\\s+"), " ")
             .trim()
 
-        // 4. Find matches
+        // 5. Find matches
         val matches = if (cleanedText.isNotBlank()) {
             findMatches(cleanedText)
         } else {
             emptyList()
         }
 
-        // 5. Determine confidence
+        // 6. Determine confidence
         val bestScore = matches.firstOrNull()?.similarity ?: 0f
         val confidence = when {
             bestScore > 0.8f -> OcrConfidence.HIGH
@@ -93,6 +100,55 @@ class OcrProcessor @Inject constructor(
             confidence = confidence,
             processingTimeMs = processingTimeMs,
         )
+    }
+
+    /**
+     * Preprocess captured image for optimal OCR on gym machine labels.
+     * Converts to grayscale, boosts contrast, and downscales for faster processing.
+     */
+    private fun preprocessForOcr(bitmap: Bitmap): Bitmap {
+        // Downscale to max 1280px wide for faster ML Kit processing
+        val scaled = if (bitmap.width > 1280) {
+            val ratio = 1280f / bitmap.width
+            Bitmap.createScaledBitmap(
+                bitmap,
+                1280,
+                (bitmap.height * ratio).toInt(),
+                true,
+            )
+        } else {
+            bitmap
+        }
+
+        // Convert to grayscale (removes color noise from gym lighting)
+        val grayscale = toGrayscale(scaled)
+
+        // Boost contrast (makes embossed/metallic text stand out)
+        return adjustContrast(grayscale, factor = 1.8f)
+    }
+
+    private fun toGrayscale(src: Bitmap): Bitmap {
+        val colorMatrix = ColorMatrix().apply { setSaturation(0f) }
+        val paint = Paint().apply { colorFilter = ColorMatrixColorFilter(colorMatrix) }
+        val result = Bitmap.createBitmap(src.width, src.height, Bitmap.Config.ARGB_8888)
+        Canvas(result).drawBitmap(src, 0f, 0f, paint)
+        return result
+    }
+
+    private fun adjustContrast(src: Bitmap, factor: Float): Bitmap {
+        val translate = 128f * (1 - factor)
+        val cm = ColorMatrix(
+            floatArrayOf(
+                factor, 0f, 0f, 0f, translate,
+                0f, factor, 0f, 0f, translate,
+                0f, 0f, factor, 0f, translate,
+                0f, 0f, 0f, 1f, 0f,
+            )
+        )
+        val paint = Paint().apply { colorFilter = ColorMatrixColorFilter(cm) }
+        val result = Bitmap.createBitmap(src.width, src.height, Bitmap.Config.ARGB_8888)
+        Canvas(result).drawBitmap(src, 0f, 0f, paint)
+        return result
     }
 
     /**

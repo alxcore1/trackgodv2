@@ -11,8 +11,8 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.CameraController
+import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -85,7 +85,6 @@ import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
-import java.util.concurrent.Executors
 
 @Composable
 fun OcrScannerScreen(
@@ -179,8 +178,18 @@ private fun CameraPhase(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val imageCapture = remember { ImageCapture.Builder().build() }
-    val executor = remember { Executors.newSingleThreadExecutor() }
+
+    val cameraController = remember {
+        LifecycleCameraController(context).apply {
+            setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+            cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+        }
+    }
+
+    // Bind to lifecycle
+    LaunchedEffect(lifecycleOwner) {
+        cameraController.bindToLifecycle(lifecycleOwner)
+    }
 
     if (!hasPermission) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -190,22 +199,13 @@ private fun CameraPhase(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Camera preview
+        // Camera preview with tap-to-focus and pinch-to-zoom
         AndroidView(
             factory = { ctx ->
-                val previewView = PreviewView(ctx)
-                val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
-                cameraProviderFuture.addListener({
-                    val cameraProvider = cameraProviderFuture.get()
-                    val preview = Preview.Builder().build().also {
-                        it.surfaceProvider = previewView.surfaceProvider
-                    }
-                    cameraProvider.unbindAll()
-                    cameraProvider.bindToLifecycle(
-                        lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture
-                    )
-                }, ContextCompat.getMainExecutor(ctx))
-                previewView
+                PreviewView(ctx).apply {
+                    controller = cameraController
+                    implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                }
             },
             modifier = Modifier.fillMaxSize(),
         )
@@ -255,17 +255,18 @@ private fun CameraPhase(
             if (isProcessing) {
                 CircularProgressIndicator(color = Blood, modifier = Modifier.size(64.dp))
             } else {
-                // Square capture button (industrial brutalism)
+                // Square capture button
                 Box(
                     modifier = Modifier
                         .size(64.dp)
                         .background(Blood, RectangleShape)
                         .clickable {
-                            imageCapture.takePicture(executor,
+                            cameraController.takePicture(
+                                ContextCompat.getMainExecutor(context),
                                 object : ImageCapture.OnImageCapturedCallback() {
                                     override fun onCaptureSuccess(imageProxy: ImageProxy) {
                                         val bitmap = imageProxy.toBitmap()
-                                        // Crop to center scan frame region (~80% width, middle 20% height)
+                                        // Crop to center scan frame region
                                         val cropWidth = (bitmap.width * 0.8f).toInt()
                                         val cropHeight = (bitmap.height * 0.2f).toInt()
                                         val cropX = (bitmap.width - cropWidth) / 2
