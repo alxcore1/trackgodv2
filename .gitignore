@@ -10,3 +10,8 @@
 local.properties
 /app/build
 /app/schemas
+
+# Release keystore — NEVER commit
+keystore/
+*.jks
+*.keystore
