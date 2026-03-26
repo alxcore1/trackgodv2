@@ -48,6 +48,9 @@ data class StatsState(
     val workoutsPerWeek: List<WeeklyConsistencyData> = emptyList(),
     val totalWorkouts: Int = 0,
 
+    // Exercise Progression (top exercises with chart data)
+    val exerciseProgressions: List<ExerciseProgressionData> = emptyList(),
+
     val weightUnit: String = "kg",
     val isLoading: Boolean = true,
     val hasData: Boolean = false,
@@ -68,6 +71,13 @@ data class HeatmapDay(val date: LocalDate, val volume: Float, val intensity: Int
 data class StrengthBalanceData(val category: String, val volume: Float, val percentage: Float)
 data class ExerciseFrequencyData(val exerciseName: String, val count: Int, val maxCount: Int)
 data class WeeklyConsistencyData(val weekLabel: String, val workoutCount: Int)
+data class ExerciseProgressionData(
+    val exerciseName: String,
+    val category: String,
+    val history: List<com.trackgod.app.core.database.dao.ExerciseProgressPoint>,
+    val current1rm: Float,
+    val progressionRate: Float,
+)
 
 // -- ViewModel ----------------------------------------------------------------
 
@@ -97,6 +107,8 @@ class StatsViewModel @Inject constructor(
     private fun loadAnalytics() {
         viewModelScope.launch {
             try {
+                // Refresh weight unit in case user changed it in settings
+                _state.update { it.copy(weightUnit = settingsRepository.getWeightUnit()) }
                 val range = _state.value.selectedTimeRange
                 val today = LocalDate.now()
                 val startDate = if (range.days == Int.MAX_VALUE) {
@@ -132,11 +144,11 @@ class StatsViewModel @Inject constructor(
                     .sortedByDescending { it.estimated1rm }
                     .take(6)
                     .map { pr ->
-                        PersonalRecordData(pr.name, pr.estimated1rm, pr.weight, pr.reps)
+                        PersonalRecordData(shortenExerciseName(pr.name), pr.estimated1rm, pr.weight, pr.reps)
                     }
 
-                // 4. Training Heatmap (use selected range, but cap at 90 days minimum)
-                val heatmapStart = if (range.days <= 90) startDate else today.minusDays(89)
+                // 4. Training Heatmap (always show 90 days for meaningful pattern visibility)
+                val heatmapStart = today.minusDays(89)
                 val heatmap = buildHeatmap(allCompletedWorkouts, heatmapStart, today)
 
                 // 5. Strength Balance (grouped categories)
@@ -148,7 +160,24 @@ class StatsViewModel @Inject constructor(
                     ExerciseFrequencyData(ef.name, ef.count, maxCount)
                 }
 
-                // 7. Workout Consistency
+                // 7. Exercise Progressions (top 5 by estimated 1RM)
+                val progressions = personalRecords.sortedByDescending { it.estimated1rm }.take(5).mapNotNull { pr ->
+                    val history = workoutRepository.getProgressionForExercise(pr.exerciseId)
+                    if (history.size < 2) return@mapNotNull null
+                    val first1rm = history.first().estimated1rm
+                    val last1rm = history.last().estimated1rm
+                    val rate = if (first1rm > 0f) ((last1rm - first1rm) / first1rm * 100f) else 0f
+                    val exercise = workoutRepository.getExerciseById(pr.exerciseId)
+                    ExerciseProgressionData(
+                        exerciseName = shortenExerciseName(pr.name),
+                        category = exercise?.category ?: "",
+                        history = history,
+                        current1rm = last1rm,
+                        progressionRate = rate,
+                    )
+                }
+
+                // 8. Workout Consistency
                 val workoutDates = allCompletedWorkouts.mapNotNull { w ->
                     runCatching { LocalDate.parse(w.date, DateTimeFormatter.ISO_LOCAL_DATE) }.getOrNull()
                 }.toSortedSet()
@@ -174,11 +203,12 @@ class StatsViewModel @Inject constructor(
                         workoutsPerWeek = weeklyConsistency,
                         totalWorkouts = totalWorkoutsInRange,
                         isLoading = false,
+                        exerciseProgressions = progressions,
                         hasData = allCompletedWorkouts.isNotEmpty(),
                     )
                 }
             } catch (_: Exception) {
-                _state.update { it.copy(isLoading = false) }
+                _state.update { it.copy(isLoading = false, hasData = false) }
             }
         }
     }
@@ -248,10 +278,11 @@ class StatsViewModel @Inject constructor(
             }
 
             TimeRange.YEAR, TimeRange.ALL -> {
-                // Group by month
+                // Group by month — start from earliest actual data, not year 2000
                 val monthLabels = listOf("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
                 val months = mutableListOf<VolumeDataPoint>()
-                var current = startDate.withDayOfMonth(1)
+                val earliestDate = dateVolumeMap.keys.minOrNull() ?: startDate
+                var current = maxOf(startDate, earliestDate).withDayOfMonth(1)
                 while (!current.isAfter(today)) {
                     val monthEnd = current.plusMonths(1).minusDays(1)
                     val vol = dateVolumeMap.entries
@@ -313,6 +344,7 @@ class StatsViewModel @Inject constructor(
         var lowerVol = 0f
         var backVol = 0f
         var coreVol = 0f
+        var otherVol = 0f
 
         for (cv in categoryVolumes) {
             val cat = cv.category
@@ -321,11 +353,11 @@ class StatsViewModel @Inject constructor(
                 lowerCategories.any { cat.equals(it, ignoreCase = true) } -> lowerVol += cv.totalVolume
                 backCategories.any { cat.equals(it, ignoreCase = true) } -> backVol += cv.totalVolume
                 coreCategories.any { cat.equals(it, ignoreCase = true) } -> coreVol += cv.totalVolume
-                else -> upperVol += cv.totalVolume // Default unknown categories to upper
+                else -> otherVol += cv.totalVolume
             }
         }
 
-        val total = upperVol + lowerVol + backVol + coreVol
+        val total = upperVol + lowerVol + backVol + coreVol + otherVol
         if (total <= 0f) return emptyList()
 
         return listOf(
@@ -333,6 +365,7 @@ class StatsViewModel @Inject constructor(
             StrengthBalanceData("Lower", lowerVol, lowerVol / total * 100f),
             StrengthBalanceData("Back", backVol, backVol / total * 100f),
             StrengthBalanceData("Core", coreVol, coreVol / total * 100f),
+            StrengthBalanceData("Other", otherVol, otherVol / total * 100f),
         ).filter { it.volume > 0f }
     }
 
@@ -340,8 +373,9 @@ class StatsViewModel @Inject constructor(
 
     private fun calculateCurrentStreak(workoutDates: Set<LocalDate>, today: LocalDate): Int {
         if (workoutDates.isEmpty()) return 0
+        // Start from today; if no workout today, try yesterday (streak isn't broken until a full day is missed)
+        var day = if (today in workoutDates) today else today.minusDays(1)
         var streak = 0
-        var day = today
         while (day in workoutDates) {
             streak++
             day = day.minusDays(1)
@@ -385,5 +419,24 @@ class StatsViewModel @Inject constructor(
             result.add(WeeklyConsistencyData(label, count))
         }
         return result
+    }
+
+    /** Strip known brand/series prefixes for compact display. */
+    private fun shortenExerciseName(fullName: String): String {
+        val prefixes = listOf(
+            "Hammer Strength MTS ", "Hammer Strength Select ", "Hammer Strength Plate-Loaded ",
+            "Hammer Strength HD Elite ", "Hammer Strength ",
+            "Life Fitness Insignia ", "Life Fitness Signature ", "Life Fitness Axiom ",
+            "Life Fitness Optima ", "Life Fitness Circuit ", "Life Fitness ",
+            "Gym80 Sygnum ", "Gym80 Pure Kraft ", "Gym80 Plate Loaded ", "Gym80 ",
+        )
+        var result = fullName
+        for (prefix in prefixes) {
+            if (result.startsWith(prefix, ignoreCase = true)) {
+                result = result.removeRange(0, prefix.length).trim()
+                break
+            }
+        }
+        return result.ifBlank { fullName }
     }
 }

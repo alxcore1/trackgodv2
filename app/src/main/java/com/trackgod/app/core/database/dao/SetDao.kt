@@ -22,6 +22,14 @@ data class PersonalRecordResult(
     val reps: Int
 )
 
+data class ExerciseProgressPoint(
+    val date: String,
+    val maxWeight: Float,
+    val estimated1rm: Float,
+    val totalVolume: Float,
+    val setCount: Int,
+)
+
 data class ExerciseFrequencyResult(
     val name: String,
     val count: Int
@@ -62,7 +70,7 @@ interface SetDao {
         FROM sets s
         INNER JOIN exercises e ON s.exercise_id = e.id
         INNER JOIN workouts w ON s.workout_id = w.id
-        WHERE w.date BETWEEN :startDate AND :endDate AND w.is_completed = 1
+        WHERE w.date BETWEEN :startDate AND :endDate AND w.is_completed = 1 AND s.set_type != 'warmup'
         GROUP BY e.category
         """
     )
@@ -76,11 +84,11 @@ interface SetDao {
         FROM sets s
         INNER JOIN exercises e ON s.exercise_id = e.id
         INNER JOIN workouts w ON s.workout_id = w.id
-        WHERE w.is_completed = 1
+        WHERE w.is_completed = 1 AND s.set_type != 'warmup'
           AND s.id = (
               SELECT s2.id FROM sets s2
               INNER JOIN workouts w2 ON s2.workout_id = w2.id
-              WHERE s2.exercise_id = s.exercise_id AND w2.is_completed = 1
+              WHERE s2.exercise_id = s.exercise_id AND w2.is_completed = 1 AND s2.set_type != 'warmup'
               ORDER BY s2.weight * (1 + 0.0333 * s2.reps) DESC
               LIMIT 1
           )
@@ -88,6 +96,31 @@ interface SetDao {
         """
     )
     suspend fun getPersonalRecords(): List<PersonalRecordResult>
+
+    /** Best estimated 1RM for a single exercise across all completed workouts. */
+    @Query("""
+        SELECT MAX(s.weight * (1 + 0.0333 * s.reps))
+        FROM sets s
+        INNER JOIN workouts w ON s.workout_id = w.id
+        WHERE s.exercise_id = :exerciseId AND w.is_completed = 1 AND s.set_type != 'warmup'
+    """)
+    suspend fun getBest1RMForExercise(exerciseId: Long): Float?
+
+    /** Per-date progression for a single exercise (for charts). */
+    @Query("""
+        SELECT w.date AS date,
+               MAX(s.weight) AS maxWeight,
+               MAX(s.weight * (1 + 0.0333 * s.reps)) AS estimated1rm,
+               SUM(s.weight * s.reps) AS totalVolume,
+               COUNT(*) AS setCount
+        FROM sets s
+        INNER JOIN workouts w ON s.workout_id = w.id
+        WHERE s.exercise_id = :exerciseId AND w.is_completed = 1 AND s.set_type != 'warmup'
+        GROUP BY w.date
+        ORDER BY w.date ASC
+        LIMIT :limit
+    """)
+    suspend fun getProgressionForExercise(exerciseId: Long, limit: Int = 30): List<ExerciseProgressPoint>
 
     @Query("SELECT * FROM sets WHERE workout_id = :workoutId ORDER BY set_number ASC")
     suspend fun getByWorkoutOnce(workoutId: Long): List<SetEntity>
@@ -120,4 +153,28 @@ interface SetDao {
         """
     )
     suspend fun getExerciseFrequency(startDate: String, endDate: String, limit: Int = 8): List<ExerciseFrequencyResult>
+
+    @Query("""
+        SELECT w.date AS date, w.name AS workoutName, e.name AS exerciseName,
+               s.set_number AS setNumber, s.weight AS weight, s.reps AS reps,
+               s.rpe AS rpe, s.rir AS rir, s.note AS note
+        FROM sets s
+        INNER JOIN workouts w ON s.workout_id = w.id
+        INNER JOIN exercises e ON s.exercise_id = e.id
+        WHERE w.is_completed = 1
+        ORDER BY w.date DESC, w.start_time DESC, e.name ASC, s.set_number ASC
+    """)
+    suspend fun getAllSetsForCsvExport(): List<CsvExportRow>
 }
+
+data class CsvExportRow(
+    val date: String,
+    val workoutName: String,
+    val exerciseName: String,
+    val setNumber: Int,
+    val weight: Float,
+    val reps: Int,
+    val rpe: Int?,
+    val rir: Int?,
+    val note: String?,
+)

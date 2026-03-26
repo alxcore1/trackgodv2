@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Locale
 import javax.inject.Inject
 
 data class EditableSet(
@@ -37,6 +38,7 @@ data class EditableExercise(
 data class EditWorkoutState(
     val workout: WorkoutEntity? = null,
     val exercises: List<EditableExercise> = emptyList(),
+    val deletedSetIds: List<Long> = emptyList(),
     val workoutName: String = "",
     val editingSetId: Long? = null,
     val editWeight: String = "",
@@ -56,14 +58,13 @@ class EditWorkoutViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val workoutId: Long = savedStateHandle.get<Long>("workoutId")
-        ?: throw IllegalArgumentException("EditWorkoutViewModel requires workoutId")
+    private val workoutId: Long = savedStateHandle.get<Long>("workoutId") ?: -1L
 
     private val _state = MutableStateFlow(EditWorkoutState())
     val state: StateFlow<EditWorkoutState> = _state.asStateFlow()
 
     init {
-        viewModelScope.launch {
+        if (workoutId > 0) viewModelScope.launch {
             val weightUnit = settingsRepository.getWeightUnit()
             val weightIncrement = settingsRepository.getDefaultWeightIncrement()
 
@@ -131,7 +132,7 @@ class EditWorkoutViewModel @Inject constructor(
     fun saveSetEdit() {
         val s = _state.value
         val setId = s.editingSetId ?: return
-        val weight = s.editWeight.toFloatOrNull() ?: return
+        val weight = s.editWeight.replace(",", ".").toFloatOrNull() ?: return
         val reps = s.editReps.toIntOrNull() ?: return
 
         _state.update { state ->
@@ -162,6 +163,7 @@ class EditWorkoutViewModel @Inject constructor(
                         }
                     )
                 }.filter { ex -> ex.sets.any { !it.isDeleted } },
+                deletedSetIds = state.deletedSetIds + setId,
                 editingSetId = if (state.editingSetId == setId) null else state.editingSetId,
             )
         }
@@ -169,12 +171,16 @@ class EditWorkoutViewModel @Inject constructor(
 
     fun deleteExercise(exerciseId: Long) {
         _state.update { state ->
+            val setsToDelete = state.exercises
+                .filter { it.exercise.id == exerciseId }
+                .flatMap { it.sets.map { s -> s.id } }
             state.copy(
                 exercises = state.exercises.map { ex ->
                     if (ex.exercise.id == exerciseId) {
                         ex.copy(sets = ex.sets.map { it.copy(isDeleted = true) })
                     } else ex
                 }.filter { ex -> ex.sets.any { !it.isDeleted } },
+                deletedSetIds = state.deletedSetIds + setsToDelete,
             )
         }
     }
@@ -188,12 +194,16 @@ class EditWorkoutViewModel @Inject constructor(
                 // Update workout name
                 workoutRepository.updateWorkoutName(workoutId, s.workoutName)
 
-                // Process set changes
+                // Delete sets (including those from fully-deleted exercises)
+                for (setId in s.deletedSetIds) {
+                    workoutRepository.deleteSetById(setId)
+                }
+
+                // Update modified sets
                 for (ex in s.exercises) {
                     for (set in ex.sets) {
-                        when {
-                            set.isDeleted -> workoutRepository.deleteSetById(set.id)
-                            set.isModified -> workoutRepository.updateSetWeightAndReps(
+                        if (set.isModified && !set.isDeleted) {
+                            workoutRepository.updateSetWeightAndReps(
                                 set.id, set.weight, set.reps
                             )
                         }
@@ -213,6 +223,6 @@ class EditWorkoutViewModel @Inject constructor(
 
     private fun formatWeight(value: Float): String {
         return if (value % 1f == 0f) value.toInt().toString()
-        else "%.1f".format(value)
+        else String.format(Locale.US, "%.1f", value)
     }
 }

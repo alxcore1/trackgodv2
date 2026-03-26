@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Locale
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.SurfaceLow
@@ -94,7 +95,7 @@ fun NumberInput(
                 icon = Icons.Default.Remove,
                 contentDescription = "Decrease",
                 onClick = {
-                    val current = value.toFloatOrNull() ?: 0f
+                    val current = value.replace(",", ".").toFloatOrNull() ?: 0f
                     val next = (current - step).coerceAtLeast(0f)
                     onValueChange(formatNumber(next, step))
                 },
@@ -112,7 +113,7 @@ fun NumberInput(
                         value = value,
                         onValueChange = { newVal ->
                             // Allow only valid numeric input
-                            if (newVal.isEmpty() || newVal.matches(Regex("""^\d*\.?\d*$"""))) {
+                            if (newVal.isEmpty() || newVal.matches(Regex("""^\d*[.,]?\d*$"""))) {
                                 onValueChange(newVal)
                             }
                         },
@@ -124,7 +125,13 @@ fun NumberInput(
                             textAlign = TextAlign.Center,
                         ),
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Decimal,
+                            imeAction = androidx.compose.ui.text.input.ImeAction.Done,
+                        ),
+                        keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                            onDone = { isEditing = false },
+                        ),
                         cursorBrush = SolidColor(Blood),
                     )
                 } else {
@@ -158,7 +165,7 @@ fun NumberInput(
                 icon = Icons.Default.Add,
                 contentDescription = "Increase",
                 onClick = {
-                    val current = value.toFloatOrNull() ?: 0f
+                    val current = value.replace(",", ".").toFloatOrNull() ?: 0f
                     val next = (current + step).coerceAtMost(maxValue)
                     onValueChange(formatNumber(next, step))
                 },
@@ -228,7 +235,8 @@ private fun formatNumber(value: Float, step: Float): String {
         value.toInt().toString()
     } else {
         // Keep one decimal place for fractional steps (e.g., 2.5 KG plates)
-        "%.1f".format(value)
+        // Force dot separator regardless of device locale
+        String.format(Locale.US, "%.1f", value)
     }
 }
 

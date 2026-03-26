@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.weightloss
 
+import java.util.Locale
 import android.app.DatePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -58,7 +59,7 @@ fun GoalSetupSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val context = LocalContext.current
 
-    var startWeight by remember { mutableStateOf(currentWeight?.let { "%.1f".format(it) } ?: "") }
+    var startWeight by remember { mutableStateOf(currentWeight?.let { String.format(Locale.US, "%.1f", it) } ?: "") }
     var targetWeight by remember { mutableStateOf("") }
     var targetDate by remember { mutableStateOf("") }
     var weeklyGoal by remember { mutableStateOf("0.5") }
@@ -129,7 +130,9 @@ fun GoalSetupSheet(
                             cal.get(Calendar.YEAR),
                             cal.get(Calendar.MONTH),
                             cal.get(Calendar.DAY_OF_MONTH),
-                        ).show()
+                        ).apply {
+                            datePicker.minDate = System.currentTimeMillis()
+                        }.show()
                     }
                     .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
@@ -167,8 +170,8 @@ fun GoalSetupSheet(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Validation error
-            val sw = startWeight.toFloatOrNull()
-            val tw = targetWeight.toFloatOrNull()
+            val sw = startWeight.replace(",", ".").toFloatOrNull()
+            val tw = targetWeight.replace(",", ".").toFloatOrNull()
             val isWeightValid = sw != null && tw != null && sw > tw
             val showWeightError = sw != null && tw != null && sw <= tw
 
@@ -187,11 +190,11 @@ fun GoalSetupSheet(
             TrackGodButton(
                 text = "SAVE GOAL",
                 onClick = {
-                    val startW = startWeight.toFloatOrNull() ?: return@TrackGodButton
-                    val targetW = targetWeight.toFloatOrNull() ?: return@TrackGodButton
+                    val startW = startWeight.replace(",", ".").toFloatOrNull() ?: return@TrackGodButton
+                    val targetW = targetWeight.replace(",", ".").toFloatOrNull() ?: return@TrackGodButton
                     if (targetDate.isBlank()) return@TrackGodButton
                     if (startW <= targetW) return@TrackGodButton
-                    val wg = weeklyGoal.toFloatOrNull()
+                    val wg = weeklyGoal.replace(",", ".").toFloatOrNull()
                     val mot = motivation.ifBlank { null }
                     onSave(startW, targetW, targetDate, wg, mot)
                 },

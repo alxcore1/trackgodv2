@@ -126,8 +126,8 @@ class OnboardingViewModel @Inject constructor(
                     avatarUri = s.avatarUri,
                     gender = s.gender,
                     birthday = s.birthday,
-                    height = s.height.toFloatOrNull(),
-                    weight = s.weight.toFloatOrNull(),
+                    height = s.height.replace(",", ".").toFloatOrNull(),
+                    weight = s.weight.replace(",", ".").toFloatOrNull(),
                     primaryObjective = s.primaryObjective,
                     experienceLevel = s.experienceLevel,
                     weeklyTarget = s.weeklyTarget,
@@ -163,8 +163,8 @@ class OnboardingViewModel @Inject constructor(
             0 -> s.name.isNotBlank()
             1 -> s.gender != null
             2 -> {
-                val h = s.height.toFloatOrNull()
-                val w = s.weight.toFloatOrNull()
+                val h = s.height.replace(",", ".").toFloatOrNull()
+                val w = s.weight.replace(",", ".").toFloatOrNull()
                 h != null && h > 0 && w != null && w > 0
             }
             3 -> true // Units step -- always valid (has defaults)

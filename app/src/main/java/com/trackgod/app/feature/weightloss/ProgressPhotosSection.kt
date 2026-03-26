@@ -158,7 +158,7 @@ fun ProgressPhotosSection(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         TrackGodButton(
-            text = "TAKE PHOTO",
+            text = "ADD PHOTO",
             onClick = { photoPickerLauncher.launch("image/*") },
             modifier = Modifier.weight(1f),
         )

@@ -26,6 +26,11 @@ object RestTimerAlarmScheduler {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
+        // Check permission on API 31+; skip alarm silently if revoked (in-app timer still works)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+            return
+        }
+
         // setAlarmClock is shown in the system status bar and is guaranteed in Doze
         val alarmInfo = AlarmManager.AlarmClockInfo(triggerAt, pendingIntent)
         alarmManager.setAlarmClock(alarmInfo, pendingIntent)

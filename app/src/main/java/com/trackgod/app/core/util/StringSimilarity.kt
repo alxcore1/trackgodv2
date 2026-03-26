@@ -98,13 +98,11 @@ object StringSimilarity {
         val cleaned = text.uppercase().trim()
         val corrected = correctOcrErrors(cleaned)
         val stripped = stripBrandsAndSeries(corrected)
-        val noNumbers = cleaned.replace(Regex("[0-9]"), "").trim()
-        val lastWords = cleaned.split("\\s+".toRegex()).takeLast(3).joinToString(" ")
-        val lastTwoWords = cleaned.split("\\s+".toRegex()).takeLast(2).joinToString(" ")
+        val noNumbers = cleaned.replace(Regex("[0-9]"), "").replace(Regex("\\s+"), " ").trim()
 
-        return listOf(cleaned, corrected, stripped, noNumbers, lastWords, lastTwoWords)
+        return listOf(cleaned, corrected, stripped, noNumbers)
             .map { it.replace(Regex("\\s+"), " ").trim() }
-            .filter { it.isNotBlank() }
+            .filter { it.length >= 3 }
             .distinct()
     }
 
@@ -206,10 +204,11 @@ object StringSimilarity {
     fun containsBonus(s1: String, s2: String): Float {
         val a = s1.uppercase().trim()
         val b = s2.uppercase().trim()
+        // Only award bonus if the contained string is meaningful (>= 5 chars)
         return when {
             a == b -> 1.0f
-            a.contains(b) -> 0.92f
-            b.contains(a) -> 0.88f
+            a.contains(b) && b.length >= 5 -> 0.92f
+            b.contains(a) && a.length >= 5 -> 0.88f
             else -> 0f
         }
     }

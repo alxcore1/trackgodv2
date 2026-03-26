@@ -34,6 +34,7 @@ data class AltarState(
     val weeklyGoal: Int = 4,
     val workoutDaysThisWeek: Set<Int> = emptySet(),
     val isLoading: Boolean = true,
+    val routines: List<com.trackgod.app.core.database.dao.RoutineWithCount> = emptyList(),
 )
 
 // ── ViewModel ────────────────────────────────────────────────────────────────
@@ -44,6 +45,7 @@ class AltarViewModel @Inject constructor(
     private val exerciseRepository: ExerciseRepository,
     private val settingsRepository: SettingsRepository,
     private val userProfileDao: UserProfileDao,
+    private val routineRepository: com.trackgod.app.core.repository.RoutineRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AltarState())
@@ -51,6 +53,13 @@ class AltarViewModel @Inject constructor(
 
     init {
         loadData()
+
+        // Observe saved routines
+        viewModelScope.launch {
+            routineRepository.getAllWithCount().collectLatest { routines ->
+                _state.update { it.copy(routines = routines) }
+            }
+        }
     }
 
     private fun loadData() {
@@ -58,51 +67,60 @@ class AltarViewModel @Inject constructor(
 
         // One-time V1 workout rename
         viewModelScope.launch {
-            if (!settingsRepository.getBooleanFlag("v1_workouts_renamed_v2")) {
-                workoutRepository.renameV1Workouts()
-                settingsRepository.setBooleanFlag("v1_workouts_renamed_v2", true)
-            }
+            try {
+                if (!settingsRepository.getBooleanFlag("v1_workouts_renamed_v2")) {
+                    workoutRepository.renameV1Workouts()
+                    settingsRepository.setBooleanFlag("v1_workouts_renamed_v2", true)
+                }
 
-            // One-time: populate series field for machine exercises
-            if (!settingsRepository.getBooleanFlag("exercise_series_populated_v2")) {
-                exerciseRepository.populateSeriesFromNames()
-                settingsRepository.setBooleanFlag("exercise_series_populated_v2", true)
+                // One-time: populate series field for machine exercises
+                if (!settingsRepository.getBooleanFlag("exercise_series_populated_v2")) {
+                    exerciseRepository.populateSeriesFromNames()
+                    settingsRepository.setBooleanFlag("exercise_series_populated_v2", true)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("AltarViewModel", "One-time migration failed", e)
             }
         }
 
         // Observe today's workouts reactively (updates when workout completes)
         viewModelScope.launch {
-            workoutRepository.getTodayWorkouts(todayDate).collectLatest { todayWorkouts ->
-                val completedToday = todayWorkouts.filter { it.isCompleted }
-                val totalVolume = completedToday.mapNotNull { it.totalVolume }.sum()
-                val totalDurationSeconds = completedToday.mapNotNull { it.durationSeconds }.sum()
+            try {
+                workoutRepository.getTodayWorkouts(todayDate).collectLatest { todayWorkouts ->
+                    val completedToday = todayWorkouts.filter { it.isCompleted }
+                    val totalVolume = completedToday.mapNotNull { it.totalVolume }.sum()
+                    val totalDurationSeconds = completedToday.mapNotNull { it.durationSeconds }.sum()
 
-                // Load today's sets for set count
-                val todayWorkoutIds = completedToday.map { it.id }
-                val todaySets = workoutRepository.getSetsForWorkoutIds(todayWorkoutIds)
+                    // Load today's sets for set count
+                    val todayWorkoutIds = completedToday.map { it.id }
+                    val todaySets = workoutRepository.getSetsForWorkoutIds(todayWorkoutIds)
 
-                // Refresh non-reactive data when today's workouts change
-                val recent = workoutRepository.getRecentCompletedWorkouts(5)
-                val streak = calculateStreak()
-                val weekDays = calculateWorkoutDaysThisWeek()
+                    // Refresh non-reactive data when today's workouts change
+                    val recent = workoutRepository.getRecentCompletedWorkouts(5)
+                    val streak = calculateStreak()
+                    val weekDays = calculateWorkoutDaysThisWeek()
 
-                _state.update {
-                    it.copy(
-                        todayWorkoutCount = completedToday.size,
-                        todaySets = todaySets.size,
-                        todayVolume = totalVolume,
-                        todayDurationMinutes = totalDurationSeconds / 60,
-                        recentWorkouts = recent,
-                        currentStreak = streak,
-                        workoutDaysThisWeek = weekDays,
-                        isLoading = false,
-                    )
+                    _state.update {
+                        it.copy(
+                            todayWorkoutCount = completedToday.size,
+                            todaySets = todaySets.size,
+                            todayVolume = totalVolume,
+                            todayDurationMinutes = totalDurationSeconds / 60,
+                            recentWorkouts = recent,
+                            currentStreak = streak,
+                            workoutDaysThisWeek = weekDays,
+                            isLoading = false,
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                android.util.Log.e("AltarViewModel", "Failed to observe today workouts", e)
+                _state.update { it.copy(isLoading = false) }
             }
         }
 
         // Load non-reactive data: streak, incomplete workout, recent workouts, weekly goal
-        viewModelScope.launch {
+        viewModelScope.launch { try {
             // Load weekly target from user profile
             val profile = userProfileDao.getProfileOnce()
             val weeklyGoal = profile?.weeklyTarget ?: 4
@@ -143,7 +161,10 @@ class AltarViewModel @Inject constructor(
                     isLoading = false,
                 )
             }
-        }
+        } catch (e: Exception) {
+            android.util.Log.e("AltarViewModel", "Failed to load non-reactive data", e)
+            _state.update { it.copy(isLoading = false) }
+        } }
     }
 
     /**
@@ -159,8 +180,9 @@ class AltarViewModel @Inject constructor(
             runCatching { LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE) }.getOrNull()
         }.toSet()
 
+        // Start from today; if no workout today, try yesterday (streak isn't broken until a full day is missed)
+        var day = if (workoutDates.contains(today)) today else today.minusDays(1)
         var streak = 0
-        var day = today
         while (workoutDates.contains(day)) {
             streak++
             day = day.minusDays(1)
@@ -190,14 +212,55 @@ class AltarViewModel @Inject constructor(
 
     // ── Actions ──────────────────────────────────────────────────────────────
 
-    suspend fun startNewWorkout(): Long {
-        val workoutId = workoutRepository.createWorkout()
-        settingsRepository.setActiveWorkoutId(workoutId)
-        return workoutId
+    private var isStarting = false
+
+    suspend fun startNewWorkout(): Long? {
+        if (isStarting) return null
+        isStarting = true
+        return try {
+            // Discard any existing incomplete workout to prevent orphans
+            _state.value.incompleteWorkoutId?.let { oldId ->
+                workoutRepository.deleteWorkout(oldId)
+            }
+            val workoutId = workoutRepository.createWorkout()
+            settingsRepository.setActiveWorkoutId(workoutId)
+            _state.update {
+                it.copy(
+                    hasIncompleteWorkout = true,
+                    incompleteWorkoutId = workoutId,
+                )
+            }
+            workoutId
+        } finally {
+            isStarting = false
+        }
     }
 
     fun resumeWorkout(): Long? {
         return _state.value.incompleteWorkoutId
+    }
+
+    /** Start a new workout from a saved routine/template. Returns (workoutId, routineId). */
+    suspend fun startFromTemplate(routineId: Long): Pair<Long, Long>? {
+        if (isStarting) return null
+        isStarting = true
+        return try {
+            _state.value.incompleteWorkoutId?.let { oldId ->
+                workoutRepository.deleteWorkout(oldId)
+            }
+            val workoutId = workoutRepository.createWorkout()
+            settingsRepository.setActiveWorkoutId(workoutId)
+            _state.update {
+                it.copy(hasIncompleteWorkout = true, incompleteWorkoutId = workoutId)
+            }
+            Pair(workoutId, routineId)
+        } finally {
+            isStarting = false
+        }
+    }
+
+    fun deleteRoutine(routineId: Long) {
+        viewModelScope.launch { routineRepository.delete(routineId) }
     }
 
     fun discardIncompleteWorkout() {

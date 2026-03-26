@@ -4,6 +4,7 @@ import com.trackgod.app.core.database.dao.CategoryVolume
 import com.trackgod.app.core.database.dao.DateVolume
 import com.trackgod.app.core.database.dao.ExerciseDao
 import com.trackgod.app.core.database.dao.ExerciseFrequencyResult
+import com.trackgod.app.core.database.dao.ExerciseProgressPoint
 import com.trackgod.app.core.database.dao.PersonalRecordResult
 import com.trackgod.app.core.database.dao.SetDao
 import com.trackgod.app.core.database.dao.WorkoutDao
@@ -54,7 +55,8 @@ class WorkoutRepository @Inject constructor(
         reps: Int,
         note: String? = null,
         rpe: Int? = null,
-        rir: Int? = null
+        rir: Int? = null,
+        setType: String = "working",
     ): Long {
         val setNumber = setDao.countSetsForExercise(workoutId, exerciseId) + 1
         val now = System.currentTimeMillis()
@@ -67,6 +69,7 @@ class WorkoutRepository @Inject constructor(
             note = note,
             rpe = rpe,
             rir = rir,
+            setType = setType,
             createdAt = now
         )
         val setId = setDao.insert(set)
@@ -93,7 +96,7 @@ class WorkoutRepository @Inject constructor(
         val now = System.currentTimeMillis()
         val durationSeconds = ((now - workout.startTime) / 1000).toInt()
         val sets = setDao.getByWorkoutOnce(workoutId)
-        val totalVolume = sets.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
+        val totalVolume = sets.filter { it.setType != "warmup" }.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
 
         workoutDao.update(
             workout.copy(
@@ -168,7 +171,7 @@ class WorkoutRepository @Inject constructor(
 
     suspend fun recalculateVolume(workoutId: Long) {
         val sets = setDao.getByWorkoutOnce(workoutId)
-        val volume = sets.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
+        val volume = sets.filter { it.setType != "warmup" }.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
         workoutDao.updateVolume(workoutId, volume)
     }
 
@@ -191,6 +194,15 @@ class WorkoutRepository @Inject constructor(
 
     suspend fun getExerciseFrequency(startDate: String, endDate: String, limit: Int = 8): List<ExerciseFrequencyResult> =
         setDao.getExerciseFrequency(startDate, endDate, limit)
+
+    suspend fun getBest1RMForExercise(exerciseId: Long): Float? =
+        setDao.getBest1RMForExercise(exerciseId)
+
+    suspend fun getProgressionForExercise(exerciseId: Long, limit: Int = 30): List<ExerciseProgressPoint> =
+        setDao.getProgressionForExercise(exerciseId, limit)
+
+    suspend fun getAllSetsForCsvExport(): List<com.trackgod.app.core.database.dao.CsvExportRow> =
+        setDao.getAllSetsForCsvExport()
 
     /**
      * One-time migration: rename all workouts with generic names

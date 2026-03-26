@@ -17,9 +17,7 @@ import androidx.compose.material3.Text
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.trackgod.app.core.database.SeedDatabase
+import androidx.compose.runtime.collectAsState
 import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.TrackGodButton
@@ -42,17 +40,15 @@ import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
-import kotlinx.coroutines.launch
 
 @Composable
 fun SeedingChoiceScreen(
-    seedDatabase: SeedDatabase,
+    viewModel: SeedingChoiceViewModel,
     onComplete: () -> Unit,
     onNavigateToV1Import: () -> Unit,
 ) {
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    var isSeeding by remember { mutableStateOf(false) }
+    val isSeeding by viewModel.isSeeding.collectAsState()
 
     MetalTextureBackground {
     Column(
@@ -104,20 +100,6 @@ fun SeedingChoiceScreen(
         Column(modifier = Modifier.padding(horizontal = 24.dp)) {
             TrackGodCard(
                 accentBorder = true,
-                onClick = if (!isSeeding) {
-                    {
-                        isSeeding = true
-                        scope.launch {
-                            try {
-                                seedDatabase.seedIfNeeded()
-                                onComplete()
-                            } catch (e: Exception) {
-                                isSeeding = false
-                                Toast.makeText(context, "Failed to load exercises. Please retry.", Toast.LENGTH_LONG).show()
-                            }
-                        }
-                    }
-                } else null,
             ) {
                 Text(
                     text = "FULL ARSENAL",
@@ -128,25 +110,14 @@ fun SeedingChoiceScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "79 exercises across all categories. Everything ready.",
+                    text = "200+ exercises across all categories. Everything ready.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextTertiary,
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 TrackGodButton(
                     text = if (isSeeding) "LOADING..." else "SELECT",
-                    onClick = {
-                        isSeeding = true
-                        scope.launch {
-                            try {
-                                seedDatabase.seedIfNeeded()
-                                onComplete()
-                            } catch (e: Exception) {
-                                isSeeding = false
-                                Toast.makeText(context, "Failed to load exercises. Please retry.", Toast.LENGTH_LONG).show()
-                            }
-                        }
-                    },
+                    onClick = { viewModel.seedFull(onComplete) },
                     enabled = !isSeeding,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -155,22 +126,7 @@ fun SeedingChoiceScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Option 2: Basics Only ───────────────────────────────────────
-            TrackGodCard(
-                onClick = if (!isSeeding) {
-                    {
-                        isSeeding = true
-                        scope.launch {
-                            try {
-                                seedDatabase.seedBasicsOnly()
-                                onComplete()
-                            } catch (e: Exception) {
-                                isSeeding = false
-                                Toast.makeText(context, "Failed to load exercises. Please retry.", Toast.LENGTH_LONG).show()
-                            }
-                        }
-                    }
-                } else null,
-            ) {
+            TrackGodCard {
                 Text(
                     text = "BASICS ONLY",
                     style = MaterialTheme.typography.titleMedium,
@@ -187,18 +143,7 @@ fun SeedingChoiceScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 TrackGodButton(
                     text = "SELECT",
-                    onClick = {
-                        isSeeding = true
-                        scope.launch {
-                            try {
-                                seedDatabase.seedBasicsOnly()
-                                onComplete()
-                            } catch (e: Exception) {
-                                isSeeding = false
-                                Toast.makeText(context, "Failed to load exercises. Please retry.", Toast.LENGTH_LONG).show()
-                            }
-                        }
-                    },
+                    onClick = { viewModel.seedBasics(onComplete) },
                     enabled = !isSeeding,
                     variant = ButtonVariant.Secondary,
                     modifier = Modifier.fillMaxWidth(),
@@ -208,22 +153,7 @@ fun SeedingChoiceScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Option 3: Empty Slate ───────────────────────────────────────
-            TrackGodCard(
-                onClick = if (!isSeeding) {
-                    {
-                        isSeeding = true
-                        scope.launch {
-                            try {
-                                seedDatabase.markAsSeeded()
-                                onComplete()
-                            } catch (e: Exception) {
-                                isSeeding = false
-                                Toast.makeText(context, "Failed to initialize. Please retry.", Toast.LENGTH_LONG).show()
-                            }
-                        }
-                    }
-                } else null,
-            ) {
+            TrackGodCard {
                 Text(
                     text = "EMPTY SLATE",
                     style = MaterialTheme.typography.titleMedium,
@@ -240,18 +170,7 @@ fun SeedingChoiceScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 TrackGodButton(
                     text = "SELECT",
-                    onClick = {
-                        isSeeding = true
-                        scope.launch {
-                            try {
-                                seedDatabase.markAsSeeded()
-                                onComplete()
-                            } catch (e: Exception) {
-                                isSeeding = false
-                                Toast.makeText(context, "Failed to initialize. Please retry.", Toast.LENGTH_LONG).show()
-                            }
-                        }
-                    },
+                    onClick = { viewModel.seedEmpty(onComplete) },
                     enabled = !isSeeding,
                     variant = ButtonVariant.Secondary,
                     modifier = Modifier.fillMaxWidth(),

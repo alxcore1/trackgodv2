@@ -34,6 +34,8 @@ class WeightLossRepository @Inject constructor(
             createdAt = now,
             updatedAt = now,
         )
+        // Deactivate any existing active goals first
+        weightLossDao.deactivateAllGoals()
         return weightLossDao.insertGoal(goal)
     }
 

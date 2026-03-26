@@ -5,5 +5,8 @@
         <item name="android:statusBarColor">#131313</item>
         <item name="android:navigationBarColor">#131313</item>
         <item name="android:windowLightStatusBar">false</item>
+        <!-- Android 12+ Splash Screen -->
+        <item name="android:windowSplashScreenBackground">#131313</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_pentagram</item>
     </style>
 </resources>

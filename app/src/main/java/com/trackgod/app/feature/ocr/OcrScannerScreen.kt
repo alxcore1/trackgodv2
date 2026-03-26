@@ -210,25 +210,37 @@ private fun CameraPhase(
             modifier = Modifier.fillMaxSize(),
         )
 
-        // Scan frame overlay
+        // Scan frame overlay - visual guide showing where to aim
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .drawWithContent {
                     drawContent()
-                    val frameWidth = size.width * 0.8f
-                    val frameHeight = 120.dp.toPx()
+                    val frameWidth = size.width * 0.85f
+                    val frameHeight = size.height * 0.25f
                     val left = (size.width - frameWidth) / 2
-                    val top = (size.height - frameHeight) / 2
+                    val top = (size.height - frameHeight) / 2 - 40.dp.toPx()
 
-                    // Dark overlay with cutout
+                    // Subtle dark overlay with cutout
                     clipRect(left, top, left + frameWidth, top + frameHeight, clipOp = ClipOp.Difference) {
-                        drawRect(Color.Black.copy(alpha = 0.6f))
+                        drawRect(Color.Black.copy(alpha = 0.45f))
                     }
-                    // Red border around scan frame
-                    val strokeWidth = 2.dp.toPx()
-                    drawRect(Blood, Offset(left, top), Size(frameWidth, frameHeight),
-                        style = androidx.compose.ui.graphics.drawscope.Stroke(strokeWidth))
+                    // Corner brackets instead of full border (cleaner look)
+                    val strokeWidth = 3.dp.toPx()
+                    val cornerLen = 24.dp.toPx()
+                    val paint = androidx.compose.ui.graphics.drawscope.Stroke(strokeWidth)
+                    // Top-left
+                    drawLine(Blood, Offset(left, top), Offset(left + cornerLen, top), strokeWidth)
+                    drawLine(Blood, Offset(left, top), Offset(left, top + cornerLen), strokeWidth)
+                    // Top-right
+                    drawLine(Blood, Offset(left + frameWidth, top), Offset(left + frameWidth - cornerLen, top), strokeWidth)
+                    drawLine(Blood, Offset(left + frameWidth, top), Offset(left + frameWidth, top + cornerLen), strokeWidth)
+                    // Bottom-left
+                    drawLine(Blood, Offset(left, top + frameHeight), Offset(left + cornerLen, top + frameHeight), strokeWidth)
+                    drawLine(Blood, Offset(left, top + frameHeight), Offset(left, top + frameHeight - cornerLen), strokeWidth)
+                    // Bottom-right
+                    drawLine(Blood, Offset(left + frameWidth, top + frameHeight), Offset(left + frameWidth - cornerLen, top + frameHeight), strokeWidth)
+                    drawLine(Blood, Offset(left + frameWidth, top + frameHeight), Offset(left + frameWidth, top + frameHeight - cornerLen), strokeWidth)
                 },
         )
 
@@ -255,29 +267,39 @@ private fun CameraPhase(
             if (isProcessing) {
                 CircularProgressIndicator(color = Blood, modifier = Modifier.size(64.dp))
             } else {
+                var capturing by remember { mutableStateOf(false) }
+                val captureExecutor = remember { java.util.concurrent.Executors.newSingleThreadExecutor() }
                 // Square capture button
                 Box(
                     modifier = Modifier
                         .size(64.dp)
-                        .background(Blood, RectangleShape)
-                        .clickable {
+                        .background(if (capturing) Blood.copy(alpha = 0.5f) else Blood, RectangleShape)
+                        .clickable(enabled = !capturing) {
+                            capturing = true
                             cameraController.takePicture(
-                                ContextCompat.getMainExecutor(context),
+                                captureExecutor,
                                 object : ImageCapture.OnImageCapturedCallback() {
                                     override fun onCaptureSuccess(imageProxy: ImageProxy) {
+                                        // Run on background thread - no UI lag
                                         val bitmap = imageProxy.toBitmap()
-                                        // Crop to center scan frame region
-                                        val cropWidth = (bitmap.width * 0.8f).toInt()
-                                        val cropHeight = (bitmap.height * 0.2f).toInt()
-                                        val cropX = (bitmap.width - cropWidth) / 2
-                                        val cropY = (bitmap.height - cropHeight) / 2
-                                        val cropped = Bitmap.createBitmap(bitmap, cropX, cropY, cropWidth, cropHeight)
                                         imageProxy.close()
-                                        onCapture(cropped)
+                                        val scaled = if (bitmap.width > 1280) {
+                                            val ratio = 1280f / bitmap.width
+                                            Bitmap.createScaledBitmap(
+                                                bitmap,
+                                                1280,
+                                                (bitmap.height * ratio).toInt(),
+                                                true,
+                                            )
+                                        } else {
+                                            bitmap
+                                        }
+                                        capturing = false
+                                        onCapture(scaled)
                                     }
 
                                     override fun onError(exception: ImageCaptureException) {
-                                        // Error handled via state
+                                        capturing = false
                                     }
                                 }
                             )

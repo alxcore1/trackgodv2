@@ -80,6 +80,8 @@ private fun ExerciseSetGroup(
     exercise: ExerciseWithSetsInWorkout,
     weightUnit: String,
 ) {
+    val maxWeight = exercise.sets.maxOfOrNull { it.weight } ?: 1f
+
     Column(modifier = Modifier.fillMaxWidth()) {
         // Exercise name with index prefix
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -102,13 +104,14 @@ private fun ExerciseSetGroup(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Individual sets
+        // Individual sets with intensity bars
         exercise.sets.forEach { set ->
             SetRow(
                 weight = set.weight,
                 reps = set.reps,
                 weightUnit = weightUnit,
                 rpe = set.rpe,
+                barFraction = if (maxWeight > 0f) set.weight / maxWeight else 0f,
             )
         }
 
@@ -136,26 +139,39 @@ private fun SetRow(
     reps: Int,
     weightUnit: String,
     rpe: Int? = null,
+    barFraction: Float = 0f,
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 28.dp, top = 2.dp),
     ) {
-        Text(
-            text = "${formatWeight(weight)}$weightUnit x $reps",
-            color = TextSecondary,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Normal,
-            letterSpacing = 0.5.sp,
-        )
-        if (rpe != null) {
-            Spacer(modifier = Modifier.width(8.dp))
+        Row {
             Text(
-                text = "@$rpe",
-                color = TextTertiary,
-                fontSize = 11.sp,
+                text = "${formatWeight(weight)}$weightUnit x $reps",
+                color = TextSecondary,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Normal,
+                letterSpacing = 0.5.sp,
+            )
+            if (rpe != null) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "@$rpe",
+                    color = TextTertiary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Normal,
+                )
+            }
+        }
+        // Mini intensity bar
+        if (barFraction > 0f) {
+            Spacer(modifier = Modifier.height(2.dp))
+            androidx.compose.foundation.layout.Box(
+                modifier = Modifier
+                    .fillMaxWidth(barFraction.coerceIn(0f, 1f))
+                    .height(2.dp)
+                    .background(Blood.copy(alpha = 0.4f)),
             )
         }
     }
@@ -166,6 +182,6 @@ private fun formatWeight(weight: Float): String {
     return if (weight == weight.toLong().toFloat()) {
         weight.toLong().toString()
     } else {
-        "%.1f".format(weight)
+        String.format(java.util.Locale.US, "%.1f", weight)
     }
 }

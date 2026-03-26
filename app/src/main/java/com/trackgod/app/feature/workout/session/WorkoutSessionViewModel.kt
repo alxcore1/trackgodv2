@@ -20,12 +20,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.trackgod.app.core.util.WorkoutNaming
+import java.util.Locale
 import javax.inject.Inject
 
 // ── State ────────────────────────────────────────────────────────────────────
@@ -46,6 +44,7 @@ data class WorkoutSessionState(
     val rpeInput: Int? = null,
     val rirInput: Int? = null,
     val lastSessionHint: String? = null,
+    val lastSessionSets: List<SetEntity> = emptyList(),
     val restTimeRemaining: Int = 0,
     val isRestTimerRunning: Boolean = false,
     val isRestTimerPaused: Boolean = false,
@@ -66,6 +65,14 @@ data class WorkoutSessionState(
     val restTimerCompleted: Boolean = false,
     val finishError: String? = null,
     val inputError: String? = null,
+    val prMessage: String? = null,
+    val prSetIds: Set<Long> = emptySet(),
+    val overloadHint: String? = null,
+    val setTypeInput: String = "working",
+    // Superset state (session-only, not persisted)
+    val supersetGroups: Map<Int, List<Long>> = emptyMap(),  // groupId → exerciseIds
+    val supersetOffer: Long? = null,  // exerciseId being offered for superset
+    val supersetOfferNewId: Long? = null,  // new exercise being offered
 )
 
 // ── ViewModel ────────────────────────────────────────────────────────────────
@@ -75,6 +82,7 @@ class WorkoutSessionViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
     private val exerciseRepository: ExerciseRepository,
     private val settingsRepository: SettingsRepository,
+    private val routineRepository: com.trackgod.app.core.repository.RoutineRepository,
     @ApplicationContext private val appContext: Context,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -89,12 +97,9 @@ class WorkoutSessionViewModel @Inject constructor(
     private var workoutId: Long = -1L
 
     init {
-        val passedId = savedStateHandle.get<Long>("workoutId")
-            ?: throw IllegalArgumentException(
-                "WorkoutSessionViewModel requires a valid workoutId route argument"
-            )
+        val passedId: Long = savedStateHandle.get<Long>("workoutId") ?: -1L
 
-        viewModelScope.launch {
+        if (passedId > 0) viewModelScope.launch {
             // Load settings
             loadSettings()
 
@@ -115,6 +120,18 @@ class WorkoutSessionViewModel @Inject constructor(
 
             // Observe all sets for this workout (for stats)
             observeSets()
+
+            // Pre-load exercises from template if routineId is provided
+            val routineId = savedStateHandle.get<Long>("routineId") ?: -1L
+            if (routineId > 0) {
+                val routineExercises = routineRepository.getExercisesForRoutine(routineId)
+                if (routineExercises.isNotEmpty()) {
+                    val firstExId = routineExercises.first().exerciseId
+                    val exercise = exerciseRepository.getById(firstExId)
+                    if (exercise != null) selectExercise(exercise)
+                }
+                routineRepository.updateLastUsed(routineId)
+            }
         }
 
         // Observe rest timer flows
@@ -134,17 +151,8 @@ class WorkoutSessionViewModel @Inject constructor(
             }
         }
 
-        // Observe exercise picker result via savedStateHandle
-        savedStateHandle.getStateFlow<Long?>("selectedExerciseId", null)
-            .filterNotNull()
-            .onEach { exerciseId ->
-                android.util.Log.d("WorkoutSession", "Received exerciseId from picker: $exerciseId")
-                val exercise = exerciseRepository.getById(exerciseId)
-                android.util.Log.d("WorkoutSession", "Loaded exercise: ${exercise?.name ?: "NULL"}")
-                if (exercise != null) selectExercise(exercise)
-                savedStateHandle["selectedExerciseId"] = null
-            }
-            .launchIn(viewModelScope)
+        // Exercise picker result is observed by NavHost LaunchedEffect
+        // and forwarded via selectExerciseById()
     }
 
     // ── Settings ─────────────────────────────────────────────────────────────
@@ -189,7 +197,7 @@ class WorkoutSessionViewModel @Inject constructor(
                     emptyList()
                 }
 
-                val totalVolume = allSets.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
+                val totalVolume = allSets.filter { it.setType != "warmup" }.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
                 val exerciseIds = allSets.map { it.exerciseId }.distinct()
 
                 // Build exercise-with-sets summary
@@ -216,10 +224,21 @@ class WorkoutSessionViewModel @Inject constructor(
 
     // ── Exercise Selection ───────────────────────────────────────────────────
 
-    fun onExerciseSelectedFromPicker(exerciseId: Long) {
+    fun selectExerciseById(exerciseId: Long) {
         viewModelScope.launch {
-            val exercise = exerciseRepository.getById(exerciseId)
-            if (exercise != null) selectExercise(exercise)
+            val exercise = exerciseRepository.getById(exerciseId) ?: return@launch
+            val currentEx = _state.value.currentExercise
+            val isNewToSession = _state.value.allExercisesInSession.none { it.exercise.id == exerciseId }
+
+            // Offer superset if switching from another exercise to a brand-new one
+            // Don't switch yet — wait for dialog response
+            if (currentEx != null && isNewToSession && currentEx.id != exerciseId) {
+                offerSuperset(currentEx.id, exerciseId)
+                // Store pending exercise, will be selected after dialog
+                return@launch
+            }
+
+            selectExercise(exercise)
         }
     }
 
@@ -247,20 +266,41 @@ class WorkoutSessionViewModel @Inject constructor(
                     editingSetId = null,
                     noteInput = "",
                     lastSessionHint = null,
+                    lastSessionSets = emptyList(),
                 )
             }
 
-            // Load smart defaults from previous sessions
+            // Load smart defaults from previous session
             val recentSets = workoutRepository.getRecentSetsForExercise(exercise.id)
+            // Only show sets from the most recent workout (not mixed from multiple)
+            val lastWorkoutId = recentSets.firstOrNull()?.workoutId
+            val lastWorkoutSets = if (lastWorkoutId != null) {
+                recentSets.filter { it.workoutId == lastWorkoutId }
+            } else emptyList()
+
             val unit = _state.value.weightUnit
-            if (recentSets.isNotEmpty()) {
-                val lastSet = recentSets.first()
-                val weightStr = formatWeight(lastSet.weight, _state.value.weightIncrement)
+            val increment = _state.value.weightIncrement
+            if (lastWorkoutSets.isNotEmpty()) {
+                // Compute progressive overload suggestion
+                val suggestion = computeOverloadSuggestion(lastWorkoutSets, increment)
+                val sugWeight = formatWeight(suggestion.first, increment)
+                val sugReps = suggestion.second
+                val lastSet = lastWorkoutSets.first()
+                val lastWeightStr = formatWeight(lastSet.weight, increment)
+
+                val hint = if (suggestion.first != lastSet.weight || suggestion.second != lastSet.reps) {
+                    "LAST: $lastWeightStr$unit x ${lastSet.reps}  →  TRY: $sugWeight$unit x $sugReps"
+                } else {
+                    "LAST: $lastWeightStr$unit x ${lastSet.reps}  →  REPEAT"
+                }
+
                 _state.update {
                     it.copy(
-                        weightInput = weightStr,
-                        repsInput = lastSet.reps.toString(),
-                        lastSessionHint = "LAST: $weightStr$unit x ${lastSet.reps}",
+                        weightInput = sugWeight,
+                        repsInput = sugReps.toString(),
+                        lastSessionHint = hint,
+                        lastSessionSets = lastWorkoutSets,
+                        overloadHint = hint,
                     )
                 }
             } else {
@@ -268,6 +308,7 @@ class WorkoutSessionViewModel @Inject constructor(
                     it.copy(
                         weightInput = "",
                         repsInput = "",
+                        overloadHint = null,
                     )
                 }
             }
@@ -280,7 +321,7 @@ class WorkoutSessionViewModel @Inject constructor(
     // ── Input Updates ────────────────────────────────────────────────────────
 
     fun updateWeight(value: String) {
-        if (value.isEmpty() || value.matches(Regex("""^\d*\.?\d*$"""))) {
+        if (value.isEmpty() || value.matches(Regex("""^\d*[.,]?\d*$"""))) {
             _state.update { it.copy(weightInput = value) }
         }
     }
@@ -295,6 +336,68 @@ class WorkoutSessionViewModel @Inject constructor(
         _state.update { it.copy(noteInput = value) }
     }
 
+    fun cycleSetType() {
+        val next = when (_state.value.setTypeInput) {
+            "working" -> "warmup"
+            "warmup" -> "drop"
+            "drop" -> "failure"
+            else -> "working"
+        }
+        _state.update { it.copy(setTypeInput = next) }
+    }
+
+    // ── Supersets ──────────────────────────────────────────────────────────
+
+    fun offerSuperset(currentExerciseId: Long, newExerciseId: Long) {
+        _state.update { it.copy(supersetOffer = currentExerciseId, supersetOfferNewId = newExerciseId) }
+    }
+
+    fun acceptSuperset() {
+        val s = _state.value
+        val current = s.supersetOffer ?: return
+        val newEx = s.supersetOfferNewId ?: return
+
+        // Check if either exercise is already in a group
+        val existingGroup = s.supersetGroups.entries.firstOrNull { current in it.value || newEx in it.value }
+        val groups = s.supersetGroups.toMutableMap()
+
+        if (existingGroup != null) {
+            val updated = (existingGroup.value + current + newEx).distinct()
+            groups[existingGroup.key] = updated
+        } else {
+            val nextId = (s.supersetGroups.keys.maxOrNull() ?: 0) + 1
+            groups[nextId] = listOf(current, newEx)
+        }
+
+        _state.update { it.copy(supersetGroups = groups, supersetOffer = null, supersetOfferNewId = null) }
+
+        // Now switch to the new exercise
+        viewModelScope.launch {
+            val exercise = exerciseRepository.getById(newEx)
+            if (exercise != null) selectExercise(exercise)
+        }
+    }
+
+    fun declineSuperset() {
+        val newExId = _state.value.supersetOfferNewId
+        _state.update { it.copy(supersetOffer = null, supersetOfferNewId = null) }
+
+        // Switch to the new exercise even though not supersetted
+        if (newExId != null) {
+            viewModelScope.launch {
+                val exercise = exerciseRepository.getById(newExId)
+                if (exercise != null) selectExercise(exercise)
+            }
+        }
+    }
+
+    fun getSupersetPartner(exerciseId: Long): ExerciseEntity? {
+        val s = _state.value
+        val group = s.supersetGroups.values.firstOrNull { exerciseId in it } ?: return null
+        val partnerId = group.firstOrNull { it != exerciseId } ?: return null
+        return s.allExercisesInSession.firstOrNull { it.exercise.id == partnerId }?.exercise
+    }
+
     fun updateRpe(value: String) {
         val rpe = value.toIntOrNull()?.coerceIn(1, 10)
         _state.update { it.copy(rpeInput = if (value.isEmpty()) null else rpe) }
@@ -306,7 +409,7 @@ class WorkoutSessionViewModel @Inject constructor(
     }
 
     fun incrementWeight(delta: Float) {
-        val current = _state.value.weightInput.toFloatOrNull() ?: 0f
+        val current = _state.value.weightInput.replace(",", ".").toFloatOrNull() ?: 0f
         val next = (current + delta).coerceIn(0f, MAX_WEIGHT)
         _state.update { it.copy(weightInput = formatWeight(next, _state.value.weightIncrement)) }
     }
@@ -322,15 +425,22 @@ class WorkoutSessionViewModel @Inject constructor(
     fun logSet() {
         val s = _state.value
         val exercise = s.currentExercise ?: return
-        val weight = s.weightInput.toFloatOrNull()?.coerceAtMost(MAX_WEIGHT)
+        val weight = s.weightInput.replace(",", ".").toFloatOrNull()?.coerceAtMost(MAX_WEIGHT)
         val reps = s.repsInput.toIntOrNull()?.coerceAtMost(MAX_REPS)
-        if (weight == null || reps == null || weight <= 0f || reps <= 0) {
+        if (weight == null || reps == null || weight < 0f || reps <= 0) {
             _state.update { it.copy(inputError = "ENTER VALID WEIGHT AND REPS") }
             return
         }
 
+        val isWarmup = s.setTypeInput == "warmup"
+
         viewModelScope.launch {
-            workoutRepository.addSet(
+            // Check previous best BEFORE logging the new set (skip for warmups)
+            val previousBest1RM = if (!isWarmup) {
+                workoutRepository.getBest1RMForExercise(exercise.id) ?: 0f
+            } else 0f
+
+            val setId = workoutRepository.addSet(
                 workoutId = workoutId,
                 exerciseId = exercise.id,
                 weight = weight,
@@ -338,13 +448,28 @@ class WorkoutSessionViewModel @Inject constructor(
                 note = s.noteInput.ifBlank { null },
                 rpe = s.rpeInput,
                 rir = s.rirInput,
+                setType = s.setTypeInput,
             )
 
-            // Clear note and error after logging (weight/reps stay for easy repeat)
-            _state.update { it.copy(noteInput = "", rpeInput = null, rirInput = null, inputError = null) }
+            // PR detection (skip for warmups)
+            val new1RM = weight * (1 + 0.0333f * reps)
+            if (!isWarmup && new1RM > previousBest1RM && weight > 0f) {
+                _state.update { it.copy(
+                    prMessage = "NEW PR!",
+                    prSetIds = it.prSetIds + setId,
+                ) }
+                // Auto-dismiss after 3 seconds
+                launch {
+                    delay(3000L)
+                    _state.update { it.copy(prMessage = null) }
+                }
+            }
 
-            // Auto-start rest timer
-            if (s.restTimerEnabled && s.restTimerAutoStart) {
+            // Clear note/error/setType after logging (weight/reps stay for easy repeat)
+            _state.update { it.copy(noteInput = "", rpeInput = null, rirInput = null, inputError = null, setTypeInput = "working") }
+
+            // Auto-start rest timer (skip for warmups)
+            if (s.restTimerEnabled && s.restTimerAutoStart && !isWarmup) {
                 restTimerManager.start(
                     durationSeconds = s.restTimerDuration,
                     scope = viewModelScope,
@@ -378,9 +503,9 @@ class WorkoutSessionViewModel @Inject constructor(
         val s = _state.value
         val setId = s.editingSetId ?: return
         val set = s.completedSets.find { it.id == setId } ?: return
-        val weight = (s.weightInput.toFloatOrNull() ?: return).coerceAtMost(MAX_WEIGHT)
+        val weight = (s.weightInput.replace(",", ".").toFloatOrNull() ?: return).coerceAtMost(MAX_WEIGHT)
         val reps = (s.repsInput.toIntOrNull() ?: return).coerceAtMost(MAX_REPS)
-        if (weight <= 0f || reps <= 0) return
+        if (weight < 0f || reps <= 0) return
 
         viewModelScope.launch {
             workoutRepository.updateSet(
@@ -459,10 +584,10 @@ class WorkoutSessionViewModel @Inject constructor(
 
     fun adjustRestTimer(deltaSeconds: Int) {
         restTimerManager.adjustTime(deltaSeconds)
-        // Reschedule alarm with new remaining time
-        val remaining = _state.value.restTimeRemaining + deltaSeconds
+        // Read actual remaining time from timer manager (not stale state)
+        val remaining = restTimerManager.timeRemaining.value
         if (remaining > 0 && _state.value.isRestTimerRunning && !_state.value.isRestTimerPaused) {
-            RestTimerAlarmScheduler.schedule(appContext, remaining.coerceAtLeast(0))
+            RestTimerAlarmScheduler.schedule(appContext, remaining)
         }
     }
 
@@ -501,10 +626,13 @@ class WorkoutSessionViewModel @Inject constructor(
         return WorkoutNaming.generateName(categories)
     }
 
-    fun confirmFinish(name: String, onSuccess: () -> Unit) {
+    fun confirmFinish(name: String, saveAsTemplate: Boolean = false, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
                 workoutRepository.completeWorkout(workoutId, name)
+                if (saveAsTemplate) {
+                    routineRepository.createFromWorkout(workoutId, name)
+                }
                 settingsRepository.clearActiveWorkoutId()
                 sessionTimerJob?.cancel()
                 restTimerManager.stop()
@@ -522,7 +650,7 @@ class WorkoutSessionViewModel @Inject constructor(
         _state.update { it.copy(finishError = null) }
     }
 
-    fun discardWorkout() {
+    fun discardWorkout(onComplete: () -> Unit) {
         viewModelScope.launch {
             workoutRepository.deleteWorkout(workoutId)
             settingsRepository.clearActiveWorkoutId()
@@ -530,6 +658,7 @@ class WorkoutSessionViewModel @Inject constructor(
             restTimerManager.stop()
             RestTimerAlarmScheduler.cancel(appContext)
             WorkoutForegroundService.stop(appContext)
+            onComplete()
         }
     }
 
@@ -540,11 +669,38 @@ class WorkoutSessionViewModel @Inject constructor(
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
+    /**
+     * Compute progressive overload suggestion from last session sets.
+     * Returns Pair(suggestedWeight, suggestedReps).
+     */
+    private fun computeOverloadSuggestion(
+        lastSets: List<SetEntity>,
+        increment: Float,
+    ): Pair<Float, Int> {
+        if (lastSets.isEmpty()) return Pair(0f, 0)
+
+        // Find the most common weight (mode)
+        val targetWeight = lastSets.groupBy { it.weight }
+            .maxByOrNull { it.value.size }?.key ?: lastSets.first().weight
+        val setsAtTarget = lastSets.filter { it.weight == targetWeight }
+        val targetReps = setsAtTarget.first().reps
+        val minReps = setsAtTarget.minOf { it.reps }
+
+        return when {
+            // All sets hit target reps → increase weight
+            minReps >= targetReps -> Pair(targetWeight + increment, targetReps)
+            // Slight drop-off (within 2 reps) → try +1 rep at same weight
+            minReps >= targetReps - 2 -> Pair(targetWeight, targetReps + 1)
+            // Significant drop-off → repeat same
+            else -> Pair(targetWeight, targetReps)
+        }
+    }
+
     private fun formatWeight(value: Float, increment: Float): String {
         return if (increment % 1f == 0f) {
             value.toInt().toString()
         } else {
-            "%.1f".format(value)
+            String.format(Locale.US, "%.1f", value)
         }
     }
 
@@ -552,5 +708,6 @@ class WorkoutSessionViewModel @Inject constructor(
         super.onCleared()
         sessionTimerJob?.cancel()
         restTimerManager.stop()
+        RestTimerAlarmScheduler.cancel(appContext)
     }
 }

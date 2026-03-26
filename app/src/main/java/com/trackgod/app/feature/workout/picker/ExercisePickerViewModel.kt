@@ -25,6 +25,7 @@ data class ExercisePickerState(
     val selectedBrands: Set<String> = emptySet(),
     val availableBrands: List<String> = emptyList(),
     val categories: List<String> = listOf("Chest", "Back", "Shoulders", "Arms", "Legs", "Core"),
+    val recentlyUsed: List<ExerciseEntity> = emptyList(),
     val isLoading: Boolean = true,
     val showAddDialog: Boolean = false,
 )
@@ -42,6 +43,8 @@ sealed interface ExercisePickerEvent {
         val equipmentType: String,
         val brand: String? = null,
     ) : ExercisePickerEvent
+    data class RenameExercise(val id: Long, val newName: String) : ExercisePickerEvent
+    data class HideExercise(val id: Long) : ExercisePickerEvent
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -57,6 +60,7 @@ class ExercisePickerViewModel @javax.inject.Inject constructor(
     private val selectedBrands = MutableStateFlow<Set<String>>(emptySet())
     private val availableBrands = MutableStateFlow<List<String>>(emptyList())
     private val showAddDialog = MutableStateFlow(false)
+    private val recentlyUsed = MutableStateFlow<List<ExerciseEntity>>(emptyList())
 
     companion object {
         private val FREE_WEIGHT_TYPES = setOf("barbell", "dumbbell", "bodyweight")
@@ -68,9 +72,10 @@ class ExercisePickerViewModel @javax.inject.Inject constructor(
         selectedCategory.value = settingsRepository.getSelectedCategory()
         selectedEquipmentFilter.value = settingsRepository.getSelectedEquipmentFilter()
 
-        // Load available brands from DB
+        // Load available brands + recently used from DB
         viewModelScope.launch {
             availableBrands.value = exerciseRepository.getDistinctBrands()
+            recentlyUsed.value = exerciseRepository.getRecentlyUsed(6)
         }
     }
 
@@ -118,20 +123,21 @@ class ExercisePickerViewModel @javax.inject.Inject constructor(
         searchQuery,
         selectedCategory,
         selectedEquipmentFilter,
-        selectedBrands,
-        availableBrands,
-        showAddDialog,
-    ) { values ->
+        combine(selectedBrands, availableBrands, showAddDialog, recentlyUsed) { a, b, c, d ->
+            arrayOf(a, b, c, d)
+        },
+    ) { exerciseList, query, category, equipFilter, rest ->
         @Suppress("UNCHECKED_CAST")
         ExercisePickerState(
-            exercises = values[0] as List<ExerciseEntity>,
-            searchQuery = values[1] as String,
-            selectedCategory = values[2] as String?,
-            selectedEquipmentFilter = values[3] as String?,
-            selectedBrands = values[4] as Set<String>,
-            availableBrands = values[5] as List<String>,
+            exercises = exerciseList,
+            searchQuery = query,
+            selectedCategory = category,
+            selectedEquipmentFilter = equipFilter,
+            selectedBrands = rest[0] as Set<String>,
+            availableBrands = rest[1] as List<String>,
             isLoading = false,
-            showAddDialog = values[6] as Boolean,
+            showAddDialog = rest[2] as Boolean,
+            recentlyUsed = rest[3] as List<ExerciseEntity>,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -177,6 +183,18 @@ class ExercisePickerViewModel @javax.inject.Inject constructor(
                         brand = event.brand,
                     )
                     showAddDialog.update { false }
+                }
+            }
+
+            is ExercisePickerEvent.RenameExercise -> {
+                viewModelScope.launch {
+                    exerciseRepository.rename(event.id, event.newName)
+                }
+            }
+
+            is ExercisePickerEvent.HideExercise -> {
+                viewModelScope.launch {
+                    exerciseRepository.hide(event.id)
                 }
             }
         }

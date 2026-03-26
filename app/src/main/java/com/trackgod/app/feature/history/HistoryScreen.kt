@@ -1,6 +1,8 @@
 package com.trackgod.app.feature.history
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -179,6 +181,7 @@ private fun HistoryContent(
         DatePickerRow(
             weekDates = state.weekDates,
             selectedDate = state.selectedDate,
+            workoutDates = state.workoutDatesThisWeek,
             onDateSelected = onDateSelected,
             onWeekNavigate = onWeekNavigate,
             modifier = Modifier.fillMaxWidth(),
@@ -231,6 +234,7 @@ private fun HistoryContent(
                         onCancelEditing = onCancelEditing,
                         onRequestDelete = { onRequestDelete(item.workout.id) },
                         onEditWorkout = { onEditWorkout(item.workout.id) },
+                        maxVolumeInList = state.maxVolumeInList,
                     )
                 }
             }
@@ -328,6 +332,7 @@ private fun SearchBar(
 private fun DatePickerRow(
     weekDates: List<LocalDate>,
     selectedDate: LocalDate?,
+    workoutDates: Set<LocalDate> = emptySet(),
     onDateSelected: (LocalDate) -> Unit,
     onWeekNavigate: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -337,36 +342,39 @@ private fun DatePickerRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Left arrow
-        IconButton(onClick = { onWeekNavigate(-1) }) {
+        IconButton(onClick = { onWeekNavigate(-1) }, modifier = Modifier.size(32.dp)) {
             Icon(
                 imageVector = Icons.Default.ChevronLeft,
                 contentDescription = "Previous week",
                 tint = TextTertiary,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(18.dp),
             )
         }
 
-        LazyRow(
+        // Fixed Row (not LazyRow) — guarantees all 7 days fit on any screen
+        Row(
             modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            items(weekDates) { date ->
+            weekDates.forEach { date ->
                 DateChip(
                     date = date,
                     isSelected = date == selectedDate,
                     isToday = date == LocalDate.now(),
+                    hasWorkout = date in workoutDates,
                     onClick = { onDateSelected(date) },
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
 
         // Right arrow
-        IconButton(onClick = { onWeekNavigate(1) }) {
+        IconButton(onClick = { onWeekNavigate(1) }, modifier = Modifier.size(32.dp)) {
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "Next week",
                 tint = TextTertiary,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(18.dp),
             )
         }
     }
@@ -377,7 +385,9 @@ private fun DateChip(
     date: LocalDate,
     isSelected: Boolean,
     isToday: Boolean,
+    hasWorkout: Boolean = false,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val bgColor by animateColorAsState(
         targetValue = when {
@@ -401,11 +411,11 @@ private fun DateChip(
     val dayNum = date.dayOfMonth.toString()
 
     Column(
-        modifier = Modifier
-            .padding(horizontal = 3.dp)
+        modifier = modifier
+            .padding(horizontal = 2.dp)
             .background(bgColor, RectangleShape)
             .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -421,6 +431,16 @@ private fun DateChip(
             color = textColor,
             fontSize = 14.sp,
             fontWeight = FontWeight.Black,
+        )
+        // Workout indicator dot
+        Spacer(modifier = Modifier.height(3.dp))
+        Box(
+            modifier = Modifier
+                .size(4.dp)
+                .background(
+                    if (hasWorkout && !isSelected) Blood else Color.Transparent,
+                    CircleShape,
+                ),
         )
     }
 }
@@ -443,6 +463,7 @@ private fun WorkoutCard(
     onCancelEditing: () -> Unit,
     onRequestDelete: () -> Unit,
     onEditWorkout: () -> Unit = {},
+    maxVolumeInList: Float = 0f,
 ) {
     val workout = item.workout
     var showContextMenu by remember { mutableStateOf(false) }
@@ -478,6 +499,7 @@ private fun WorkoutCard(
                     isEditing = isEditing,
                     editingName = editingName,
                     weightUnit = weightUnit,
+                    maxVolumeInList = maxVolumeInList,
                     onEditingNameChanged = onEditingNameChanged,
                     onSaveEditingName = onSaveEditingName,
                     onCancelEditing = onCancelEditing,
@@ -575,6 +597,7 @@ private fun WorkoutCardContent(
     isEditing: Boolean,
     editingName: String,
     weightUnit: String,
+    maxVolumeInList: Float = 0f,
     onEditingNameChanged: (String) -> Unit,
     onSaveEditingName: () -> Unit,
     onCancelEditing: () -> Unit,
@@ -677,6 +700,45 @@ private fun WorkoutCardContent(
             text = "${item.totalSets} SETS",
             color = TextTertiary,
             fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp,
+        )
+
+        // Volume delta comparison
+        if (item.volumeDelta != null && item.volumeDelta != 0f) {
+            Spacer(modifier = Modifier.weight(1f))
+            val arrow = if (item.volumeDelta > 0) "↑" else "↓"
+            val deltaColor = if (item.volumeDelta > 0) BloodBright else TextTertiary
+            Text(
+                text = "$arrow ${formatVolume(kotlin.math.abs(item.volumeDelta))}",
+                color = deltaColor,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp,
+            )
+        }
+    }
+
+    // Volume intensity bar
+    val currentVolume = workout.totalVolume ?: 0f
+    if (maxVolumeInList > 0f && currentVolume > 0f) {
+        Spacer(modifier = Modifier.height(6.dp))
+        val fraction = (currentVolume / maxVolumeInList).coerceIn(0f, 1f)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(fraction)
+                .height(2.dp)
+                .background(Blood.copy(alpha = 0.5f)),
+        )
+    }
+
+    // Category tags
+    if (item.categories.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = item.categories.joinToString(" · ") { it.uppercase() },
+            color = TextTertiary,
+            fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 2.sp,
         )

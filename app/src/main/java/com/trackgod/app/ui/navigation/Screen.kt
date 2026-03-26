@@ -27,8 +27,9 @@ sealed class Screen(val route: String) {
 
     // ── Workout flow ─────────────────────────────────────────────────────────
 
-    data object WorkoutSession : Screen("workout_session/{workoutId}") {
-        fun create(workoutId: Long) = "workout_session/$workoutId"
+    data object WorkoutSession : Screen("workout_session/{workoutId}?routineId={routineId}") {
+        fun create(workoutId: Long, routineId: Long = -1L) =
+            "workout_session/$workoutId?routineId=$routineId"
     }
 
     data object EditWorkout : Screen("edit_workout/{workoutId}") {

@@ -5,6 +5,8 @@ import com.trackgod.app.core.database.entity.ExerciseEntity
 import com.trackgod.app.core.repository.ExerciseRepository
 import com.trackgod.app.core.repository.SettingsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.json.JSONArray
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,25 +17,28 @@ class SeedDatabase @Inject constructor(
     private val exerciseRepository: ExerciseRepository,
     private val settingsRepository: SettingsRepository
 ) {
+    private val seedMutex = Mutex()
 
     suspend fun seedIfNeeded() {
-        if (settingsRepository.isDatabaseSeeded()) return
-
-        val exercises = loadExercisesFromAssets()
-        exerciseRepository.seedExercises(exercises)
-        settingsRepository.setDatabaseSeeded()
+        seedMutex.withLock {
+            if (settingsRepository.isDatabaseSeeded()) return
+            val exercises = loadExercisesFromAssets()
+            exerciseRepository.seedExercises(exercises)
+            settingsRepository.setDatabaseSeeded()
+        }
     }
 
     /**
      * Seed only non-machine exercises (barbell, dumbbell, bodyweight, cable, other).
      */
     suspend fun seedBasicsOnly() {
-        if (settingsRepository.isDatabaseSeeded()) return
-
-        val exercises = loadExercisesFromAssets()
-            .filter { it.equipmentType != "machine" }
-        exerciseRepository.seedExercises(exercises)
-        settingsRepository.setDatabaseSeeded()
+        seedMutex.withLock {
+            if (settingsRepository.isDatabaseSeeded()) return
+            val exercises = loadExercisesFromAssets()
+                .filter { it.equipmentType != "machine" }
+            exerciseRepository.seedExercises(exercises)
+            settingsRepository.setDatabaseSeeded()
+        }
     }
 
     /**
@@ -42,6 +47,11 @@ class SeedDatabase @Inject constructor(
      */
     suspend fun markAsSeeded() {
         settingsRepository.setDatabaseSeeded()
+    }
+
+    /** Remove duplicate exercises that snuck in from double-seeding. */
+    suspend fun removeDuplicates() {
+        exerciseRepository.removeDuplicates()
     }
 
     private fun loadExercisesFromAssets(): List<ExerciseEntity> {

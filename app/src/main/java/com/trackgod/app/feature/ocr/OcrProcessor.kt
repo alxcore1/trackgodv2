@@ -1,10 +1,6 @@
 package com.trackgod.app.feature.ocr
 
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.ColorMatrix
-import android.graphics.ColorMatrixColorFilter
-import android.graphics.Paint
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -57,30 +53,74 @@ class OcrProcessor @Inject constructor(
     suspend fun processImage(bitmap: Bitmap): OcrResult {
         val startTime = System.currentTimeMillis()
 
-        // 1. Preprocess image for better OCR on metallic gym machine labels
-        val preprocessed = preprocessForOcr(bitmap)
+        // 1. Downscale only (ML Kit handles contrast/normalization well on its own)
+        val scaled = try {
+            if (bitmap.width > 1920) {
+                val ratio = 1920f / bitmap.width
+                val scaledHeight = (bitmap.height * ratio).toInt().coerceAtLeast(1)
+                Bitmap.createScaledBitmap(bitmap, 1920, scaledHeight, true)
+            } else {
+                bitmap
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("OcrProcessor", "Bitmap scaling failed", e)
+            return OcrResult(rawText = "", cleanedText = "", matches = emptyList(), confidence = OcrConfidence.NONE, processingTimeMs = 0L)
+        }
 
-        // 2. Run ML Kit
-        val image = InputImage.fromBitmap(preprocessed, 0)
-        val visionText = recognizer.process(image).await()
+        // 2. Run ML Kit on clean image (no grayscale/contrast - it hurts more than helps)
+        val image = try {
+            InputImage.fromBitmap(scaled, 0)
+        } catch (e: Exception) {
+            android.util.Log.e("OcrProcessor", "InputImage creation failed", e)
+            return OcrResult(rawText = "", cleanedText = "", matches = emptyList(), confidence = OcrConfidence.NONE, processingTimeMs = 0L)
+        }
+        val visionText = try {
+            recognizer.process(image).await()
+        } catch (e: Exception) {
+            android.util.Log.e("OcrProcessor", "ML Kit recognition failed", e)
+            return OcrResult(rawText = "", cleanedText = "", matches = emptyList(), confidence = OcrConfidence.NONE, processingTimeMs = 0L)
+        }
 
-        // 3. Extract all text blocks into a single string
-        val rawText = visionText.textBlocks
-            .joinToString(" ") { it.text }
-            .trim()
+        // 3. Extract text blocks, sorted by size (largest first = most prominent)
+        val textBlocks = visionText.textBlocks
+            .sortedByDescending { block ->
+                val box = block.boundingBox
+                if (box != null) box.width() * box.height() else 0
+            }
 
-        // 4. Clean and normalize
-        val cleanedText = rawText
+        val rawText = textBlocks.joinToString(" ") { it.text }.trim()
+
+        // 4. Clean and normalize - try both full text and individual blocks
+        val cleanedFull = rawText
             .replace(Regex("[^A-Za-z0-9 ]"), "")
             .replace(Regex("\\s+"), " ")
             .trim()
 
-        // 5. Find matches
-        val matches = if (cleanedText.isNotBlank()) {
-            findMatches(cleanedText)
-        } else {
-            emptyList()
+        // Also try the largest text block individually (often the machine name)
+        val largestBlock = textBlocks.firstOrNull()?.let {
+            it.text.replace(Regex("[^A-Za-z0-9 ]"), "").replace(Regex("\\s+"), " ").trim()
         }
+
+        // 5. Find matches against full text and largest block
+        val allMatches = mutableListOf<OcrMatch>()
+        if (cleanedFull.isNotBlank()) {
+            allMatches.addAll(findMatches(cleanedFull))
+        }
+        if (largestBlock != null && largestBlock != cleanedFull && largestBlock.length >= 5) {
+            allMatches.addAll(findMatches(largestBlock))
+        }
+
+        // Debug logging for top matches
+        allMatches.sortedByDescending { it.similarity }.take(3).forEach {
+            android.util.Log.d("OCR_MATCH", "Exercise='${it.exercise.name}' score=${it.similarity} from text='$cleanedFull'")
+        }
+
+        // Deduplicate by exercise ID, keeping highest similarity
+        val matches = allMatches
+            .groupBy { it.exercise.id }
+            .map { (_, group) -> group.maxByOrNull { it.similarity }!! }
+            .sortedByDescending { it.similarity }
+            .take(5)
 
         // 6. Determine confidence
         val bestScore = matches.firstOrNull()?.similarity ?: 0f
@@ -95,7 +135,7 @@ class OcrProcessor @Inject constructor(
 
         return OcrResult(
             rawText = rawText,
-            cleanedText = cleanedText,
+            cleanedText = cleanedFull,
             matches = matches,
             confidence = confidence,
             processingTimeMs = processingTimeMs,
@@ -103,65 +143,16 @@ class OcrProcessor @Inject constructor(
     }
 
     /**
-     * Preprocess captured image for optimal OCR on gym machine labels.
-     * Converts to grayscale, boosts contrast, and downscales for faster processing.
-     */
-    private fun preprocessForOcr(bitmap: Bitmap): Bitmap {
-        // Downscale to max 1280px wide for faster ML Kit processing
-        val scaled = if (bitmap.width > 1280) {
-            val ratio = 1280f / bitmap.width
-            Bitmap.createScaledBitmap(
-                bitmap,
-                1280,
-                (bitmap.height * ratio).toInt(),
-                true,
-            )
-        } else {
-            bitmap
-        }
-
-        // Convert to grayscale (removes color noise from gym lighting)
-        val grayscale = toGrayscale(scaled)
-
-        // Boost contrast (makes embossed/metallic text stand out)
-        return adjustContrast(grayscale, factor = 1.8f)
-    }
-
-    private fun toGrayscale(src: Bitmap): Bitmap {
-        val colorMatrix = ColorMatrix().apply { setSaturation(0f) }
-        val paint = Paint().apply { colorFilter = ColorMatrixColorFilter(colorMatrix) }
-        val result = Bitmap.createBitmap(src.width, src.height, Bitmap.Config.ARGB_8888)
-        Canvas(result).drawBitmap(src, 0f, 0f, paint)
-        return result
-    }
-
-    private fun adjustContrast(src: Bitmap, factor: Float): Bitmap {
-        val translate = 128f * (1 - factor)
-        val cm = ColorMatrix(
-            floatArrayOf(
-                factor, 0f, 0f, 0f, translate,
-                0f, factor, 0f, 0f, translate,
-                0f, 0f, factor, 0f, translate,
-                0f, 0f, 0f, 1f, 0f,
-            )
-        )
-        val paint = Paint().apply { colorFilter = ColorMatrixColorFilter(cm) }
-        val result = Bitmap.createBitmap(src.width, src.height, Bitmap.Config.ARGB_8888)
-        Canvas(result).drawBitmap(src, 0f, 0f, paint)
-        return result
-    }
-
-    /**
      * Compare [text] variations against every active exercise name.
-     * Returns top 5 matches with similarity > 0.4, sorted descending.
+     * Returns top 5 matches with similarity > 0.55, sorted descending.
+     * Requires at least one word overlap to avoid false positives.
      */
     private suspend fun findMatches(text: String): List<OcrMatch> {
         val exercises = exerciseRepository.getAllActiveSnapshot()
         val variations = StringSimilarity.generateVariations(text)
+        val ocrWords = text.uppercase().split("\\s+".toRegex()).filter { it.length >= 3 }.toSet()
 
-        val scored = exercises.map { exercise ->
-            // Best score across all text variations, also checking
-            // against alternative names when available.
+        val scored = exercises.mapNotNull { exercise ->
             val targets = buildList {
                 add(exercise.name)
                 exercise.alternativeNames
@@ -171,20 +162,35 @@ class OcrProcessor @Inject constructor(
                     ?.let { addAll(it) }
             }
 
+            // Require at least one fuzzy word overlap to avoid nonsense matches
+            // (e.g., "RCERSPRES" should match "PRESS" via fuzzy)
+            val exerciseWords = targets.flatMap {
+                it.uppercase().split("\\s+".toRegex()).filter { w -> w.length >= 3 }
+            }.toSet()
+            val hasWordOverlap = ocrWords.any { ocrWord ->
+                exerciseWords.any { exWord ->
+                    ocrWord == exWord ||
+                    ocrWord.contains(exWord) || exWord.contains(ocrWord) ||
+                    StringSimilarity.levenshteinSimilarity(ocrWord, exWord) > 0.6f
+                }
+            }
+
             val bestSimilarity = variations.maxOf { variation ->
                 targets.maxOf { target ->
                     StringSimilarity.similarity(variation, target)
                 }
             }
 
-            OcrMatch(
-                exercise = exercise,
-                similarity = bestSimilarity,
-            )
+            // Only include if there's word overlap OR very high Levenshtein score
+            if (hasWordOverlap || bestSimilarity > 0.75f) {
+                OcrMatch(exercise = exercise, similarity = bestSimilarity)
+            } else {
+                null
+            }
         }
 
         return scored
-            .filter { it.similarity > 0.4f }
+            .filter { it.similarity > 0.55f }
             .sortedByDescending { it.similarity }
             .take(5)
     }

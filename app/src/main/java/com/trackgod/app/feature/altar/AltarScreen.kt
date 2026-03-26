@@ -18,13 +18,17 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,6 +67,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AltarScreen(
     onStartWorkout: (workoutId: Long) -> Unit = {},
+    onStartFromTemplate: (workoutId: Long, routineId: Long) -> Unit = { _, _ -> },
     onResumeWorkout: (workoutId: Long) -> Unit = {},
     onWorkoutTap: (workoutId: Long) -> Unit = {},
     viewModel: AltarViewModel = hiltViewModel(),
@@ -73,10 +79,17 @@ fun AltarScreen(
         state = state,
         onStartNewWorkout = {
             scope.launch {
-                val workoutId = viewModel.startNewWorkout()
+                val workoutId = viewModel.startNewWorkout() ?: return@launch
                 onStartWorkout(workoutId)
             }
         },
+        onStartFromTemplate = { routineId ->
+            scope.launch {
+                val (workoutId, rId) = viewModel.startFromTemplate(routineId) ?: return@launch
+                onStartFromTemplate(workoutId, rId)
+            }
+        },
+        onDeleteRoutine = viewModel::deleteRoutine,
         onResumeWorkout = {
             val id = viewModel.resumeWorkout()
             if (id != null) onResumeWorkout(id)
@@ -88,10 +101,13 @@ fun AltarScreen(
 
 // ── Content (stateless, previewable) ────────────────────────────────────────
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun AltarContent(
     state: AltarState,
     onStartNewWorkout: () -> Unit,
+    onStartFromTemplate: (routineId: Long) -> Unit = {},
+    onDeleteRoutine: (routineId: Long) -> Unit = {},
     onResumeWorkout: () -> Unit,
     onDiscardIncomplete: () -> Unit,
     onWorkoutTap: (Long) -> Unit = {},
@@ -241,7 +257,7 @@ private fun AltarContent(
                 icon = Icons.Default.FitnessCenter,
                 label = "VOLUME",
                 value = formatVolume(state.todayVolume),
-                unit = if (state.todayVolume >= 1000) "TONS" else "KG",
+                unit = if (state.todayVolume >= 1_000_000) "M KG" else if (state.todayVolume >= 1_000) "K KG" else "KG",
                 modifier = Modifier.weight(1f),
                 backgroundAlignment = Alignment.TopEnd,
             )
@@ -271,6 +287,70 @@ private fun AltarContent(
                 modifier = Modifier.weight(1f),
                 backgroundAlignment = Alignment.BottomEnd,
             )
+        }
+
+        // ── Saved Rituals (Templates) ─────────────────────────────────────
+        if (state.routines.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(24.dp))
+            SectionDivider(
+                text = "SAVED RITUALS",
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            var deleteRoutineId by remember { mutableStateOf<Long?>(null) }
+
+            // Delete confirmation
+            deleteRoutineId?.let { id ->
+                com.trackgod.app.feature.workout.session.ConfirmationDialog(
+                    title = "DELETE RITUAL?",
+                    message = "This template will be permanently removed.",
+                    confirmText = "DELETE",
+                    dismissText = "CANCEL",
+                    onConfirm = { onDeleteRoutine(id); deleteRoutineId = null },
+                    onDismiss = { deleteRoutineId = null },
+                )
+            }
+
+            state.routines.forEach { routine ->
+                TrackGodCard(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 3.dp)
+                        .combinedClickable(
+                            onClick = { onStartFromTemplate(routine.id) },
+                            onLongClick = { deleteRoutineId = routine.id },
+                        ),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = routine.name.uppercase(),
+                                color = TextPrimary,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp,
+                                maxLines = 1,
+                            )
+                            Text(
+                                text = "${routine.exerciseCount} EXERCISES",
+                                color = TextTertiary,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 2.sp,
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = "Start",
+                            tint = BloodBright,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -440,6 +520,8 @@ private fun RecentWorkoutRow(
             fontSize = 14.sp,
             fontWeight = FontWeight.Black,
             letterSpacing = 1.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Row(
@@ -489,9 +571,9 @@ private fun RecentWorkoutRow(
 
 private fun formatVolume(volume: Float): String {
     return when {
-        volume >= 1_000_000 -> "%.1f".format(volume / 1_000_000f)
-        volume >= 1_000 -> "%.1f".format(volume / 1_000f)
-        else -> "%.0f".format(volume)
+        volume >= 1_000_000 -> String.format(java.util.Locale.US, "%.1f", volume / 1_000_000f)
+        volume >= 1_000 -> String.format(java.util.Locale.US, "%.1f", volume / 1_000f)
+        else -> String.format(java.util.Locale.US, "%.0f", volume)
     }
 }
 

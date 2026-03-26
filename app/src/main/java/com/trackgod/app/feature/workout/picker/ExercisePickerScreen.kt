@@ -4,6 +4,10 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -89,6 +93,12 @@ fun ExercisePickerScreen(
         onCreateExercise = { name, category, equipment, brand ->
             viewModel.onEvent(ExercisePickerEvent.CreateExercise(name, category, equipment, brand))
         },
+        onRenameExercise = { id, newName ->
+            viewModel.onEvent(ExercisePickerEvent.RenameExercise(id, newName))
+        },
+        onHideExercise = { id ->
+            viewModel.onEvent(ExercisePickerEvent.HideExercise(id))
+        },
     )
 }
 
@@ -107,6 +117,8 @@ private fun ExercisePickerContent(
     onNavigateToOcr: () -> Unit,
     onToggleAddDialog: () -> Unit,
     onCreateExercise: (name: String, category: String, equipmentType: String, brand: String?) -> Unit,
+    onRenameExercise: (id: Long, newName: String) -> Unit = { _, _ -> },
+    onHideExercise: (id: Long) -> Unit = {},
 ) {
     MetalTextureBackground {
     Column(
@@ -122,6 +134,14 @@ private fun ExercisePickerContent(
             query = state.searchQuery,
             onQueryChange = onSearchQueryChanged,
         )
+
+        // 2b. Recently used (quick access)
+        if (state.searchQuery.isBlank() && state.recentlyUsed.isNotEmpty()) {
+            RecentlyUsedStrip(
+                exercises = state.recentlyUsed,
+                onExerciseSelected = onExerciseSelected,
+            )
+        }
 
         // 3. Equipment type filter chips
         EquipmentFilterChips(
@@ -178,6 +198,8 @@ private fun ExercisePickerContent(
                     ExerciseRow(
                         exercise = exercise,
                         onClick = { onExerciseSelected(exercise) },
+                        onRename = { newName -> onRenameExercise(exercise.id, newName) },
+                        onHide = { onHideExercise(exercise.id) },
                     )
                 }
             }
@@ -449,15 +471,64 @@ private fun BrandFilterChips(
     }
 }
 
+// ── Recently Used Strip ──────────────────────────────────────────────────────
+
+@Composable
+private fun RecentlyUsedStrip(
+    exercises: List<ExerciseEntity>,
+    onExerciseSelected: (ExerciseEntity) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 6.dp, bottom = 2.dp),
+    ) {
+        Text(
+            text = "RECENT",
+            color = TextTertiary,
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 3.sp,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            items(items = exercises, key = { it.id }) { exercise ->
+                Text(
+                    text = exercise.displayName().uppercase(),
+                    color = TextPrimary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .background(SurfaceHighest, RectangleShape)
+                        .clickable { onExerciseSelected(exercise) }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                )
+            }
+        }
+    }
+}
+
 // ── Exercise Row ─────────────────────────────────────────────────────────────
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun ExerciseRow(
     exercise: ExerciseEntity,
     onClick: () -> Unit,
+    onRename: (String) -> Unit = {},
+    onHide: () -> Unit = {},
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val hasUsage = exercise.usageCount > 0
+    var showMenu by remember { mutableStateOf(false) }
+    var showRenameDialog by remember { mutableStateOf(false) }
 
     val rowBackground by animateColorAsState(
         targetValue = if (isPressed) Blood.copy(alpha = 0.15f) else Color.Transparent,
@@ -465,78 +536,138 @@ private fun ExerciseRow(
         label = "rowBg",
     )
 
+    // Rename dialog
+    if (showRenameDialog) {
+        var renameText by remember { mutableStateOf(exercise.name) }
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showRenameDialog = false },
+            title = { Text("RENAME", color = TextPrimary, fontWeight = FontWeight.Black, letterSpacing = 2.sp) },
+            text = {
+                androidx.compose.foundation.text.BasicTextField(
+                    value = renameText,
+                    onValueChange = { renameText = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(SurfaceHighest, RectangleShape)
+                        .padding(12.dp),
+                    textStyle = TextStyle(color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold),
+                    singleLine = true,
+                    cursorBrush = SolidColor(Blood),
+                )
+            },
+            confirmButton = {
+                Text(
+                    "SAVE",
+                    color = Blood,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.clickable {
+                        if (renameText.isNotBlank()) { onRename(renameText.trim()); showRenameDialog = false }
+                    }.padding(12.dp),
+                )
+            },
+            dismissButton = {
+                Text(
+                    "CANCEL",
+                    color = TextTertiary,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { showRenameDialog = false }.padding(12.dp),
+                )
+            },
+            containerColor = Void,
+        )
+    }
+
+    Box {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
             .background(rowBackground)
-            .clickable(
+            .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick,
+                onLongClick = { showMenu = true },
             )
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Left accent bar
+        // Left accent bar (blood tint for used exercises)
         Box(
             modifier = Modifier
-                .width(2.dp)
+                .width(3.dp)
                 .fillMaxHeight()
-                .background(if (isPressed) Blood else Color.Transparent),
+                .background(
+                    when {
+                        isPressed -> Blood
+                        hasUsage -> Blood.copy(alpha = 0.4f)
+                        else -> Color.Transparent
+                    }
+                ),
         )
 
-        Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-        // Exercise info
+        // Exercise info (compact)
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(vertical = 14.dp),
+                .padding(vertical = 10.dp),
         ) {
             Text(
                 text = exercise.displayName().uppercase(),
                 color = TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Black,
                 letterSpacing = 1.sp,
+                maxLines = 1,
             )
-            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = buildString {
                     append(exercise.category.uppercase())
-                    append(" \u00b7 ")
-                    append(exercise.equipmentType.uppercase())
-                    if (!exercise.brand.isNullOrBlank()) {
-                        append(" \u00b7 ")
-                        append(exercise.brand.uppercase())
-                    }
                     if (!exercise.series.isNullOrBlank()) {
-                        append(" \u00b7 ")
+                        append(" · ")
                         append(exercise.series.uppercase())
+                    } else if (!exercise.brand.isNullOrBlank()) {
+                        append(" · ")
+                        append(exercise.brand.uppercase())
                     }
                 },
                 color = TextTertiary,
-                fontSize = 10.sp,
+                fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 2.sp,
+                maxLines = 1,
             )
         }
 
-        // Usage count badge
-        if (exercise.usageCount > 0) {
+        // Compact usage indicator
+        if (hasUsage) {
             Text(
-                text = "${exercise.usageCount}",
+                text = "\u00d7${exercise.usageCount}",
                 color = TextTertiary,
-                fontSize = 12.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp,
-                modifier = Modifier
-                    .background(SurfaceHighest, RectangleShape)
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
             )
         }
     }
+
+    // Long-press context menu
+    androidx.compose.material3.DropdownMenu(
+        expanded = showMenu,
+        onDismissRequest = { showMenu = false },
+        modifier = Modifier.background(SurfaceHighest),
+    ) {
+        androidx.compose.material3.DropdownMenuItem(
+            text = { Text("RENAME", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp) },
+            onClick = { showMenu = false; showRenameDialog = true },
+        )
+        androidx.compose.material3.DropdownMenuItem(
+            text = { Text("HIDE", color = TextTertiary, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp) },
+            onClick = { showMenu = false; onHide() },
+        )
+    }
+    } // Box
 }
 
 /**

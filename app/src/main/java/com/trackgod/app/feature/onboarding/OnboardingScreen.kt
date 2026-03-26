@@ -1,8 +1,6 @@
 package com.trackgod.app.feature.onboarding
 
 import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -34,11 +32,15 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,8 +62,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.trackgod.app.R
-import com.trackgod.app.core.util.ImageCropper
 import com.trackgod.app.ui.theme.Void
 import com.trackgod.app.ui.component.NumberInput
 import com.trackgod.app.ui.component.TrackGodButton
@@ -107,19 +109,15 @@ fun OnboardingScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (state.currentStep > 0) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = TextTertiary,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                        ) { viewModel.previousStep() },
-                )
+                IconButton(onClick = { viewModel.previousStep() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = TextTertiary,
+                    )
+                }
             } else {
-                Spacer(modifier = Modifier.size(24.dp))
+                Spacer(modifier = Modifier.size(48.dp))
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -263,13 +261,22 @@ private fun StepNameAvatar(
 ) {
     val context = LocalContext.current
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-    ) { uri: Uri? ->
-        uri?.let {
-            val cropped = ImageCropper.cropToSquare(context, it)
-            viewModel.updateAvatarUri((cropped ?: it).toString())
-        }
+    var pendingCropUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    val launchPicker = com.trackgod.app.core.util.rememberAvatarPickerLauncher { uri ->
+        pendingCropUri = uri
+    }
+
+    // Interactive crop overlay (shown above the onboarding content)
+    pendingCropUri?.let { uri ->
+        com.trackgod.app.core.util.ImageCropOverlay(
+            sourceUri = uri,
+            onConfirm = { croppedUri ->
+                viewModel.updateAvatarUri(croppedUri.toString())
+                pendingCropUri = null
+            },
+            onCancel = { pendingCropUri = null },
+        )
+        return  // don't render step content while cropping
     }
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -280,12 +287,17 @@ private fun StepNameAvatar(
             .size(80.dp)
             .background(SurfaceLow, RectangleShape)
             .clip(RectangleShape)
-            .clickable { imagePickerLauncher.launch("image/*") },
+            .clickable { launchPicker() },
         contentAlignment = Alignment.Center,
     ) {
         if (!state.avatarUri.isNullOrBlank()) {
+            val context = LocalContext.current
             AsyncImage(
-                model = state.avatarUri,
+                model = ImageRequest.Builder(context)
+                    .data(state.avatarUri)
+                    .crossfade(true)
+                    .error(android.R.drawable.ic_menu_gallery)
+                    .build(),
                 contentDescription = "Avatar",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
@@ -362,6 +374,12 @@ private fun StepGender(
             label = "FEMALE",
             isSelected = state.gender == "female",
             onClick = { viewModel.updateGender("female") },
+            modifier = Modifier.weight(1f),
+        )
+        GenderCard(
+            label = "OTHER",
+            isSelected = state.gender == "other",
+            onClick = { viewModel.updateGender("other") },
             modifier = Modifier.weight(1f),
         )
     }

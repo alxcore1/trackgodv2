@@ -52,7 +52,7 @@ fun MilestoneSheet(
     var milestoneWeight by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
 
-    val parsedWeight = milestoneWeight.toFloatOrNull()
+    val parsedWeight = milestoneWeight.replace(",", ".").toFloatOrNull()
     val isValid = parsedWeight != null
             && parsedWeight < startingWeight
             && parsedWeight >= targetWeight
@@ -80,7 +80,7 @@ fun MilestoneSheet(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "BETWEEN %.1f AND %.1f %s".format(
+                text = String.format(java.util.Locale.US, "BETWEEN %.1f AND %.1f %s",
                     targetWeight, startingWeight, weightUnit.uppercase()
                 ),
                 color = TextTertiary,
@@ -118,7 +118,7 @@ fun MilestoneSheet(
             TrackGodButton(
                 text = "SAVE MILESTONE",
                 onClick = {
-                    val w = milestoneWeight.toFloatOrNull() ?: return@TrackGodButton
+                    val w = milestoneWeight.replace(",", ".").toFloatOrNull() ?: return@TrackGodButton
                     val desc = description.ifBlank { null }
                     onSave(w, desc)
                 },

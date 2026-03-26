@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -48,77 +49,79 @@ class EditProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val profile = userRepository.getProfileOnce()
             if (profile != null) {
-                _state.value = _state.value.copy(
-                    name = profile.name,
-                    avatarUri = profile.avatarUri ?: "",
-                    gender = profile.gender ?: "",
-                    birthday = profile.birthday ?: "",
-                    height = profile.height?.toString() ?: "",
-                    weight = profile.weight?.toString() ?: "",
-                    primaryObjective = profile.primaryObjective ?: "",
-                    experienceLevel = profile.experienceLevel,
-                    weeklyTarget = profile.weeklyTarget.toString(),
-                    weightUnit = profile.weightUnit,
-                    heightUnit = profile.heightUnit,
-                    isLoading = false,
-                    isNewProfile = false,
-                    existingId = profile.id,
-                    existingCreatedAt = profile.createdAt,
-                )
+                _state.update {
+                    it.copy(
+                        name = profile.name,
+                        avatarUri = profile.avatarUri ?: "",
+                        gender = profile.gender ?: "",
+                        birthday = profile.birthday ?: "",
+                        height = profile.height?.toString() ?: "",
+                        weight = profile.weight?.toString() ?: "",
+                        primaryObjective = profile.primaryObjective ?: "",
+                        experienceLevel = profile.experienceLevel,
+                        weeklyTarget = profile.weeklyTarget.toString(),
+                        weightUnit = profile.weightUnit,
+                        heightUnit = profile.heightUnit,
+                        isLoading = false,
+                        isNewProfile = false,
+                        existingId = profile.id,
+                        existingCreatedAt = profile.createdAt,
+                    )
+                }
             } else {
-                _state.value = _state.value.copy(isLoading = false, isNewProfile = true)
+                _state.update { it.copy(isLoading = false, isNewProfile = true) }
             }
         }
     }
 
     fun onNameChanged(value: String) {
-        _state.value = _state.value.copy(name = value, nameError = false)
+        _state.update { it.copy(name = value, nameError = false) }
     }
 
     fun onAvatarUriChanged(uri: String) {
-        _state.value = _state.value.copy(avatarUri = uri)
+        _state.update { it.copy(avatarUri = uri) }
     }
 
     fun onGenderChanged(value: String) {
-        _state.value = _state.value.copy(gender = value)
+        _state.update { it.copy(gender = value) }
     }
 
     fun onBirthdayChanged(value: String) {
-        _state.value = _state.value.copy(birthday = value)
+        _state.update { it.copy(birthday = value) }
     }
 
     fun onHeightChanged(value: String) {
-        _state.value = _state.value.copy(height = value)
+        _state.update { it.copy(height = value) }
     }
 
     fun onWeightChanged(value: String) {
-        _state.value = _state.value.copy(weight = value)
+        _state.update { it.copy(weight = value) }
     }
 
     fun onPrimaryObjectiveChanged(value: String) {
-        _state.value = _state.value.copy(primaryObjective = value)
+        _state.update { it.copy(primaryObjective = value) }
     }
 
     fun onExperienceLevelChanged(value: String) {
-        _state.value = _state.value.copy(experienceLevel = value)
+        _state.update { it.copy(experienceLevel = value) }
     }
 
     fun onWeeklyTargetChanged(value: String) {
-        _state.value = _state.value.copy(weeklyTarget = value)
+        _state.update { it.copy(weeklyTarget = value) }
     }
 
     fun onWeightUnitChanged(value: String) {
-        _state.value = _state.value.copy(weightUnit = value)
+        _state.update { it.copy(weightUnit = value) }
     }
 
     fun onHeightUnitChanged(value: String) {
-        _state.value = _state.value.copy(heightUnit = value)
+        _state.update { it.copy(heightUnit = value) }
     }
 
     fun save(onSuccess: () -> Unit) {
         val current = _state.value
         if (current.name.isBlank()) {
-            _state.value = current.copy(nameError = true)
+            _state.update { it.copy(nameError = true) }
             return
         }
 
@@ -129,8 +132,8 @@ class EditProfileViewModel @Inject constructor(
             avatarUri = current.avatarUri.ifBlank { null },
             gender = current.gender.ifBlank { null },
             birthday = current.birthday.ifBlank { null },
-            height = current.height.toFloatOrNull(),
-            weight = current.weight.toFloatOrNull(),
+            height = current.height.replace(",", ".").toFloatOrNull(),
+            weight = current.weight.replace(",", ".").toFloatOrNull(),
             primaryObjective = current.primaryObjective.ifBlank { null },
             experienceLevel = current.experienceLevel.ifBlank { "intermediate" },
             weeklyTarget = current.weeklyTarget.toIntOrNull()?.coerceIn(1, 7) ?: 4,

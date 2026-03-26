@@ -13,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -49,6 +50,7 @@ class WeightLossViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(WeightLossState())
     val state: StateFlow<WeightLossState> = _state.asStateFlow()
+    private var milestoneJob: kotlinx.coroutines.Job? = null
 
     init {
         loadWeightUnit()
@@ -61,16 +63,16 @@ class WeightLossViewModel @Inject constructor(
 
     private fun loadWeightUnit() {
         val unit = settingsRepository.getWeightUnit()
-        _state.value = _state.value.copy(weightUnit = unit)
+        _state.update { it.copy(weightUnit = unit) }
     }
 
     private fun loadActiveGoal() {
         viewModelScope.launch {
             weightLossRepository.getActiveGoal().collect { goal ->
-                _state.value = _state.value.copy(
+                _state.update { it.copy(
                     activeGoal = goal,
                     isLoading = false,
-                )
+                ) }
                 recalculateProgress()
                 if (goal != null) {
                     loadMilestones(goal.id)
@@ -80,9 +82,10 @@ class WeightLossViewModel @Inject constructor(
     }
 
     private fun loadMilestones(goalId: Long) {
-        viewModelScope.launch {
+        milestoneJob?.cancel()
+        milestoneJob = viewModelScope.launch {
             weightLossRepository.getMilestones(goalId).collect { milestones ->
-                _state.value = _state.value.copy(milestones = milestones)
+                _state.update { it.copy(milestones = milestones) }
             }
         }
     }
@@ -90,7 +93,7 @@ class WeightLossViewModel @Inject constructor(
     private fun loadWeightHistory() {
         viewModelScope.launch {
             bodyMetricRepository.getWeightHistory(30).collect { history ->
-                _state.value = _state.value.copy(weightHistory = history)
+                _state.update { it.copy(weightHistory = history) }
             }
         }
     }
@@ -98,7 +101,7 @@ class WeightLossViewModel @Inject constructor(
     private fun loadProgressPhotos() {
         viewModelScope.launch {
             bodyMetricRepository.getProgressPhotos(20).collect { photos ->
-                _state.value = _state.value.copy(progressPhotos = photos)
+                _state.update { it.copy(progressPhotos = photos) }
             }
         }
     }
@@ -106,7 +109,7 @@ class WeightLossViewModel @Inject constructor(
     private fun loadLatestWeight() {
         viewModelScope.launch {
             val latest = bodyMetricRepository.getLatest()
-            _state.value = _state.value.copy(currentWeight = latest?.weight)
+            _state.update { it.copy(currentWeight = latest?.weight) }
             recalculateProgress()
         }
     }
@@ -124,18 +127,18 @@ class WeightLossViewModel @Inject constructor(
 
             // Mifflin-St Jeor equation
             val bmr = if (gender.equals("male", ignoreCase = true)) {
-                10f * weight + 6.25f * height - 5f * age - 5f
+                10f * weight + 6.25f * height - 5f * age + 5f
             } else {
-                10f * weight + 6.25f * height - 5f * age + 161f
+                10f * weight + 6.25f * height - 5f * age - 161f
             }
 
             // TDEE with moderate activity multiplier (1.55)
             val tdee = bmr * 1.55f
 
-            _state.value = _state.value.copy(
+            _state.update { it.copy(
                 bmr = bmr,
                 tdee = tdee,
-            )
+            ) }
         }
     }
 
@@ -155,11 +158,11 @@ class WeightLossViewModel @Inject constructor(
         val weightRemaining = (current - goal.targetWeight).coerceAtLeast(0f)
         val daysRemaining = calculateDaysRemaining(goal.targetDate)
 
-        _state.value = _state.value.copy(
+        _state.update { it.copy(
             progressPercent = progressPercent,
             weightRemaining = weightRemaining,
             daysRemaining = daysRemaining,
-        )
+        ) }
     }
 
     private fun calculateDaysRemaining(targetDate: String): Int {
@@ -194,27 +197,27 @@ class WeightLossViewModel @Inject constructor(
     // -- Actions --
 
     fun showGoalSetup() {
-        _state.value = _state.value.copy(showGoalSetup = true)
+        _state.update { it.copy(showGoalSetup = true) }
     }
 
     fun dismissGoalSetup() {
-        _state.value = _state.value.copy(showGoalSetup = false)
+        _state.update { it.copy(showGoalSetup = false) }
     }
 
     fun showWeighIn() {
-        _state.value = _state.value.copy(showWeighIn = true)
+        _state.update { it.copy(showWeighIn = true) }
     }
 
     fun dismissWeighIn() {
-        _state.value = _state.value.copy(showWeighIn = false)
+        _state.update { it.copy(showWeighIn = false) }
     }
 
     fun showMilestone() {
-        _state.value = _state.value.copy(showMilestone = true)
+        _state.update { it.copy(showMilestone = true) }
     }
 
     fun dismissMilestone() {
-        _state.value = _state.value.copy(showMilestone = false)
+        _state.update { it.copy(showMilestone = false) }
     }
 
     fun saveGoal(
@@ -232,7 +235,7 @@ class WeightLossViewModel @Inject constructor(
                 weeklyGoal = weeklyGoal,
                 motivation = motivation,
             )
-            _state.value = _state.value.copy(showGoalSetup = false)
+            _state.update { it.copy(showGoalSetup = false) }
         }
     }
 
@@ -241,10 +244,10 @@ class WeightLossViewModel @Inject constructor(
             bodyMetricRepository.logWeighIn(weight, note, photoUri)
             // Refresh latest weight
             val latest = bodyMetricRepository.getLatest()
-            _state.value = _state.value.copy(
+            _state.update { it.copy(
                 currentWeight = latest?.weight,
                 showWeighIn = false,
-            )
+            ) }
             recalculateProgress()
             checkMilestones(weight)
         }
@@ -274,7 +277,7 @@ class WeightLossViewModel @Inject constructor(
                 targetWeight = targetWeight,
                 description = description,
             )
-            _state.value = _state.value.copy(showMilestone = false)
+            _state.update { it.copy(showMilestone = false) }
         }
     }
 

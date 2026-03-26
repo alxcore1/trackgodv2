@@ -51,6 +51,9 @@ data class SetEntity(
 
     val note: String? = null,
 
+    @ColumnInfo(name = "set_type", defaultValue = "working")
+    val setType: String = "working",
+
     @ColumnInfo(name = "created_at")
     val createdAt: Long
 )

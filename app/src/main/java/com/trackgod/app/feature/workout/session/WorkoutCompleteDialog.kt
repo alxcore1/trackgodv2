@@ -1,7 +1,10 @@
 package com.trackgod.app.feature.workout.session
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -50,12 +57,15 @@ fun WorkoutCompleteDialog(
     totalVolume: Float,
     durationSeconds: Long,
     defaultName: String,
-    onSave: (name: String) -> Unit,
+    finishError: String? = null,
+    onSave: (name: String, saveAsTemplate: Boolean) -> Unit,
     onDiscard: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     var workoutName by remember { mutableStateOf(defaultName) }
+    var saveAsTemplate by remember { mutableStateOf(false) }
     var showDiscardConfirm by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -113,6 +123,8 @@ fun WorkoutCompleteDialog(
                 ),
                 singleLine = true,
                 cursorBrush = SolidColor(Blood),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -174,9 +186,57 @@ fun WorkoutCompleteDialog(
                     )
                     TrackGodButton(
                         text = "SAVE WORKOUT",
-                        onClick = { onSave(workoutName) },
+                        onClick = { onSave(workoutName, saveAsTemplate) },
                         enabled = workoutName.isNotBlank() && totalSets > 0,
                         modifier = Modifier.weight(1f),
+                    )
+                }
+
+                // Save as template toggle
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { saveAsTemplate = !saveAsTemplate }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .background(
+                                if (saveAsTemplate) com.trackgod.app.ui.theme.Blood
+                                else com.trackgod.app.ui.theme.SurfaceLow,
+                                RectangleShape,
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (saveAsTemplate) {
+                            Text(
+                                text = "✓",
+                                color = com.trackgod.app.ui.theme.TextPrimary,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Black,
+                            )
+                        }
+                    }
+                    Text(
+                        text = "SAVE AS RITUAL",
+                        color = com.trackgod.app.ui.theme.TextTertiary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp,
+                    )
+                }
+
+                if (finishError != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = finishError,
+                        color = com.trackgod.app.ui.theme.Blood,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
                     )
                 }
             }
@@ -215,9 +275,9 @@ private fun StatRow(
 
 private fun formatVolume(volume: Float): String {
     return when {
-        volume >= 1_000_000 -> "%.1fM".format(volume / 1_000_000f)
-        volume >= 1_000 -> "%,.0f".format(volume)
-        else -> "%.0f".format(volume)
+        volume >= 1_000_000 -> String.format(java.util.Locale.US, "%.1fM", volume / 1_000_000f)
+        volume >= 1_000 -> String.format(java.util.Locale.US, "%,.0f", volume)
+        else -> String.format(java.util.Locale.US, "%.0f", volume)
     }
 }
 

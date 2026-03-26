@@ -216,7 +216,7 @@ fun SettingsScreen(
             title = "DEFAULT WEIGHT INCREMENT",
             currentValue = state.defaultWeightIncrement.toString(),
             onConfirm = { value ->
-                value.toFloatOrNull()?.coerceIn(0.5f, 20f)?.let { viewModel.setDefaultWeightIncrement(it) }
+                value.replace(",", ".").toFloatOrNull()?.coerceIn(0.5f, 20f)?.let { viewModel.setDefaultWeightIncrement(it) }
                 showIncrementDialog = false
             },
             onDismiss = { showIncrementDialog = false },

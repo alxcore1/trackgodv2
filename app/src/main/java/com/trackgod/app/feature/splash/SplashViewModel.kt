@@ -55,6 +55,9 @@ class SplashViewModel @Inject constructor(
                 seedDatabase.seedIfNeeded()
             }
 
+            // Clean up any duplicate exercises from prior double-seeding
+            seedDatabase.removeDuplicates()
+
             _isReady.value = true
         }
     }

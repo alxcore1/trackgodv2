@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.weightloss
 
+import java.util.Locale
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -62,7 +63,7 @@ fun WeighInSheet(
     val context = LocalContext.current
 
     var weight by remember {
-        mutableStateOf(lastWeight?.let { "%.1f".format(it) } ?: "")
+        mutableStateOf(lastWeight?.let { String.format(Locale.US, "%.1f", it) } ?: "")
     }
     var note by remember { mutableStateOf("") }
     var photoUri by remember { mutableStateOf<String?>(null) }
@@ -177,11 +178,11 @@ fun WeighInSheet(
             TrackGodButton(
                 text = "LOG WEIGH-IN",
                 onClick = {
-                    val w = weight.toFloatOrNull() ?: return@TrackGodButton
+                    val w = weight.replace(",", ".").toFloatOrNull() ?: return@TrackGodButton
                     val n = note.ifBlank { null }
                     onLog(w, n, photoUri)
                 },
-                enabled = weight.toFloatOrNull() != null,
+                enabled = weight.replace(",", ".").toFloatOrNull() != null,
                 modifier = Modifier.fillMaxWidth(),
             )
 

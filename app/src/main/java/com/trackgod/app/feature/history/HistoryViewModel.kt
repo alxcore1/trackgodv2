@@ -32,6 +32,8 @@ data class WorkoutWithDetails(
     val workout: WorkoutEntity,
     val exercises: List<ExerciseWithSetsInWorkout> = emptyList(),
     val totalSets: Int = 0,
+    val volumeDelta: Float? = null,
+    val categories: List<String> = emptyList(),
 )
 
 data class HistoryState(
@@ -46,6 +48,8 @@ data class HistoryState(
     val isLoading: Boolean = true,
     val weightUnit: String = "kg",
     val showDeleteConfirm: Long? = null,
+    val workoutDatesThisWeek: Set<LocalDate> = emptySet(),
+    val maxVolumeInList: Float = 0f,
 )
 
 // -- ViewModel ----------------------------------------------------------------
@@ -78,19 +82,53 @@ class HistoryViewModel @Inject constructor(
         observeJob?.cancel()
         observeJob = viewModelScope.launch {
             workoutRepository.getAllCompletedWorkouts().collectLatest { allWorkouts ->
-                val filtered = applyFilters(allWorkouts)
-                val withDetails = filtered.map { workout ->
-                    val totalSets = workoutRepository.getSetsForWorkoutOnce(workout.id).size
-                    WorkoutWithDetails(
-                        workout = workout,
-                        totalSets = totalSets,
-                    )
-                }
-                _state.update {
-                    it.copy(
-                        workouts = enrichExpandedWorkout(withDetails, it.expandedWorkoutId),
-                        isLoading = false,
-                    )
+                try {
+                    val filtered = applyFilters(allWorkouts)
+
+                    // Build a map of workout name → previous volume for delta comparison
+                    val volumeByName = mutableMapOf<String, Float>()
+
+                    val withDetails = filtered.map { workout ->
+                        val sets = workoutRepository.getSetsForWorkoutOnce(workout.id)
+                        val categories = sets.map { it.exerciseId }
+                            .distinct()
+                            .mapNotNull { workoutRepository.getExerciseById(it)?.category }
+                            .distinct()
+                        val currentVolume = workout.totalVolume ?: 0f
+                        val name = workout.name.lowercase()
+                        val previousVolume = volumeByName[name]
+                        val delta = if (previousVolume != null) currentVolume - previousVolume else null
+                        volumeByName[name] = currentVolume
+                        WorkoutWithDetails(
+                            workout = workout,
+                            totalSets = sets.size,
+                            volumeDelta = delta,
+                            categories = categories,
+                        )
+                    }
+
+                    // Workout dates for week indicator
+                    val weekDates = _state.value.weekDates.toSet()
+                    val datesWithWorkouts = allWorkouts
+                        .mapNotNull { w ->
+                            runCatching { LocalDate.parse(w.date, DateTimeFormatter.ISO_LOCAL_DATE) }.getOrNull()
+                        }
+                        .filter { it in weekDates }
+                        .toSet()
+
+                    val maxVol = withDetails.maxOfOrNull { it.workout.totalVolume ?: 0f } ?: 0f
+
+                    _state.update {
+                        it.copy(
+                            workouts = enrichExpandedWorkout(withDetails, it.expandedWorkoutId),
+                            isLoading = false,
+                            workoutDatesThisWeek = datesWithWorkouts,
+                            maxVolumeInList = maxVol,
+                        )
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("HistoryViewModel", "Error processing workouts", e)
+                    _state.update { it.copy(isLoading = false) }
                 }
             }
         }

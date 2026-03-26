@@ -2,8 +2,6 @@ package com.trackgod.app.feature.profile
 
 import android.app.DatePickerDialog
 import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -34,7 +32,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.trackgod.app.core.util.ImageCropOverlay
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,7 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.trackgod.app.core.util.ImageCropper
 import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
@@ -68,14 +69,23 @@ fun EditProfileScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    // Image picker
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-    ) { uri: Uri? ->
-        uri?.let {
-            val cropped = ImageCropper.cropToSquare(context, it)
-            viewModel.onAvatarUriChanged((cropped ?: it).toString())
-        }
+    // Image picker (PickVisualMedia with search on Android 13+, fallback on older)
+    var pendingCropUri by remember { mutableStateOf<Uri?>(null) }
+    val launchPicker = com.trackgod.app.core.util.rememberAvatarPickerLauncher { uri ->
+        pendingCropUri = uri
+    }
+
+    // Interactive crop overlay
+    pendingCropUri?.let { uri ->
+        ImageCropOverlay(
+            sourceUri = uri,
+            onConfirm = { croppedUri ->
+                viewModel.onAvatarUriChanged(croppedUri.toString())
+                pendingCropUri = null
+            },
+            onCancel = { pendingCropUri = null },
+        )
+        return // don't render the rest while cropping
     }
 
     MetalTextureBackground {
@@ -153,7 +163,7 @@ fun EditProfileScreen(
 
                 TrackGodButton(
                     text = "CHANGE PHOTO",
-                    onClick = { imagePickerLauncher.launch("image/*") },
+                    onClick = { launchPicker() },
                     variant = ButtonVariant.Secondary,
                 )
             }

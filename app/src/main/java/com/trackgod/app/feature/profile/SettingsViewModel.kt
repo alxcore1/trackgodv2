@@ -2,6 +2,8 @@ package com.trackgod.app.feature.profile
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import com.trackgod.app.core.repository.SettingsRepository
 import com.trackgod.app.service.BackupScheduler
 import com.trackgod.app.service.WeighInReminderScheduler
@@ -10,6 +12,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 data class SettingsState(
@@ -36,6 +39,7 @@ data class SettingsState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
+    private val userRepository: com.trackgod.app.core.repository.UserRepository,
     @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
 
@@ -69,56 +73,59 @@ class SettingsViewModel @Inject constructor(
 
     fun setRestTimerEnabled(enabled: Boolean) {
         settingsRepository.setRestTimerEnabled(enabled)
-        _state.value = _state.value.copy(restTimerEnabled = enabled)
+        _state.update { it.copy(restTimerEnabled = enabled) }
     }
 
     fun setRestTimerDuration(seconds: Int) {
         settingsRepository.setRestTimerDuration(seconds)
-        _state.value = _state.value.copy(restTimerDuration = seconds)
+        _state.update { it.copy(restTimerDuration = seconds) }
     }
 
     fun setRestTimerAutoStart(enabled: Boolean) {
         settingsRepository.setRestTimerAutoStart(enabled)
-        _state.value = _state.value.copy(restTimerAutoStart = enabled)
+        _state.update { it.copy(restTimerAutoStart = enabled) }
     }
 
     fun setShowRpe(enabled: Boolean) {
         settingsRepository.setShowRpe(enabled)
-        _state.value = _state.value.copy(showRpe = enabled)
+        _state.update { it.copy(showRpe = enabled) }
     }
 
     fun setShowRir(enabled: Boolean) {
         settingsRepository.setShowRir(enabled)
-        _state.value = _state.value.copy(showRir = enabled)
+        _state.update { it.copy(showRir = enabled) }
     }
 
     fun setDefaultWeightIncrement(value: Float) {
         settingsRepository.setDefaultWeightIncrement(value)
-        _state.value = _state.value.copy(defaultWeightIncrement = value)
+        _state.update { it.copy(defaultWeightIncrement = value) }
     }
 
     // -- Display --
 
     fun setWeightUnit(unit: String) {
         settingsRepository.setWeightUnit(unit)
-        _state.value = _state.value.copy(weightUnit = unit)
+        _state.update { it.copy(weightUnit = unit) }
+        // Sync to profile entity so both sources agree
+        viewModelScope.launch { userRepository.updateWeightUnit(unit) }
     }
 
     fun setHeightUnit(unit: String) {
         settingsRepository.setHeightUnit(unit)
-        _state.value = _state.value.copy(heightUnit = unit)
+        _state.update { it.copy(heightUnit = unit) }
+        viewModelScope.launch { userRepository.updateHeightUnit(unit) }
     }
 
     // -- Notifications --
 
     fun setRestTimerSound(enabled: Boolean) {
         settingsRepository.setRestTimerSoundEnabled(enabled)
-        _state.value = _state.value.copy(restTimerSound = enabled)
+        _state.update { it.copy(restTimerSound = enabled) }
     }
 
     fun setWeighInReminder(enabled: Boolean) {
         settingsRepository.setWeighInReminderEnabled(enabled)
-        _state.value = _state.value.copy(weighInReminder = enabled)
+        _state.update { it.copy(weighInReminder = enabled) }
         if (enabled) {
             scheduleWeighInReminder()
         } else {
@@ -128,7 +135,7 @@ class SettingsViewModel @Inject constructor(
 
     fun setReminderDay(day: String) {
         settingsRepository.setReminderDay(day)
-        _state.value = _state.value.copy(reminderDay = day)
+        _state.update { it.copy(reminderDay = day) }
         if (_state.value.weighInReminder) {
             scheduleWeighInReminder()
         }
@@ -136,7 +143,7 @@ class SettingsViewModel @Inject constructor(
 
     fun setReminderTime(time: String) {
         settingsRepository.setReminderTime(time)
-        _state.value = _state.value.copy(reminderTime = time)
+        _state.update { it.copy(reminderTime = time) }
         if (_state.value.weighInReminder) {
             scheduleWeighInReminder()
         }
@@ -154,7 +161,7 @@ class SettingsViewModel @Inject constructor(
 
     fun setAutoBackup(enabled: Boolean) {
         settingsRepository.setAutoBackupEnabled(enabled)
-        _state.value = _state.value.copy(autoBackup = enabled)
+        _state.update { it.copy(autoBackup = enabled) }
         if (enabled) {
             BackupScheduler.scheduleDaily(appContext)
         } else {
@@ -164,6 +171,6 @@ class SettingsViewModel @Inject constructor(
 
     fun setMaxBackups(count: Int) {
         settingsRepository.setMaxBackups(count)
-        _state.value = _state.value.copy(maxBackups = count)
+        _state.update { it.copy(maxBackups = count) }
     }
 }

@@ -23,6 +23,9 @@ class ExerciseRepository @Inject constructor(
     fun search(query: String): Flow<List<ExerciseEntity>> =
         exerciseDao.search(query)
 
+    suspend fun getRecentlyUsed(limit: Int = 6): List<ExerciseEntity> =
+        exerciseDao.getRecentlyUsed(limit)
+
     suspend fun getDistinctBrands(): List<String> =
         exerciseDao.getDistinctBrands()
 
@@ -48,6 +51,15 @@ class ExerciseRepository @Inject constructor(
         return exerciseDao.insert(entity)
     }
 
+    suspend fun rename(id: Long, newName: String) {
+        val exercise = exerciseDao.getById(id) ?: return
+        exerciseDao.update(exercise.copy(name = newName))
+    }
+
+    suspend fun hide(id: Long) {
+        exerciseDao.deactivate(id)
+    }
+
     suspend fun incrementUsage(id: Long) {
         exerciseDao.incrementUsageCount(id, System.currentTimeMillis())
     }
@@ -55,6 +67,9 @@ class ExerciseRepository @Inject constructor(
     suspend fun seedExercises(exercises: List<ExerciseEntity>) {
         exerciseDao.insertAll(exercises)
     }
+
+    suspend fun removeDuplicates(): Int =
+        exerciseDao.removeDuplicates()
 
     suspend fun getCount(): Int =
         exerciseDao.getCount()

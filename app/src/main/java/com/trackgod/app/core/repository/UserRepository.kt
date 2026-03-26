@@ -25,4 +25,10 @@ class UserRepository @Inject constructor(
 
     suspend fun updateProfile(entity: UserProfileEntity) =
         userProfileDao.update(entity)
+
+    suspend fun updateWeightUnit(unit: String) =
+        userProfileDao.updateWeightUnit(unit)
+
+    suspend fun updateHeightUnit(unit: String) =
+        userProfileDao.updateHeightUnit(unit)
 }

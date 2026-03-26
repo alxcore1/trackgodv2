@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.history
 
+import java.util.Locale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -221,7 +222,7 @@ private fun SetDisplayRow(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        val weightStr = if (weight % 1f == 0f) "${weight.toInt()}" else "%.1f".format(weight)
+        val weightStr = if (weight % 1f == 0f) "${weight.toInt()}" else String.format(Locale.US, "%.1f", weight)
         Text(
             text = "$weightStr${weightUnit.uppercase()} x $reps",
             color = if (isModified) BloodBright else TextPrimary,

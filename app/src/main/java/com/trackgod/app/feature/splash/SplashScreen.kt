@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +36,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.Canvas
+import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -83,6 +86,12 @@ fun SplashScreen(
     val ctaAlpha = remember { Animatable(0f) }
     val ctaOffsetY = remember { Animatable(60f) }
     val footerAlpha = remember { Animatable(0f) }
+
+    // Glitch state
+    var glitchActive by remember { mutableStateOf(false) }
+    var glitchOffsetX by remember { mutableFloatStateOf(0f) }
+    var glitchScale by remember { mutableFloatStateOf(1f) }
+    var glitchRotation by remember { mutableFloatStateOf(0f) }
 
     fun randomHex(len: Int): String {
         val chars = "0123456789ABCDEF"
@@ -133,6 +142,25 @@ fun SplashScreen(
             hexLine1 = "0xDEAD BEEF C0DE"
             hexLine2 = ">> ALL SYSTEMS NOMINAL"
             initStatus = "READY"
+        }
+
+        // CRT glitch — screen tears + pentagram flash with size jitter
+        launch {
+            delay(2000)
+            // Burst 1: rapid screen tears
+            glitchActive = true; glitchOffsetX = 12f; glitchScale = 1.05f; glitchRotation = 3f; delay(50)
+            glitchOffsetX = -8f; glitchScale = 0.92f; glitchRotation = -2f; delay(40)
+            glitchOffsetX = 20f; glitchScale = 1.1f; glitchRotation = 4f; delay(30)
+            glitchActive = false; glitchOffsetX = 0f; glitchScale = 1f; glitchRotation = 0f; delay(30)
+            // Burst 2: longer hold
+            glitchActive = true; glitchOffsetX = -15f; glitchScale = 0.95f; glitchRotation = -3f; delay(60)
+            glitchOffsetX = 6f; glitchScale = 1.08f; glitchRotation = 2f; delay(150)
+            glitchOffsetX = -10f; glitchScale = 0.9f; glitchRotation = -5f; delay(40)
+            glitchActive = false; glitchOffsetX = 0f; glitchScale = 1f; glitchRotation = 0f; delay(150)
+            // Aftershock
+            glitchActive = true; glitchOffsetX = 5f; glitchScale = 1.12f; glitchRotation = 3f; delay(40)
+            glitchOffsetX = -4f; glitchScale = 0.88f; glitchRotation = -2f; delay(30)
+            glitchActive = false; glitchOffsetX = 0f; glitchScale = 1f; glitchRotation = 0f
         }
 
         // CTA slides up after init
@@ -188,6 +216,52 @@ fun SplashScreen(
                     ),
                 ),
         )
+
+        // ── CRT Glitch overlay ─────────────────────────────────────────
+        if (glitchActive) {
+            // Horizontal scanlines tearing across screen
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val tearCount = 12
+                for (i in 0 until tearCount) {
+                    val y = size.height * (i.toFloat() / tearCount) + glitchOffsetX * 3
+                    val thickness = if (i % 3 == 0) 3.dp.toPx() else 1.dp.toPx()
+                    drawRect(
+                        color = Blood.copy(alpha = if (i % 2 == 0) 0.25f else 0.1f),
+                        topLeft = androidx.compose.ui.geometry.Offset(0f, y),
+                        size = androidx.compose.ui.geometry.Size(size.width, thickness),
+                    )
+                }
+            }
+            // Pentagram — displaced, glitchy, shifted up to overlay the logo
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(y = (-80).dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                val baseSizeDp = (180 * glitchScale).dp
+                // RGB-shift echo
+                Icon(
+                    painter = painterResource(R.drawable.ic_pentagram),
+                    contentDescription = null,
+                    tint = Color(0x44FF0000),
+                    modifier = Modifier
+                        .size(baseSizeDp)
+                        .offset(x = (glitchOffsetX * 0.5f).dp, y = (-2).dp)
+                        .graphicsLayer { rotationZ = glitchRotation * 1.3f },
+                )
+                // Main pentagram
+                Icon(
+                    painter = painterResource(R.drawable.ic_pentagram),
+                    contentDescription = null,
+                    tint = Blood.copy(alpha = 0.7f),
+                    modifier = Modifier
+                        .size(baseSizeDp)
+                        .offset(x = (glitchOffsetX * -0.3f).dp)
+                        .graphicsLayer { rotationZ = glitchRotation },
+                )
+            }
+        }
 
         // ── Words: single line at top ──────────────────────────────
         Row(

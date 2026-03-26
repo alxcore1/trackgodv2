@@ -1,5 +1,11 @@
 package com.trackgod.app.feature.stats
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import com.trackgod.app.ui.component.ButtonVariant
+import com.trackgod.app.ui.component.TrackGodButton
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -41,6 +47,7 @@ import com.trackgod.app.feature.stats.chart.ConsistencySection
 import com.trackgod.app.feature.stats.chart.ExerciseFrequencySection
 import com.trackgod.app.feature.stats.chart.HeatmapChart
 import com.trackgod.app.feature.stats.chart.MuscleGroupChart
+import com.trackgod.app.feature.stats.chart.ExerciseProgressSection
 import com.trackgod.app.feature.stats.chart.PersonalRecordsSection
 import com.trackgod.app.feature.stats.chart.StrengthBalanceSection
 import com.trackgod.app.feature.stats.chart.VolumeChart
@@ -156,6 +163,25 @@ private fun StatsContent(
             onSelect = onTimeRangeChanged,
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // ── Tools ───────────────────────────────────────────────────────────
+        var showOneRepMaxSheet by remember { mutableStateOf(false) }
+        TrackGodButton(
+            text = "1RM CALCULATOR",
+            onClick = { showOneRepMaxSheet = true },
+            variant = ButtonVariant.Secondary,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+        )
+        if (showOneRepMaxSheet) {
+            OneRepMaxSheet(
+                weightUnit = state.weightUnit,
+                onDismiss = { showOneRepMaxSheet = false },
+            )
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
 
         // ── 1. Volume Progression ────────────────────────────────────────────
@@ -182,6 +208,15 @@ private fun StatsContent(
         if (state.personalRecords.isNotEmpty()) {
             PersonalRecordsSection(
                 records = state.personalRecords,
+                weightUnit = state.weightUnit,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // ── 3b. Exercise Progression Charts ─────────────────────────────────
+        if (state.exerciseProgressions.isNotEmpty()) {
+            ExerciseProgressSection(
+                progressions = state.exerciseProgressions,
                 weightUnit = state.weightUnit,
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -355,8 +390,8 @@ private fun TimeRangeChip(
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 private fun formatVolume(volume: Float): String = when {
-    volume >= 1_000_000f -> String.format("%.1fM", volume / 1_000_000f)
-    volume >= 1_000f -> String.format("%.1fK", volume / 1_000f)
+    volume >= 1_000_000f -> String.format(java.util.Locale.US, "%.1fM", volume / 1_000_000f)
+    volume >= 1_000f -> String.format(java.util.Locale.US, "%.1fK", volume / 1_000f)
     else -> volume.toInt().toString()
 }
 

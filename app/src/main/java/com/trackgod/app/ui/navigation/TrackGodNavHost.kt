@@ -149,7 +149,7 @@ fun TrackGodNavHost() {
                 val viewModel: SeedingChoiceViewModel =
                     androidx.hilt.navigation.compose.hiltViewModel()
                 SeedingChoiceScreen(
-                    seedDatabase = viewModel.seedDatabase,
+                    viewModel = viewModel,
                     onComplete = {
                         navController.navigate(Screen.Altar.route) {
                             popUpTo(Screen.SeedingChoice.route) { inclusive = true }
@@ -181,6 +181,9 @@ fun TrackGodNavHost() {
                         0 -> AltarScreen(
                             onStartWorkout = { workoutId ->
                                 navController.navigate(Screen.WorkoutSession.create(workoutId))
+                            },
+                            onStartFromTemplate = { workoutId, routineId ->
+                                navController.navigate(Screen.WorkoutSession.create(workoutId, routineId))
                             },
                             onResumeWorkout = { workoutId ->
                                 navController.navigate(Screen.WorkoutSession.create(workoutId))
@@ -223,21 +226,21 @@ fun TrackGodNavHost() {
                 route = Screen.WorkoutSession.route,
                 arguments = listOf(
                     navArgument("workoutId") { type = NavType.LongType },
+                    navArgument("routineId") { type = NavType.LongType; defaultValue = -1L },
                 ),
             ) { backStackEntry ->
                 val workoutId = backStackEntry.arguments?.getLong("workoutId") ?: return@composable
 
-                // Observe exercise picker result from the backstack entry's savedStateHandle
+                // Observe exercise picker / OCR result from backstack savedStateHandle
                 val selectedExerciseId = backStackEntry.savedStateHandle
                     .getStateFlow<Long?>("selectedExerciseId", null)
                     .collectAsStateWithLifecycle()
 
-                // Forward picked exercise to the ViewModel
                 val sessionViewModel: com.trackgod.app.feature.workout.session.WorkoutSessionViewModel =
                     hiltViewModel()
                 LaunchedEffect(selectedExerciseId.value) {
                     selectedExerciseId.value?.let { exerciseId ->
-                        sessionViewModel.onExerciseSelectedFromPicker(exerciseId)
+                        sessionViewModel.selectExerciseById(exerciseId)
                         backStackEntry.savedStateHandle["selectedExerciseId"] = null
                     }
                 }
@@ -283,10 +286,20 @@ fun TrackGodNavHost() {
             composable(Screen.OcrScanner.route) {
                 OcrScannerScreen(
                     onExerciseSelected = { exerciseId ->
-                        navController.previousBackStackEntry
-                            ?.savedStateHandle
-                            ?.set("selectedExerciseId", exerciseId)
-                        navController.popBackStack()
+                        // Set result directly on WorkoutSession's savedStateHandle
+                        try {
+                            navController.getBackStackEntry(Screen.WorkoutSession.route)
+                                .savedStateHandle["selectedExerciseId"] = exerciseId
+                        } catch (_: IllegalArgumentException) {
+                            // Fallback: set on previous entry (ExercisePicker)
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle?.set("selectedExerciseId", exerciseId)
+                        }
+                        // Pop both OcrScanner and ExercisePicker in one go
+                        navController.popBackStack(
+                            route = Screen.ExercisePicker.route,
+                            inclusive = true,
+                        )
                     },
                     onDismiss = { navController.popBackStack() },
                 )
@@ -327,7 +340,11 @@ fun TrackGodNavHost() {
                 // Share the WeightLossViewModel with the parent route so
                 // the comparison screen sees the same progress photos.
                 val parentEntry = remember(it) {
-                    navController.getBackStackEntry(Screen.WeightLoss.route)
+                    try {
+                        navController.getBackStackEntry(Screen.WeightLoss.route)
+                    } catch (_: IllegalArgumentException) {
+                        it // fallback to own entry
+                    }
                 }
                 val viewModel: WeightLossViewModel =
                     androidx.hilt.navigation.compose.hiltViewModel(parentEntry)

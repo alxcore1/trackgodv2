@@ -1,6 +1,7 @@
 package com.trackgod.app.feature.weightloss
 
 import android.net.Uri
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -79,7 +80,7 @@ fun PhotoComparisonScreen(
 ) {
     if (photos.size < 2) {
         // Safety fallback -- should not happen via normal navigation
-        onNavigateBack()
+        LaunchedEffect(Unit) { onNavigateBack() }
         return
     }
 

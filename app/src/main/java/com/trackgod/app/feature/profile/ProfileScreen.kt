@@ -32,7 +32,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.text.style.TextOverflow
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import androidx.compose.ui.platform.LocalContext
 import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
@@ -68,7 +72,16 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (state.profile == null && !state.isLoading) {
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator(color = Blood)
+            }
+        } else if (state.profile == null && !state.isLoading) {
             // No profile -- show setup prompt
             NoProfileSection(onSetUp = onNavigateToEditProfile)
         } else if (state.profile != null) {
@@ -99,8 +112,6 @@ fun ProfileScreen(
             SectionDivider(text = "DATA", modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(16.dp))
             ProfileMenuItem(label = "BACKUP & RESTORE", onClick = onNavigateToBackup)
-            Spacer(modifier = Modifier.height(8.dp))
-            ProfileMenuItem(label = "EXPORT DATABASE", onClick = onNavigateToBackup)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -108,8 +119,6 @@ fun ProfileScreen(
             SectionDivider(text = "APP", modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(16.dp))
             ProfileMenuItem(label = "SETTINGS", onClick = onNavigateToSettings)
-            Spacer(modifier = Modifier.height(8.dp))
-            ProfileMenuItem(label = "ABOUT", onClick = { /* TODO */ })
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -131,8 +140,13 @@ private fun ProfileHeader(
     ) {
         // Avatar
         if (profile.avatarUri != null) {
+            val context = LocalContext.current
             AsyncImage(
-                model = profile.avatarUri,
+                model = ImageRequest.Builder(context)
+                    .data(profile.avatarUri)
+                    .crossfade(true)
+                    .error(android.R.drawable.ic_menu_gallery)
+                    .build(),
                 contentDescription = "Profile avatar",
                 modifier = Modifier
                     .size(80.dp)
@@ -171,6 +185,8 @@ private fun ProfileHeader(
             style = MaterialTheme.typography.headlineLarge,
             color = TextPrimary,
             textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
 
         // Primary objective

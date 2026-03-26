@@ -84,7 +84,7 @@ fun WeightProgressChart(
                 .padding(bottom = 4.dp),
         ) {
             Text(
-                text = "%.1f".format(maxWeight),
+                text = String.format(java.util.Locale.US, "%.1f", maxWeight),
                 color = TextTertiary,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
@@ -207,7 +207,7 @@ fun WeightProgressChart(
                 .padding(top = 4.dp),
         ) {
             Text(
-                text = "%.1f".format(minWeight),
+                text = String.format(java.util.Locale.US, "%.1f", minWeight),
                 color = TextTertiary,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
@@ -216,7 +216,7 @@ fun WeightProgressChart(
             Spacer(modifier = Modifier.weight(1f))
             if (targetWeight != null) {
                 Text(
-                    text = "TARGET: %.1f".format(targetWeight),
+                    text = String.format(java.util.Locale.US, "TARGET: %.1f", targetWeight),
                     color = TextTertiary,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,

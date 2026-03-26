@@ -37,6 +37,9 @@ fun VolumeChart(
 ) {
     if (data.isEmpty()) return
 
+    // Limit data to last 12 points to prevent overbleed on ALL/YEAR
+    val displayData = if (data.size > 12) data.takeLast(12) else data
+
     Column(modifier = modifier) {
         // Section title
         Text(
@@ -55,8 +58,8 @@ fun VolumeChart(
                 .fillMaxWidth()
                 .height(160.dp),
         ) {
-            val maxVolume = data.maxOf { it.volume }.coerceAtLeast(1f)
-            val barCount = data.size
+            val maxVolume = displayData.maxOf { it.volume }.coerceAtLeast(1f)
+            val barCount = displayData.size
             val totalWidth = size.width
             val chartHeight = size.height - 24.dp.toPx()
             val barSpacing = if (barCount > 20) 1.dp.toPx() else 4.dp.toPx()
@@ -71,7 +74,7 @@ fun VolumeChart(
                 else -> (barCount / 8).coerceAtLeast(3)
             }
 
-            data.forEachIndexed { index, point ->
+            displayData.forEachIndexed { index, point ->
                 val barHeight = if (maxVolume > 0f) {
                     (point.volume / maxVolume) * chartHeight
                 } else {
@@ -127,10 +130,11 @@ private fun DrawScope.drawLabel(
         maxLines = 1,
         constraints = Constraints(maxWidth = maxWidth.toInt().coerceAtLeast(1)),
     )
+    val labelX = (x - layoutResult.size.width / 2f).coerceIn(0f, size.width - layoutResult.size.width)
     drawText(
         textLayoutResult = layoutResult,
         topLeft = Offset(
-            x = x - layoutResult.size.width / 2f,
+            x = labelX,
             y = y,
         ),
     )

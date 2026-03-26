@@ -31,7 +31,8 @@ class BackupWorker(
                 context,
                 com.trackgod.app.core.database.TrackGodDatabase::class.java,
                 "trackgod.db",
-            ).build()
+            ).addMigrations(com.trackgod.app.core.database.TrackGodDatabase.MIGRATION_1_2, com.trackgod.app.core.database.TrackGodDatabase.MIGRATION_2_3, com.trackgod.app.core.database.TrackGodDatabase.MIGRATION_3_4)
+             .build()
 
             val backupDao: BackupDao = db.backupDao()
             val repo = BackupRepository(backupDao, context)
