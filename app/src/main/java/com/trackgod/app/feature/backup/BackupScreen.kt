@@ -57,7 +57,7 @@ import com.trackgod.app.ui.theme.Void
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.system.exitProcess
+import android.app.Activity
 
 @Composable
 fun BackupScreen(
@@ -88,9 +88,23 @@ fun BackupScreen(
         }
     }
 
+    // -- Share intent for CSV export -------------------------------------------
+    LaunchedEffect(uiState.csvExportUri) {
+        uiState.csvExportUri?.let { uri ->
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/csv"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(Intent.createChooser(shareIntent, "EXPORT CSV"))
+            viewModel.clearCsvExportUri()
+        }
+    }
+
     // -- Confirm dialog state -------------------------------------------------
     var confirmRestore by remember { mutableStateOf<BackupMetadataEntity?>(null) }
     var confirmDelete by remember { mutableStateOf<BackupMetadataEntity?>(null) }
+    var confirmDeleteAll by remember { mutableStateOf(false) }
 
     // -- Restart dialog -------------------------------------------------------
     if (uiState.showRestartDialog) {
@@ -113,7 +127,12 @@ fun BackupScreen(
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.dismissRestartDialog()
-                    exitProcess(0)
+                    // Restart the app properly via activity recreation + process kill
+                    val activity = context as? Activity
+                    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                    intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    context.startActivity(intent)
+                    activity?.finish()
                 }) {
                     Text("RESTART", color = Blood)
                 }
@@ -185,6 +204,41 @@ fun BackupScreen(
             },
             dismissButton = {
                 TextButton(onClick = { confirmDelete = null }) {
+                    Text("CANCEL", color = TextTertiary)
+                }
+            },
+            containerColor = Void,
+        )
+    }
+
+    // -- Delete All confirm dialog --------------------------------------------
+    if (confirmDeleteAll) {
+        AlertDialog(
+            onDismissRequest = { confirmDeleteAll = false },
+            title = {
+                Text(
+                    text = "DELETE ALL DATA?",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextPrimary,
+                )
+            },
+            text = {
+                Text(
+                    text = "ALL WORKOUT DATA, PROGRESS PHOTOS, AND SETTINGS WILL BE PERMANENTLY DELETED. A SAFETY BACKUP WILL BE CREATED FIRST. THIS CANNOT BE UNDONE.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteAllData()
+                    confirmDeleteAll = false
+                }) {
+                    Text("DELETE EVERYTHING", color = Blood)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDeleteAll = false }) {
                     Text("CANCEL", color = TextTertiary)
                 }
             },
@@ -293,6 +347,29 @@ fun BackupScreen(
                     modifier = Modifier.fillMaxWidth(),
                     variant = ButtonVariant.Secondary,
                     enabled = !uiState.isLoading,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            item {
+                TrackGodButton(
+                    text = "EXPORT CSV",
+                    onClick = { viewModel.exportCsv() },
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = ButtonVariant.Secondary,
+                    enabled = !uiState.isLoading,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            item {
+                TrackGodButton(
+                    text = "DELETE ALL DATA",
+                    onClick = { confirmDeleteAll = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = ButtonVariant.Secondary,
+                    enabled = !uiState.isLoading,
+                    textColorOverride = Blood,
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }

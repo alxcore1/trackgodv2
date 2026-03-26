@@ -28,7 +28,8 @@ object DatabaseModule {
             context,
             TrackGodDatabase::class.java,
             "trackgod.db"
-        ).addMigrations(TrackGodDatabase.MIGRATION_1_2)
+        ).addMigrations(TrackGodDatabase.MIGRATION_1_2, TrackGodDatabase.MIGRATION_2_3, TrackGodDatabase.MIGRATION_3_4)
+            .fallbackToDestructiveMigrationOnDowngrade()
             .build()
     }
 
@@ -65,5 +66,10 @@ object DatabaseModule {
     @Provides
     fun provideBackupDao(database: TrackGodDatabase): BackupDao {
         return database.backupDao()
+    }
+
+    @Provides
+    fun provideRoutineDao(database: TrackGodDatabase): com.trackgod.app.core.database.dao.RoutineDao {
+        return database.routineDao()
     }
 }

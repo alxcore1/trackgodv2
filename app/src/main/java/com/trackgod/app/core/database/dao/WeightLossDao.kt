@@ -31,6 +31,9 @@ interface WeightLossDao {
     @Delete
     suspend fun deleteMilestone(milestone: WeightLossMilestoneEntity)
 
+    @Query("UPDATE weight_loss_goals SET is_active = 0 WHERE is_active = 1")
+    suspend fun deactivateAllGoals()
+
     @Query("SELECT * FROM weight_loss_goals WHERE is_active = 1 LIMIT 1")
     fun getActiveGoal(): Flow<WeightLossGoalEntity?>
 

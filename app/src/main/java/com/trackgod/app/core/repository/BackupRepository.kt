@@ -231,6 +231,42 @@ class BackupRepository @Inject constructor(
         )
     }
 
+    // -- Delete All Data ------------------------------------------------------
+
+    /**
+     * Delete all user data: database, SharedPreferences, and progress photos.
+     *
+     * A safety backup is created first. After calling this the app MUST be restarted.
+     */
+    suspend fun deleteAllData(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            // Safety backup first
+            createBackup(type = "safety")
+
+            // Delete database files
+            val dbFile = context.getDatabasePath(DB_NAME)
+            dbFile.delete()
+            File(dbFile.path + "-wal").delete()
+            File(dbFile.path + "-shm").delete()
+
+            // Clear SharedPreferences
+            context.getSharedPreferences("trackgod_prefs", android.content.Context.MODE_PRIVATE)
+                .edit()
+                .clear()
+                .commit()
+
+            // Delete progress photos
+            val photosDir = File(context.filesDir, "progress_photos")
+            if (photosDir.exists() && photosDir.isDirectory) {
+                photosDir.deleteRecursively()
+            }
+
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     // -- Helpers --------------------------------------------------------------
 
     private fun checkpointDatabase() {

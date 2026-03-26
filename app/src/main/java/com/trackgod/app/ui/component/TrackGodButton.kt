@@ -60,6 +60,7 @@ fun TrackGodButton(
     variant: ButtonVariant = ButtonVariant.Primary,
     enabled: Boolean = true,
     icon: ImageVector? = null,
+    textColorOverride: Color? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -76,7 +77,7 @@ fun TrackGodButton(
         ButtonVariant.Ghost -> Color.Transparent
     }
 
-    val textColor = when (variant) {
+    val textColor = textColorOverride ?: when (variant) {
         ButtonVariant.Primary -> TextPrimary
         ButtonVariant.Secondary -> TextTertiary
         ButtonVariant.Ghost -> TextTertiary

@@ -29,4 +29,10 @@ interface UserProfileDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM user_profile LIMIT 1)")
     suspend fun hasProfile(): Boolean
+
+    @Query("UPDATE user_profile SET weight_unit = :weightUnit")
+    suspend fun updateWeightUnit(weightUnit: String)
+
+    @Query("UPDATE user_profile SET height_unit = :heightUnit")
+    suspend fun updateHeightUnit(heightUnit: String)
 }

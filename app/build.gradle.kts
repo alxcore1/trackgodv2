@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,6 +9,11 @@ plugins {
     alias(libs.plugins.room)
 }
 
+val releaseProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) load(f.inputStream())
+}
+
 android {
     namespace = "com.trackgod.app"
     compileSdk = 35
@@ -14,17 +21,27 @@ android {
     defaultConfig {
         applicationId = "com.trackgod.v2"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "2.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(releaseProps.getProperty("RELEASE_STORE_FILE", "../keystore/release.jks"))
+            storePassword = releaseProps.getProperty("RELEASE_STORE_PASSWORD", "")
+            keyAlias = releaseProps.getProperty("RELEASE_KEY_ALIAS", "trackgod")
+            keyPassword = releaseProps.getProperty("RELEASE_KEY_PASSWORD", "")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+: dataExtractionRules -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="database" path="trackgod.db" />
+        <exclude domain="database" path="trackgod.db-wal" />
+        <exclude domain="database" path="trackgod.db-shm" />
+        <exclude domain="sharedpref" path="trackgod_prefs.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="database" path="trackgod.db" />
+        <exclude domain="database" path="trackgod.db-wal" />
+        <exclude domain="database" path="trackgod.db-shm" />
+    </device-transfer>
+</data-extraction-rules>
