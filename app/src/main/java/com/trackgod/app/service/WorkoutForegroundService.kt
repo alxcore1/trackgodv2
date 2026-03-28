@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.trackgod.app.MainActivity
 import com.trackgod.app.R
@@ -60,14 +61,20 @@ class WorkoutForegroundService : Service() {
         workoutStartTime = intent?.getLongExtra(EXTRA_START_TIME, System.currentTimeMillis())
             ?: System.currentTimeMillis()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(
-                NOTIFICATION_ID,
-                buildNotification(0),
-                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, buildNotification(0))
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    buildNotification(0),
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, buildNotification(0))
+            }
+        } catch (e: Exception) {
+            Log.e("WorkoutFGS", "Failed to start foreground service", e)
+            stopSelf()
+            return START_NOT_STICKY
         }
 
         updateJob?.cancel()
@@ -90,12 +97,6 @@ class WorkoutForegroundService : Service() {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.cancel(NOTIFICATION_ID)
         super.onDestroy()
-    }
-
-    override fun onTaskRemoved(rootIntent: Intent?) {
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
-        super.onTaskRemoved(rootIntent)
     }
 
     private fun ensureChannel() {
@@ -124,10 +125,10 @@ class WorkoutForegroundService : Service() {
 
         val minutes = elapsedSeconds / 60
         val hours = minutes / 60
-        val durationText = if (hours > 0) {
-            "%dh %02dm".format(hours, minutes % 60)
-        } else {
-            "%d min".format(minutes)
+        val durationText = when {
+            hours > 0 -> "%dh %02dm".format(hours, minutes % 60)
+            minutes > 0 -> "%d min".format(minutes)
+            else -> "< 1 min"
         }
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
