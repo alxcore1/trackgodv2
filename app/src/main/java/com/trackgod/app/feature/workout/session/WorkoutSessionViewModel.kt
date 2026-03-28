@@ -709,5 +709,6 @@ class WorkoutSessionViewModel @Inject constructor(
         sessionTimerJob?.cancel()
         restTimerManager.stop()
         RestTimerAlarmScheduler.cancel(appContext)
+        WorkoutForegroundService.stop(appContext)
     }
 }

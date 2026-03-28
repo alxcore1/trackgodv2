@@ -74,6 +74,15 @@ fun NumberInput(
 ) {
     var isEditing by remember { mutableStateOf(false) }
 
+    // Shrink font for longer values so text never gets clipped
+    val displayText = value.ifEmpty { "0" }
+    val dynamicFontSize = when {
+        displayText.length >= 6 -> 18.sp
+        displayText.length >= 5 -> 22.sp
+        displayText.length >= 4 -> 25.sp
+        else -> 28.sp
+    }
+
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         // Label
         Text(
@@ -120,7 +129,7 @@ fun NumberInput(
                         modifier = Modifier.defaultMinSize(minWidth = 56.dp),
                         textStyle = TextStyle(
                             color = TextPrimary,
-                            fontSize = 28.sp,
+                            fontSize = dynamicFontSize,
                             fontWeight = FontWeight.Black,
                             textAlign = TextAlign.Center,
                         ),
@@ -136,9 +145,9 @@ fun NumberInput(
                     )
                 } else {
                     Text(
-                        text = value.ifEmpty { "0" },
+                        text = displayText,
                         color = TextPrimary,
-                        fontSize = 28.sp,
+                        fontSize = dynamicFontSize,
                         fontWeight = FontWeight.Black,
                         textAlign = TextAlign.Center,
                         maxLines = 1,

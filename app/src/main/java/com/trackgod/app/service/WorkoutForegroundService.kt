@@ -39,6 +39,9 @@ class WorkoutForegroundService : Service() {
 
         fun stop(context: Context) {
             context.stopService(Intent(context, WorkoutForegroundService::class.java))
+            // Immediately cancel notification in case onDestroy is delayed
+            val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            nm.cancel(NOTIFICATION_ID)
         }
     }
 
@@ -77,13 +80,22 @@ class WorkoutForegroundService : Service() {
             }
         }
 
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
         updateJob?.cancel()
         scope.cancel()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        nm.cancel(NOTIFICATION_ID)
         super.onDestroy()
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+        super.onTaskRemoved(rootIntent)
     }
 
     private fun ensureChannel() {
