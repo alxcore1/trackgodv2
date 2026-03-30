@@ -1,7 +1,12 @@
 package com.trackgod.app.ui.component
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,13 +18,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,10 +43,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trackgod.app.ui.theme.Blood
+import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
+import kotlinx.coroutines.delay
 
 /** Button style variants for the TrackGod design system. */
 enum class ButtonVariant { Primary, Secondary, Ghost }
@@ -61,9 +72,22 @@ fun TrackGodButton(
     enabled: Boolean = true,
     icon: ImageVector? = null,
     textColorOverride: Color? = null,
+    confirmationTrigger: Int = 0,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+
+    // Confirmation state: tracks trigger changes to show checkmark
+    val showingCheck = remember { mutableIntStateOf(0) }
+    val isConfirming = showingCheck.intValue > 0
+
+    LaunchedEffect(confirmationTrigger) {
+        if (confirmationTrigger > 0) {
+            showingCheck.intValue = confirmationTrigger
+            delay(500L)
+            showingCheck.intValue = 0
+        }
+    }
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled) 0.95f else 1f,
@@ -71,11 +95,12 @@ fun TrackGodButton(
         label = "btnScale",
     )
 
-    val bgColor = when (variant) {
+    val baseBgColor = when (variant) {
         ButtonVariant.Primary -> Blood
         ButtonVariant.Secondary -> SurfaceLow
         ButtonVariant.Ghost -> Color.Transparent
     }
+    val bgColor = if (isConfirming && variant == ButtonVariant.Primary) BloodBright else baseBgColor
 
     val textColor = textColorOverride ?: when (variant) {
         ButtonVariant.Primary -> TextPrimary
@@ -109,21 +134,44 @@ fun TrackGodButton(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = text.uppercase(),
-            color = textColor,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = 3.sp,
-            textAlign = TextAlign.Center,
-        )
-        if (icon != null) {
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = textColor,
-            )
+        AnimatedContent(
+            targetState = isConfirming,
+            transitionSpec = {
+                fadeIn(tween(150)) togetherWith fadeOut(tween(150)) using
+                    SizeTransform(clip = false)
+            },
+            label = "btnConfirm",
+        ) { confirming ->
+            if (confirming) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Logged",
+                    tint = textColor,
+                    modifier = Modifier.size(22.dp),
+                )
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Text(
+                        text = text.uppercase(),
+                        color = textColor,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 3.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                    if (icon != null) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = textColor,
+                        )
+                    }
+                }
+            }
         }
     }
 }

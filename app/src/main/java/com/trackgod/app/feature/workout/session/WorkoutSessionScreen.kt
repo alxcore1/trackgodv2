@@ -53,6 +53,7 @@ import android.os.VibratorManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -347,19 +348,51 @@ private fun WorkoutSessionContent(
                         items = state.completedSets,
                         key = { _, set -> set.id },
                     ) { index, set ->
-                        CompletedSetRow(
-                            setNumber = index + 1,
-                            weight = set.weight,
-                            reps = set.reps,
-                            note = set.note,
-                            weightUnit = state.weightUnit,
-                            weightIncrement = state.weightIncrement,
-                            isEditing = state.editingSetId == set.id,
-                            isPr = set.id in state.prSetIds,
-                            setType = set.setType,
-                            onClick = { onEditSet(set.id) },
-                            onLongClick = { deleteSetId = set.id },
-                        )
+                        val isNew = remember(set.id) { mutableStateOf(true) }
+                        val highlightAlpha = remember { androidx.compose.animation.core.Animatable(1f) }
+
+                        LaunchedEffect(set.id) {
+                            if (isNew.value) {
+                                highlightAlpha.snapTo(1f)
+                                highlightAlpha.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = tween(durationMillis = 600),
+                                )
+                                isNew.value = false
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .animateItem(
+                                    fadeInSpec = tween(300),
+                                    placementSpec = tween(300),
+                                )
+                        ) {
+                            CompletedSetRow(
+                                setNumber = index + 1,
+                                weight = set.weight,
+                                reps = set.reps,
+                                note = set.note,
+                                weightUnit = state.weightUnit,
+                                weightIncrement = state.weightIncrement,
+                                isEditing = state.editingSetId == set.id,
+                                isPr = set.id in state.prSetIds,
+                                setType = set.setType,
+                                onClick = { onEditSet(set.id) },
+                                onLongClick = { deleteSetId = set.id },
+                            )
+                            // Brief highlight overlay for newly added sets
+                            if (highlightAlpha.value > 0f) {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .padding(horizontal = 16.dp, vertical = 2.dp)
+                                        .alpha(highlightAlpha.value * 0.15f)
+                                        .background(Blood),
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -691,6 +724,9 @@ private fun ExerciseInputSection(
     val exercise = state.currentExercise ?: return
     val isEditing = state.editingSetId != null
 
+    // Confirmation trigger: increments each time a set is logged
+    var logConfirmCount by remember { mutableIntStateOf(0) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -929,8 +965,12 @@ private fun ExerciseInputSection(
                 }
                 TrackGodButton(
                     text = "LOG SET",
-                    onClick = onLogSet,
+                    onClick = {
+                        onLogSet()
+                        logConfirmCount++
+                    },
                     modifier = Modifier.weight(1f),
+                    confirmationTrigger = logConfirmCount,
                 )
             }
         }
