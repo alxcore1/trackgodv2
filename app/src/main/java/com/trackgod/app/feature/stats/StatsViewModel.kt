@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trackgod.app.core.repository.SettingsRepository
 import com.trackgod.app.core.repository.WorkoutRepository
+import com.trackgod.app.core.util.calculateStreak
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -181,7 +182,7 @@ class StatsViewModel @Inject constructor(
                 val workoutDates = allCompletedWorkouts.mapNotNull { w ->
                     runCatching { LocalDate.parse(w.date, DateTimeFormatter.ISO_LOCAL_DATE) }.getOrNull()
                 }.toSortedSet()
-                val currentStreak = calculateCurrentStreak(workoutDates, today)
+                val currentStreak = calculateStreak(workoutDates, today)
                 val longestStreak = calculateLongestStreak(workoutDates)
                 val weeklyConsistency = buildWeeklyConsistency(allCompletedWorkouts, today)
                 val totalWorkoutsInRange = allCompletedWorkouts.count { w ->
@@ -207,7 +208,8 @@ class StatsViewModel @Inject constructor(
                         hasData = allCompletedWorkouts.isNotEmpty(),
                     )
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                android.util.Log.e("StatsViewModel", "Failed to load analytics", e)
                 _state.update { it.copy(isLoading = false, hasData = false) }
             }
         }
@@ -315,14 +317,16 @@ class StatsViewModel @Inject constructor(
         }
 
         val days = ChronoUnit.DAYS.between(start, end).toInt() + 1
+        val unit = settingsRepository.getWeightUnit()
+        val factor = if (unit == "lbs") 2.2f else 1f
         return (0 until days).map { offset ->
             val day = start.plusDays(offset.toLong())
             val volume = volumeByDate[day] ?: 0f
             val intensity = when {
                 volume <= 0f -> 0
-                volume < 2000f -> 1
-                volume < 5000f -> 2
-                volume < 10000f -> 3
+                volume < 2000f * factor -> 1
+                volume < 5000f * factor -> 2
+                volume < 10000f * factor -> 3
                 else -> 4
             }
             HeatmapDay(day, volume, intensity)
@@ -370,18 +374,6 @@ class StatsViewModel @Inject constructor(
     }
 
     // -- Streak calculations --------------------------------------------------
-
-    private fun calculateCurrentStreak(workoutDates: Set<LocalDate>, today: LocalDate): Int {
-        if (workoutDates.isEmpty()) return 0
-        // Start from today; if no workout today, try yesterday (streak isn't broken until a full day is missed)
-        var day = if (today in workoutDates) today else today.minusDays(1)
-        var streak = 0
-        while (day in workoutDates) {
-            streak++
-            day = day.minusDays(1)
-        }
-        return streak
-    }
 
     private fun calculateLongestStreak(workoutDates: Set<LocalDate>): Int {
         if (workoutDates.isEmpty()) return 0

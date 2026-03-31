@@ -2,8 +2,6 @@ package com.trackgod.app.core.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import com.trackgod.app.core.database.converter.Converters
 import com.trackgod.app.core.database.dao.BackupDao
 import com.trackgod.app.core.database.dao.RoutineDao
 import com.trackgod.app.core.database.dao.BodyMetricDao
@@ -39,7 +37,6 @@ import com.trackgod.app.core.database.entity.WorkoutEntity
     version = 4,
     exportSchema = true
 )
-@TypeConverters(Converters::class)
 abstract class TrackGodDatabase : RoomDatabase() {
 
     companion object {

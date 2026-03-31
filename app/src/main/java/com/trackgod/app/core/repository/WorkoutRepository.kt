@@ -1,5 +1,7 @@
 package com.trackgod.app.core.repository
 
+import androidx.room.withTransaction
+import com.trackgod.app.core.database.TrackGodDatabase
 import com.trackgod.app.core.database.dao.CategoryVolume
 import com.trackgod.app.core.database.dao.DateVolume
 import com.trackgod.app.core.database.dao.ExerciseDao
@@ -24,6 +26,7 @@ import javax.inject.Singleton
 
 @Singleton
 class WorkoutRepository @Inject constructor(
+    private val database: TrackGodDatabase,
     private val workoutDao: WorkoutDao,
     private val setDao: SetDao,
     private val exerciseDao: ExerciseDao,
@@ -92,21 +95,23 @@ class WorkoutRepository @Inject constructor(
         setDao.getRecentForExercise(exerciseId)
 
     suspend fun completeWorkout(workoutId: Long, name: String) {
-        val workout = workoutDao.getById(workoutId) ?: return
-        val now = System.currentTimeMillis()
-        val durationSeconds = ((now - workout.startTime) / 1000).toInt()
-        val sets = setDao.getByWorkoutOnce(workoutId)
-        val totalVolume = sets.filter { it.setType != "warmup" }.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
+        database.withTransaction {
+            val workout = workoutDao.getById(workoutId) ?: return@withTransaction
+            val now = System.currentTimeMillis()
+            val durationSeconds = ((now - workout.startTime) / 1000).toInt()
+            val sets = setDao.getByWorkoutOnce(workoutId)
+            val totalVolume = sets.filter { it.setType != "warmup" }.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
 
-        workoutDao.update(
-            workout.copy(
-                name = name,
-                endTime = now,
-                durationSeconds = durationSeconds,
-                totalVolume = totalVolume,
-                isCompleted = true
+            workoutDao.update(
+                workout.copy(
+                    name = name.trim(),
+                    endTime = now,
+                    durationSeconds = durationSeconds,
+                    totalVolume = totalVolume,
+                    isCompleted = true
+                )
             )
-        )
+        }
 
         // Fire-and-forget backup after workout save
         backgroundScope.launch {

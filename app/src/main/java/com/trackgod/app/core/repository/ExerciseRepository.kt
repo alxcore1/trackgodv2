@@ -60,10 +60,6 @@ class ExerciseRepository @Inject constructor(
         exerciseDao.deactivate(id)
     }
 
-    suspend fun incrementUsage(id: Long) {
-        exerciseDao.incrementUsageCount(id, System.currentTimeMillis())
-    }
-
     suspend fun seedExercises(exercises: List<ExerciseEntity>) {
         exerciseDao.insertAll(exercises)
     }

@@ -64,7 +64,7 @@ class BackupViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     isLoading = false,
-                    message = if (result.success) "BACKUP CREATED" else "BACKUP FAILED: ${result.errorMessage}",
+                    message = if (result.success) "BACKUP CREATED" else "Backup fehlgeschlagen. Bitte versuche es erneut.",
                 )
             }
             if (result.success) loadStats()
@@ -131,7 +131,11 @@ class BackupViewModel @Inject constructor(
             try {
                 val rows = workoutRepository.getAllSetsForCsvExport()
                 val unit = settingsRepository.getWeightUnit()
-                fun csvEscape(s: String): String = "\"${s.replace("\"", "\"\"")}\""
+                fun csvEscape(s: String): String {
+                    val escaped = s.replace("\"", "\"\"")
+                    val prefixed = if (escaped.isNotEmpty() && escaped[0] in charArrayOf('=', '+', '-', '@', '\t', '\r')) "'$escaped" else escaped
+                    return "\"$prefixed\""
+                }
 
                 val sb = StringBuilder()
                 sb.appendLine("Date,Workout,Exercise,Set,Weight ($unit),Reps,RPE,RIR,Note")

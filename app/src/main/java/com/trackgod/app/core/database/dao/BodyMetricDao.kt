@@ -32,4 +32,7 @@ interface BodyMetricDao {
 
     @Query("SELECT * FROM body_metrics WHERE photo_uri IS NOT NULL ORDER BY date DESC LIMIT :limit")
     fun getProgressPhotos(limit: Int): Flow<List<BodyMetricEntity>>
+
+    @Query("SELECT * FROM body_metrics ORDER BY date DESC LIMIT :limit")
+    fun getWeightHistoryLimited(limit: Int): Flow<List<BodyMetricEntity>>
 }

@@ -36,6 +36,9 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercises WHERE id = :id")
     suspend fun getById(id: Long): ExerciseEntity?
 
+    @Query("SELECT * FROM exercises WHERE name = :name LIMIT 1")
+    suspend fun getByName(name: String): ExerciseEntity?
+
     @Query("UPDATE exercises SET usage_count = usage_count + 1, last_used_at = :timestamp WHERE id = :id")
     suspend fun incrementUsageCount(id: Long, timestamp: Long)
 

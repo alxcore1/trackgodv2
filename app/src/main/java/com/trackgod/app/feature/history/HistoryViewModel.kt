@@ -85,10 +85,11 @@ class HistoryViewModel @Inject constructor(
                 try {
                     val filtered = applyFilters(allWorkouts)
 
-                    // Build a map of workout name → previous volume for delta comparison
+                    // Build a map of workout name → previous volume for delta comparison.
+                    // Process oldest-first so each workout compares against its older predecessor.
                     val volumeByName = mutableMapOf<String, Float>()
 
-                    val withDetails = filtered.map { workout ->
+                    val withDetails = filtered.reversed().map { workout ->
                         val sets = workoutRepository.getSetsForWorkoutOnce(workout.id)
                         val categories = sets.map { it.exerciseId }
                             .distinct()
@@ -105,7 +106,7 @@ class HistoryViewModel @Inject constructor(
                             volumeDelta = delta,
                             categories = categories,
                         )
-                    }
+                    }.reversed()
 
                     // Workout dates for week indicator
                     val weekDates = _state.value.weekDates.toSet()

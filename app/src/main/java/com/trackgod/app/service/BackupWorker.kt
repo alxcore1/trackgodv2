@@ -8,51 +8,97 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.trackgod.app.core.database.dao.BackupDao
-import com.trackgod.app.core.repository.BackupRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
  * Daily WorkManager worker that creates an automatic backup and enforces
- * the retention policy.
+ * a file-based retention policy.
+ *
+ * This worker performs a raw file copy of the database instead of opening a
+ * second Room instance, which would risk WAL lock contention with the
+ * Hilt-managed singleton.
  */
 class BackupWorker(
     context: Context,
     params: WorkerParameters,
 ) : CoroutineWorker(context, params) {
 
-    override suspend fun doWork(): Result {
-        return try {
-            // Build a lightweight BackupRepository manually since we are not
-            // using @HiltWorker to keep setup simple and avoid the extra
-            // hilt-work dependency.
+    companion object {
+        private const val DB_NAME = "trackgod.db"
+        private const val BACKUP_DIR = "backups"
+    }
+
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        try {
             val context = applicationContext
-            val db = androidx.room.Room.databaseBuilder(
-                context,
-                com.trackgod.app.core.database.TrackGodDatabase::class.java,
-                "trackgod.db",
-            ).addMigrations(com.trackgod.app.core.database.TrackGodDatabase.MIGRATION_1_2, com.trackgod.app.core.database.TrackGodDatabase.MIGRATION_2_3, com.trackgod.app.core.database.TrackGodDatabase.MIGRATION_3_4)
-             .build()
+            val dbFile = context.getDatabasePath(DB_NAME)
 
-            val backupDao: BackupDao = db.backupDao()
-            val repo = BackupRepository(backupDao, context)
-
-            val result = repo.createBackup(type = "auto")
-
-            if (result.success) {
-                // Read max backups from prefs
-                val prefs: SharedPreferences =
-                    context.getSharedPreferences("trackgod_prefs", Context.MODE_PRIVATE)
-                val maxBackups = prefs.getInt("max_backups", 10)
-                repo.enforceRetentionPolicy(maxBackups)
+            if (!dbFile.exists() || dbFile.length() == 0L) {
+                return@withContext Result.failure()
             }
 
-            db.close()
+            // Checkpoint WAL so the main db file is up to date
+            checkpointDatabase(dbFile)
 
-            if (result.success) Result.success() else Result.retry()
+            val backupDir = File(context.filesDir, BACKUP_DIR).apply { mkdirs() }
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+            val backupFile = File(backupDir, "trackgod_backup_${timestamp}.db")
+
+            dbFile.copyTo(backupFile, overwrite = true)
+
+            if (!backupFile.exists() || backupFile.length() == 0L) {
+                return@withContext Result.retry()
+            }
+
+            // Enforce retention by deleting oldest files on disk
+            val prefs: SharedPreferences =
+                context.getSharedPreferences("trackgod_prefs", Context.MODE_PRIVATE)
+            val maxBackups = prefs.getInt("max_backups", 10)
+            enforceFileRetention(backupDir, maxBackups)
+
+            Result.success()
         } catch (_: Exception) {
             Result.retry()
         }
+    }
+
+    /**
+     * Checkpoint WAL using the raw Android SQLite API (no Room).
+     */
+    private fun checkpointDatabase(dbFile: File) {
+        try {
+            val db = android.database.sqlite.SQLiteDatabase.openDatabase(
+                dbFile.absolutePath,
+                null,
+                android.database.sqlite.SQLiteDatabase.OPEN_READWRITE,
+            )
+            db.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", null).use { it.moveToFirst() }
+            db.close()
+        } catch (_: Exception) {
+            // Non-critical: backup will still work, just might miss latest WAL data
+        }
+    }
+
+    /**
+     * Keep only the [maxBackups] most recent backup files, deleting the rest.
+     */
+    private fun enforceFileRetention(backupDir: File, maxBackups: Int) {
+        val backups = backupDir.listFiles { file ->
+            file.name.startsWith("trackgod_backup_") && file.name.endsWith(".db")
+        } ?: return
+
+        if (backups.size <= maxBackups) return
+
+        // Sort oldest-first by last modified time, delete the excess
+        backups.sortedBy { it.lastModified() }
+            .dropLast(maxBackups)
+            .forEach { it.delete() }
     }
 }
 

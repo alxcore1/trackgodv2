@@ -145,10 +145,11 @@ class OnboardingViewModel @Inject constructor(
                 _state.update { it.copy(isSaving = false) }
                 onComplete()
             } catch (e: Exception) {
+                android.util.Log.e("OnboardingViewModel", "Failed to save profile", e)
                 _state.update {
                     it.copy(
                         isSaving = false,
-                        error = e.message ?: "Failed to save profile",
+                        error = "Profil konnte nicht gespeichert werden.",
                     )
                 }
             }

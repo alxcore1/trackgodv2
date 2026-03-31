@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
+import androidx.room.withTransaction
 import com.trackgod.app.core.database.TrackGodDatabase
 import com.trackgod.app.core.database.entity.BodyMetricEntity
 import com.trackgod.app.core.database.entity.ExerciseEntity
@@ -36,6 +37,8 @@ class V1ImportRepository @Inject constructor(
 ) {
 
     companion object {
+        private const val MAX_IMPORT_FILE_SIZE = 100L * 1024 * 1024 // 100 MB
+
         private val ISO_FORMATS = listOf(
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US),
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US),
@@ -80,6 +83,12 @@ class V1ImportRepository @Inject constructor(
                 }
             } ?: return@withContext ImportResult(success = false, error = "Cannot read selected file")
 
+            // Reject files larger than 100 MB
+            if (tempFile.length() > MAX_IMPORT_FILE_SIZE) {
+                tempFile.delete()
+                return@withContext ImportResult(success = false, error = "File is too large (max 100 MB)")
+            }
+
             // Validate SQLite header
             if (tempFile.length() < 16) {
                 tempFile.delete()
@@ -103,213 +112,235 @@ class V1ImportRepository @Inject constructor(
 
             val now = System.currentTimeMillis()
 
+            // Read all v1 data from cursors before entering the transaction,
+            // because the v1 SQLite DB is opened separately from Room.
+            // We collect the data into lists, then write inside the transaction.
+
             // 3. Import exercises (machines)
             val exerciseNameToId = mutableMapOf<String, Long>()
             var exercisesImported = 0
 
-            if (tableExists(v1Db, "machines")) {
-                v1Db.rawQuery("SELECT * FROM machines", null).use { cursor ->
-                    while (cursor.moveToNext()) {
-                        val name = cursor.getStringOrNull("name") ?: continue
-                        val category = cursor.getStringOrNull("category") ?: "Other"
-                        val brand = cursor.getStringOrNull("brand")
-                        val alternativeNames = cursor.getStringOrNull("alternative_names")
-
-                        val mappedCategory = CATEGORY_MAP[category.lowercase()] ?: category
-
-                        val exerciseId = db.exerciseDao().insert(
-                            ExerciseEntity(
-                                name = name,
-                                category = mappedCategory,
-                                equipmentType = "machine",
-                                brand = brand,
-                                alternativeNames = alternativeNames,
-                                isCustom = false,
-                                isActive = true,
-                                createdAt = now,
-                            )
-                        )
-                        exerciseNameToId[name.lowercase()] = exerciseId
-                        exercisesImported++
-                    }
-                }
+            // Pre-populate map with exercises that already exist in v2
+            db.exerciseDao().getAllActiveSnapshot().forEach { existing ->
+                exerciseNameToId[existing.name.lowercase()] = existing.id
             }
 
-            // 4. Import workouts and entries
-            var workoutsImported = 0
-            var setsImported = 0
+            db.withTransaction {
+                if (tableExists(v1Db, "machines")) {
+                    v1Db.rawQuery("SELECT * FROM machines", null).use { cursor ->
+                        while (cursor.moveToNext()) {
+                            val name = cursor.getStringOrNull("name") ?: continue
+                            val category = cursor.getStringOrNull("category") ?: "Other"
+                            val brand = cursor.getStringOrNull("brand")
+                            val alternativeNames = cursor.getStringOrNull("alternative_names")
 
-            // Map v1 workout IDs to v2 workout IDs
-            val v1WorkoutIdToV2Id = mutableMapOf<Long, Long>()
+                            // Deduplicate: reuse existing exercise if name matches
+                            val existing = exerciseNameToId[name.lowercase()]
+                            if (existing != null) continue
 
-            v1Db.rawQuery("SELECT * FROM workouts ORDER BY id ASC", null).use { cursor ->
-                while (cursor.moveToNext()) {
-                    val v1Id = cursor.getLongOrNull("id") ?: continue
-                    val date = cursor.getStringOrNull("date") ?: continue
-                    val comment = cursor.getStringOrNull("comment")
-                    val startTimeRaw = cursor.getStringOrNull("start_time")
-                    val endTimeRaw = cursor.getStringOrNull("end_time")
-                    val createdAtRaw = cursor.getStringOrNull("created_at")
+                            val mappedCategory = CATEGORY_MAP[category.lowercase()] ?: category
 
-                    val startTime = parseTimestamp(startTimeRaw) ?: parseTimestamp(createdAtRaw) ?: now
-                    val endTime = parseTimestamp(endTimeRaw)
-
-                    val durationSeconds = if (endTime != null && endTime > startTime) {
-                        ((endTime - startTime) / 1000).toInt()
-                    } else {
-                        null
-                    }
-
-                    val v2WorkoutId = db.workoutDao().insert(
-                        WorkoutEntity(
-                            name = comment?.takeIf { it.isNotBlank() } ?: "V1 Workout",
-                            date = date,
-                            startTime = startTime,
-                            endTime = endTime,
-                            durationSeconds = durationSeconds,
-                            isCompleted = true,
-                            notes = null,
-                            createdAt = startTime,
-                        )
-                    )
-
-                    v1WorkoutIdToV2Id[v1Id] = v2WorkoutId
-                    workoutsImported++
-                }
-            }
-
-            // 5. Import entries -> expand to individual sets
-            v1Db.rawQuery("SELECT * FROM entries ORDER BY id ASC", null).use { cursor ->
-                while (cursor.moveToNext()) {
-                    val v1WorkoutId = cursor.getLongOrNull("workout_id") ?: continue
-                    val machineName = cursor.getStringOrNull("machine_name") ?: continue
-                    val weight = cursor.getFloatOrNull("weight") ?: 0f
-                    val reps = cursor.getIntOrNull("reps") ?: 0
-                    val setsCount = cursor.getIntOrNull("sets") ?: 1
-                    val note = cursor.getStringOrNull("note")
-
-                    val v2WorkoutId = v1WorkoutIdToV2Id[v1WorkoutId] ?: continue
-
-                    // Find or create exercise
-                    val exerciseId = exerciseNameToId[machineName.lowercase()]
-                        ?: run {
-                            val newId = db.exerciseDao().insert(
+                            val exerciseId = db.exerciseDao().insert(
                                 ExerciseEntity(
-                                    name = machineName,
-                                    category = "Other",
+                                    name = name,
+                                    category = mappedCategory,
                                     equipmentType = "machine",
-                                    isCustom = true,
+                                    brand = brand,
+                                    alternativeNames = alternativeNames,
+                                    isCustom = false,
                                     isActive = true,
                                     createdAt = now,
                                 )
                             )
-                            exerciseNameToId[machineName.lowercase()] = newId
+                            exerciseNameToId[name.lowercase()] = exerciseId
                             exercisesImported++
-                            newId
                         }
-
-                    // Expand sets count to individual set rows
-                    val expandCount = setsCount.coerceIn(1, 50)
-                    for (setNum in 1..expandCount) {
-                        db.setDao().insert(
-                            SetEntity(
-                                workoutId = v2WorkoutId,
-                                exerciseId = exerciseId,
-                                setNumber = setNum,
-                                weight = weight,
-                                reps = reps,
-                                note = if (setNum == 1) note else null,
-                                createdAt = now,
-                            )
-                        )
-                        setsImported++
                     }
                 }
-            }
 
-            // 6. Update workout totalVolume
-            for ((_, v2WorkoutId) in v1WorkoutIdToV2Id) {
-                val sets = db.setDao().getByWorkoutOnce(v2WorkoutId)
-                val totalVolume = sets.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
-                val workout = db.workoutDao().getById(v2WorkoutId)
-                if (workout != null) {
-                    db.workoutDao().update(workout.copy(totalVolume = totalVolume))
-                }
-            }
+                // 4. Import workouts and entries
+                var workoutsImported = 0
+                var setsImported = 0
 
-            // 7. Import body metrics
-            var bodyMetricsImported = 0
-            if (tableExists(v1Db, "body_metrics")) {
-                v1Db.rawQuery("SELECT * FROM body_metrics", null).use { cursor ->
+                // Map v1 workout IDs to v2 workout IDs
+                val v1WorkoutIdToV2Id = mutableMapOf<Long, Long>()
+
+                v1Db.rawQuery("SELECT * FROM workouts ORDER BY id ASC", null).use { cursor ->
                     while (cursor.moveToNext()) {
+                        val v1Id = cursor.getLongOrNull("id") ?: continue
                         val date = cursor.getStringOrNull("date") ?: continue
-                        val weightVal = cursor.getFloatOrNull("weight")
-                        val noteVal = cursor.getStringOrNull("note")
+                        val comment = cursor.getStringOrNull("comment")
+                        val startTimeRaw = cursor.getStringOrNull("start_time")
+                        val endTimeRaw = cursor.getStringOrNull("end_time")
                         val createdAtRaw = cursor.getStringOrNull("created_at")
 
-                        db.bodyMetricDao().insert(
-                            BodyMetricEntity(
-                                date = date,
-                                weight = weightVal,
-                                photoUri = null, // v1 URIs won't work on v2 install
-                                note = noteVal,
-                                createdAt = parseTimestamp(createdAtRaw) ?: now,
-                            )
-                        )
-                        bodyMetricsImported++
-                    }
-                }
-            }
+                        val startTime = parseTimestamp(startTimeRaw) ?: parseTimestamp(createdAtRaw) ?: now
+                        val endTime = parseTimestamp(endTimeRaw)
 
-            // 8. Import user profile
-            var profileImported = false
-            if (tableExists(v1Db, "user_profile")) {
-                v1Db.rawQuery("SELECT * FROM user_profile LIMIT 1", null).use { cursor ->
-                    if (cursor.moveToFirst()) {
-                        val name = cursor.getStringOrNull("name") ?: "Athlete"
-                        val gender = cursor.getStringOrNull("gender")
-                        val birthday = cursor.getStringOrNull("birthday")
-                        val height = cursor.getFloatOrNull("height")
-                        val weightVal = cursor.getFloatOrNull("weight")
-                        val goals = cursor.getStringOrNull("goals")
-                        val weeklyTarget = cursor.getIntOrNull("weekly_target") ?: 4
-                        val experienceLevel = cursor.getStringOrNull("experience_level") ?: "intermediate"
-
-                        val primaryObjective = goals?.let { goalsText ->
-                            OBJECTIVE_MAP.entries.firstOrNull { (key, _) ->
-                                goalsText.lowercase().contains(key)
-                            }?.value ?: goalsText
+                        val durationSeconds = if (endTime != null && endTime > startTime) {
+                            ((endTime - startTime) / 1000).toInt()
+                        } else {
+                            null
                         }
 
-                        db.userProfileDao().insert(
-                            UserProfileEntity(
-                                name = name,
-                                gender = gender,
-                                birthday = birthday,
-                                height = height,
-                                weight = weightVal,
-                                primaryObjective = primaryObjective,
-                                experienceLevel = experienceLevel,
-                                weeklyTarget = weeklyTarget,
-                                weightUnit = "kg",
-                                heightUnit = "cm",
-                                createdAt = now,
-                                updatedAt = now,
+                        val v2WorkoutId = db.workoutDao().insert(
+                            WorkoutEntity(
+                                name = comment?.takeIf { it.isNotBlank() } ?: "V1 Workout",
+                                date = date,
+                                startTime = startTime,
+                                endTime = endTime,
+                                durationSeconds = durationSeconds,
+                                isCompleted = true,
+                                notes = null,
+                                createdAt = startTime,
                             )
                         )
-                        profileImported = true
+
+                        v1WorkoutIdToV2Id[v1Id] = v2WorkoutId
+                        workoutsImported++
                     }
                 }
-            }
 
-            ImportResult(
-                success = true,
-                workoutsImported = workoutsImported,
-                exercisesImported = exercisesImported,
-                setsImported = setsImported,
-                bodyMetricsImported = bodyMetricsImported,
-                profileImported = profileImported,
-            )
+                // 5. Import entries -> expand to individual sets
+                v1Db.rawQuery("SELECT * FROM entries ORDER BY id ASC", null).use { cursor ->
+                    while (cursor.moveToNext()) {
+                        val v1WorkoutId = cursor.getLongOrNull("workout_id") ?: continue
+                        val machineName = cursor.getStringOrNull("machine_name") ?: continue
+                        val weight = cursor.getFloatOrNull("weight") ?: 0f
+                        val reps = cursor.getIntOrNull("reps") ?: 0
+                        val setsCount = cursor.getIntOrNull("sets") ?: 1
+                        val note = cursor.getStringOrNull("note")
+
+                        val v2WorkoutId = v1WorkoutIdToV2Id[v1WorkoutId] ?: continue
+
+                        // Find or create exercise (with deduplication)
+                        val exerciseId = exerciseNameToId[machineName.lowercase()]
+                            ?: run {
+                                // Check DB in case it was added outside our map
+                                val dbExisting = db.exerciseDao().getByName(machineName)
+                                if (dbExisting != null) {
+                                    exerciseNameToId[machineName.lowercase()] = dbExisting.id
+                                    dbExisting.id
+                                } else {
+                                    val newId = db.exerciseDao().insert(
+                                        ExerciseEntity(
+                                            name = machineName,
+                                            category = "Other",
+                                            equipmentType = "machine",
+                                            isCustom = true,
+                                            isActive = true,
+                                            createdAt = now,
+                                        )
+                                    )
+                                    exerciseNameToId[machineName.lowercase()] = newId
+                                    exercisesImported++
+                                    newId
+                                }
+                            }
+
+                        // Expand sets count to individual set rows
+                        val expandCount = setsCount.coerceIn(1, 50)
+                        for (setNum in 1..expandCount) {
+                            db.setDao().insert(
+                                SetEntity(
+                                    workoutId = v2WorkoutId,
+                                    exerciseId = exerciseId,
+                                    setNumber = setNum,
+                                    weight = weight,
+                                    reps = reps,
+                                    note = if (setNum == 1) note else null,
+                                    createdAt = now,
+                                )
+                            )
+                            setsImported++
+                        }
+                    }
+                }
+
+                // 6. Update workout totalVolume
+                for ((_, v2WorkoutId) in v1WorkoutIdToV2Id) {
+                    val sets = db.setDao().getByWorkoutOnce(v2WorkoutId)
+                    val totalVolume = sets.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
+                    val workout = db.workoutDao().getById(v2WorkoutId)
+                    if (workout != null) {
+                        db.workoutDao().update(workout.copy(totalVolume = totalVolume))
+                    }
+                }
+
+                // 7. Import body metrics
+                var bodyMetricsImported = 0
+                if (tableExists(v1Db, "body_metrics")) {
+                    v1Db.rawQuery("SELECT * FROM body_metrics", null).use { cursor ->
+                        while (cursor.moveToNext()) {
+                            val date = cursor.getStringOrNull("date") ?: continue
+                            val weightVal = cursor.getFloatOrNull("weight")
+                            val noteVal = cursor.getStringOrNull("note")
+                            val createdAtRaw = cursor.getStringOrNull("created_at")
+
+                            db.bodyMetricDao().insert(
+                                BodyMetricEntity(
+                                    date = date,
+                                    weight = weightVal,
+                                    photoUri = null, // v1 URIs won't work on v2 install
+                                    note = noteVal,
+                                    createdAt = parseTimestamp(createdAtRaw) ?: now,
+                                )
+                            )
+                            bodyMetricsImported++
+                        }
+                    }
+                }
+
+                // 8. Import user profile
+                var profileImported = false
+                if (tableExists(v1Db, "user_profile")) {
+                    v1Db.rawQuery("SELECT * FROM user_profile LIMIT 1", null).use { cursor ->
+                        if (cursor.moveToFirst()) {
+                            val name = cursor.getStringOrNull("name") ?: "Athlete"
+                            val gender = cursor.getStringOrNull("gender")
+                            val birthday = cursor.getStringOrNull("birthday")
+                            val height = cursor.getFloatOrNull("height")
+                            val weightVal = cursor.getFloatOrNull("weight")
+                            val goals = cursor.getStringOrNull("goals")
+                            val weeklyTarget = cursor.getIntOrNull("weekly_target") ?: 4
+                            val experienceLevel = cursor.getStringOrNull("experience_level") ?: "intermediate"
+
+                            val primaryObjective = goals?.let { goalsText ->
+                                OBJECTIVE_MAP.entries.firstOrNull { (key, _) ->
+                                    goalsText.lowercase().contains(key)
+                                }?.value ?: goalsText
+                            }
+
+                            db.userProfileDao().insert(
+                                UserProfileEntity(
+                                    name = name,
+                                    gender = gender,
+                                    birthday = birthday,
+                                    height = height,
+                                    weight = weightVal,
+                                    primaryObjective = primaryObjective,
+                                    experienceLevel = experienceLevel,
+                                    weeklyTarget = weeklyTarget,
+                                    weightUnit = "kg",
+                                    heightUnit = "cm",
+                                    createdAt = now,
+                                    updatedAt = now,
+                                )
+                            )
+                            profileImported = true
+                        }
+                    }
+                }
+
+                ImportResult(
+                    success = true,
+                    workoutsImported = workoutsImported,
+                    exercisesImported = exercisesImported,
+                    setsImported = setsImported,
+                    bodyMetricsImported = bodyMetricsImported,
+                    profileImported = profileImported,
+                )
+            }
         } catch (e: Exception) {
             ImportResult(
                 success = false,

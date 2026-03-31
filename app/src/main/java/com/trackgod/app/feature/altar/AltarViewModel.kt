@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.trackgod.app.core.util.calculateStreak
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -167,27 +168,15 @@ class AltarViewModel @Inject constructor(
         } }
     }
 
-    /**
-     * Calculate current streak: consecutive days backward from today
-     * that have at least one completed workout.
-     */
     private suspend fun calculateStreak(): Int {
         val dates = workoutRepository.getCompletedWorkoutDates()
         if (dates.isEmpty()) return 0
 
-        val today = LocalDate.now()
         val workoutDates = dates.mapNotNull { dateStr ->
             runCatching { LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE) }.getOrNull()
         }.toSet()
 
-        // Start from today; if no workout today, try yesterday (streak isn't broken until a full day is missed)
-        var day = if (workoutDates.contains(today)) today else today.minusDays(1)
-        var streak = 0
-        while (workoutDates.contains(day)) {
-            streak++
-            day = day.minusDays(1)
-        }
-        return streak
+        return calculateStreak(workoutDates)
     }
 
     /**

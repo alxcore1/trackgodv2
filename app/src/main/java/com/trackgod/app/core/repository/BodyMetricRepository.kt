@@ -37,7 +37,7 @@ class BodyMetricRepository @Inject constructor(
     }
 
     fun getWeightHistory(limit: Int = 30): Flow<List<BodyMetricEntity>> =
-        bodyMetricDao.getAll()
+        bodyMetricDao.getWeightHistoryLimited(limit)
 
     fun getProgressPhotos(limit: Int = 20): Flow<List<BodyMetricEntity>> =
         bodyMetricDao.getProgressPhotos(limit)

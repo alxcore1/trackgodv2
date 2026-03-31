@@ -30,7 +30,6 @@ class SettingsRepository @Inject constructor(
         private const val KEY_REMINDER_TIME = "reminder_time"
         private const val KEY_AUTO_BACKUP = "auto_backup"
         private const val KEY_MAX_BACKUPS = "max_backups"
-        private const val KEY_FIRST_LAUNCH = "first_launch"
         private const val KEY_DATABASE_SEEDED = "database_seeded"
         private const val KEY_SELECTED_CATEGORY = "selected_category"
         private const val KEY_SELECTED_EQUIPMENT_FILTER = "selected_equipment_filter"
@@ -160,14 +159,7 @@ class SettingsRepository @Inject constructor(
         prefs.edit().putInt(KEY_MAX_BACKUPS, count).apply()
     }
 
-    // --- First Launch / Seeding ---
-
-    fun isFirstLaunch(): Boolean =
-        prefs.getBoolean(KEY_FIRST_LAUNCH, true)
-
-    fun setFirstLaunchComplete() {
-        prefs.edit().putBoolean(KEY_FIRST_LAUNCH, false).apply()
-    }
+    // --- Seeding ---
 
     fun isDatabaseSeeded(): Boolean =
         prefs.getBoolean(KEY_DATABASE_SEEDED, false)

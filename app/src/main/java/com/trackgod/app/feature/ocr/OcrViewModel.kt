@@ -57,10 +57,11 @@ class OcrViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
+                android.util.Log.e("OcrViewModel", "OCR processing failed", e)
                 _state.update {
                     it.copy(
                         isProcessing = false,
-                        error = e.message ?: "OCR processing failed",
+                        error = "Texterkennung fehlgeschlagen. Bitte versuche es erneut.",
                     )
                 }
             }

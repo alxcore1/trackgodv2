@@ -57,6 +57,7 @@ import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.TrackGodTheme
 import com.trackgod.app.ui.theme.Void
+import com.trackgod.app.BuildConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -413,7 +414,7 @@ fun SplashScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "VER: 2.0.0",
+                    text = "VER: ${BuildConfig.VERSION_NAME}",
                     style = MaterialTheme.typography.labelSmall,
                     color = TextTertiary,
                 )

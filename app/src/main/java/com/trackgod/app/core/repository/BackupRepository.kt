@@ -109,6 +109,8 @@ class BackupRepository @Inject constructor(
     suspend fun restoreFromBackup(backupPath: String): Boolean = withContext(Dispatchers.IO) {
         try {
             val backupFile = File(backupPath)
+            val backupDir = File(context.filesDir, BACKUP_DIR)
+            if (!backupFile.canonicalPath.startsWith(backupDir.canonicalPath)) return@withContext false
             if (!backupFile.exists() || !isValidSqlite(backupFile)) return@withContext false
 
             val dbFile = context.getDatabasePath(DB_NAME)
@@ -172,6 +174,11 @@ class BackupRepository @Inject constructor(
                     input.copyTo(output)
                 }
             } ?: return@withContext false
+
+            if (tempFile.length() > 500L * 1024 * 1024) {
+                tempFile.delete()
+                return@withContext false
+            }
 
             if (!isValidSqlite(tempFile)) {
                 tempFile.delete()

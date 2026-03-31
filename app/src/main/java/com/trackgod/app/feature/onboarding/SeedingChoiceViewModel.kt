@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SeedingChoiceViewModel @Inject constructor(
-    val seedDatabase: SeedDatabase,
+    private val seedDatabase: SeedDatabase,
 ) : ViewModel() {
 
     private val _isSeeding = MutableStateFlow(false)
