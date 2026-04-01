@@ -212,7 +212,7 @@ private fun ExercisePickerContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Void)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 18.dp, vertical = 12.dp),
         ) {
             TrackGodButton(
                 text = "ADD CUSTOM",
@@ -245,7 +245,7 @@ private fun HeaderBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(58.dp)
             .background(Void)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -297,7 +297,7 @@ private fun SearchBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(VoidDeep)
-            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .padding(horizontal = 18.dp, vertical = 10.dp)
             .height(IntrinsicSize.Min),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -362,7 +362,7 @@ private fun CategoryChips(
 ) {
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         // "ALL" chip
@@ -404,7 +404,7 @@ private fun CategoryChip(
                 shape = RectangleShape,
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 18.dp, vertical = 8.dp),
     )
 }
 
@@ -418,7 +418,7 @@ private fun EquipmentFilterChips(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(horizontal = 18.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         CategoryChip(
@@ -450,8 +450,8 @@ private fun BrandFilterChips(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        contentPadding = PaddingValues(horizontal = 18.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
             CategoryChip(
@@ -481,7 +481,7 @@ private fun RecentlyUsedStrip(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 6.dp, bottom = 2.dp),
+            .padding(top = 8.dp, bottom = 2.dp),
     ) {
         Text(
             text = "RECENT",
@@ -489,12 +489,12 @@ private fun RecentlyUsedStrip(
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 3.sp,
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = 18.dp),
         )
         Spacer(modifier = Modifier.height(4.dp))
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            contentPadding = PaddingValues(horizontal = 18.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(items = exercises, key = { it.id }) { exercise ->
                 Text(
@@ -507,7 +507,7 @@ private fun RecentlyUsedStrip(
                     modifier = Modifier
                         .background(SurfaceHighest, RectangleShape)
                         .clickable { onExerciseSelected(exercise) }
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                 )
             }
         }
@@ -589,7 +589,7 @@ private fun ExerciseRow(
                 onClick = onClick,
                 onLongClick = { showMenu = true },
             )
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Left accent bar (blood tint for used exercises)

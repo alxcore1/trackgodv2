@@ -153,7 +153,7 @@ fun WeightLossScreen(
                             milestone = milestone,
                             weightUnit = state.weightUnit,
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
 

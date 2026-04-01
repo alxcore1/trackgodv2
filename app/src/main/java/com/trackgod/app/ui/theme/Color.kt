@@ -21,7 +21,7 @@ val BloodWarm = Color(0xFFE3BEB8)     // On-surface variant
 // === Text (The Signal) ===
 val TextPrimary = Color(0xFFE5E2E1)   // High contrast
 val TextSecondary = Color(0xFFC8C6C6) // 60-70%
-val TextTertiary = Color(0xFFAA8984)  // Labels, metadata
+val TextTertiary = Color(0xFFBF9D97)  // Labels, metadata
 val GhostBorder = Color(0xFF5A403C)   // 15% opacity outlines
 
 // === Semantic ===

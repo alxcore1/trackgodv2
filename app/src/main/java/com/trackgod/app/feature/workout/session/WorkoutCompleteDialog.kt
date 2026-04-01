@@ -13,9 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,9 +23,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,13 +31,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.TrackGodButton
+import com.trackgod.app.ui.component.TrackGodTextField
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
-import com.trackgod.app.ui.theme.Void
-import com.trackgod.app.ui.theme.VoidDeep
 
 /**
  * Dialog shown when the user finishes a workout.
@@ -67,7 +60,6 @@ fun WorkoutCompleteDialog(
     var workoutName by remember { mutableStateOf(defaultName) }
     var saveAsTemplate by remember { mutableStateOf(false) }
     var showDiscardConfirm by remember { mutableStateOf(false) }
-    val focusManager = LocalFocusManager.current
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -101,32 +93,13 @@ fun WorkoutCompleteDialog(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Workout name label
-            Text(
-                text = "WORKOUT NAME",
-                color = TextTertiary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp,
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
             // Editable name field
-            BasicTextField(
+            TrackGodTextField(
                 value = workoutName,
                 onValueChange = { workoutName = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = VoidDeep, shape = RectangleShape)
-                    .padding(horizontal = 12.dp, vertical = 14.dp),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    color = TextPrimary,
-                ),
+                label = "WORKOUT NAME",
                 singleLine = true,
-                cursorBrush = SolidColor(Blood),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(modifier = Modifier.height(24.dp))

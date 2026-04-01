@@ -316,7 +316,7 @@ private fun AltarContent(
             state.routines.forEach { routine ->
                 TrackGodCard(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 3.dp)
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
                         .combinedClickable(
                             enabled = !state.isStarting,
                             onClick = { onStartFromTemplate(routine.id) },
@@ -382,7 +382,7 @@ private fun AltarContent(
                     fontWeight = FontWeight.Black,
                     letterSpacing = 3.sp,
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "RAGE. RIP. REPEAT.",
                     color = BloodBright,
@@ -447,7 +447,7 @@ private fun WeeklyRitualContent(
         letterSpacing = 3.sp,
     )
 
-    Spacer(modifier = Modifier.height(6.dp))
+    Spacer(modifier = Modifier.height(8.dp))
 
     // Goal + percentage row
     Row(

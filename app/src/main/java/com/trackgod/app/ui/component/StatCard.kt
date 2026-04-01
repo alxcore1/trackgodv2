@@ -138,7 +138,7 @@ fun StatCard(
                 letterSpacing = 3.sp,
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Icon
             Icon(
@@ -148,7 +148,7 @@ fun StatCard(
                 modifier = Modifier.size(18.dp),
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Value
             Text(

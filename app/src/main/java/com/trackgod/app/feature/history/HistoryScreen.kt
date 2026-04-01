@@ -9,6 +9,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,9 +80,9 @@ import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodHeader
+import com.trackgod.app.ui.component.TrackGodTextField
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
-import com.trackgod.app.ui.theme.BloodDeep
 import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
@@ -172,10 +173,10 @@ private fun HistoryContent(
             onQueryChanged = onSearchQueryChanged,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 18.dp),
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         // -- Date picker ------------------------------------------------------
         DatePickerRow(
@@ -187,14 +188,14 @@ private fun HistoryContent(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         // -- Section divider --------------------------------------------------
         SectionDivider(
             text = "VERIFIED HISTORY",
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 18.dp),
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -414,7 +415,11 @@ private fun DateChip(
         modifier = modifier
             .padding(horizontal = 2.dp)
             .background(bgColor, RectangleShape)
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
             .padding(horizontal = 4.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -467,11 +472,11 @@ private fun WorkoutCard(
 ) {
     val workout = item.workout
     var showContextMenu by remember { mutableStateOf(false) }
-    val accentColor = if (index % 2 == 0) Blood else BloodDeep
+    val accentColor = Blood
 
     val rootModifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 16.dp)
+        .padding(horizontal = 18.dp)
         .height(IntrinsicSize.Min)
         .background(SurfaceLow, RectangleShape)
         .combinedClickable(
@@ -480,7 +485,7 @@ private fun WorkoutCard(
         )
 
     Box {
-        // All cards get accent bar, alternating Blood/BloodDeep
+        // All cards get accent bar
         Row(modifier = rootModifier) {
             Box(
                 modifier = Modifier
@@ -491,7 +496,7 @@ private fun WorkoutCard(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 18.dp, vertical = 12.dp),
             ) {
                 WorkoutCardContent(
                     item = item,
@@ -512,7 +517,7 @@ private fun WorkoutCard(
         DropdownMenu(
             expanded = showContextMenu,
             onDismissRequest = { showContextMenu = false },
-            offset = DpOffset(16.dp, 0.dp),
+            offset = DpOffset(18.dp, 0.dp),
             modifier = Modifier.background(SurfaceHighest),
         ) {
             DropdownMenuItem(
@@ -522,7 +527,7 @@ private fun WorkoutCard(
                             imageVector = Icons.Default.Edit,
                             contentDescription = null,
                             tint = TextPrimary,
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(18.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -546,7 +551,7 @@ private fun WorkoutCard(
                             imageVector = Icons.Default.FitnessCenter,
                             contentDescription = null,
                             tint = TextPrimary,
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(18.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -570,7 +575,7 @@ private fun WorkoutCard(
                             imageVector = Icons.Default.Delete,
                             contentDescription = null,
                             tint = BloodBright,
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(18.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -665,12 +670,12 @@ private fun WorkoutCardContent(
         }
     }
 
-    Spacer(modifier = Modifier.height(6.dp))
+    Spacer(modifier = Modifier.height(8.dp))
 
     // -- Duration & sets row ---
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Icon(
             imageVector = Icons.Default.Timer,
@@ -724,7 +729,7 @@ private fun WorkoutCardContent(
     // Volume intensity bar
     val currentVolume = workout.totalVolume ?: 0f
     if (maxVolumeInList > 0f && currentVolume > 0f) {
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         val fraction = (currentVolume / maxVolumeInList).coerceIn(0f, 1f)
         Box(
             modifier = Modifier
@@ -736,7 +741,7 @@ private fun WorkoutCardContent(
 
     // Category tags
     if (item.categories.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = item.categories.joinToString(" · ") { it.uppercase() },
             color = TextTertiary,
@@ -784,22 +789,12 @@ private fun EditNameRow(
     onCancel: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        BasicTextField(
+        TrackGodTextField(
             value = name,
             onValueChange = onNameChanged,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(VoidDeep, RectangleShape)
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            textStyle = TextStyle(
-                color = TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-            ),
+            label = "WORKOUT NAME",
             singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { onSave() }),
-            cursorBrush = SolidColor(Blood),
+            modifier = Modifier.fillMaxWidth(),
         )
 
         Spacer(modifier = Modifier.height(8.dp))

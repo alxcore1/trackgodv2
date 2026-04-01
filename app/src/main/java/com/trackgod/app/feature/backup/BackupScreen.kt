@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trackgod.app.core.database.entity.BackupMetadataEntity
+import com.trackgod.app.feature.workout.session.ConfirmationDialog
 import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
@@ -143,106 +144,46 @@ fun BackupScreen(
 
     // -- Restore confirm dialog -----------------------------------------------
     confirmRestore?.let { backup ->
-        AlertDialog(
-            onDismissRequest = { confirmRestore = null },
-            title = {
-                Text(
-                    text = "RESTORE FROM BACKUP?",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary,
-                )
+        ConfirmationDialog(
+            title = "RESTORE FROM BACKUP?",
+            message = "CURRENT DATA WILL BE REPLACED WITH THIS BACKUP. A SAFETY BACKUP WILL BE CREATED FIRST.",
+            confirmText = "RESTORE",
+            dismissText = "CANCEL",
+            onConfirm = {
+                viewModel.restoreFromBackup(backup)
+                confirmRestore = null
             },
-            text = {
-                Text(
-                    text = "CURRENT DATA WILL BE REPLACED WITH THIS BACKUP. A SAFETY BACKUP WILL BE CREATED FIRST.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary,
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.restoreFromBackup(backup)
-                    confirmRestore = null
-                }) {
-                    Text("RESTORE", color = Blood)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmRestore = null }) {
-                    Text("CANCEL", color = TextTertiary)
-                }
-            },
-            containerColor = Void,
+            onDismiss = { confirmRestore = null },
         )
     }
 
     // -- Delete confirm dialog ------------------------------------------------
     confirmDelete?.let { backup ->
-        AlertDialog(
-            onDismissRequest = { confirmDelete = null },
-            title = {
-                Text(
-                    text = "DELETE BACKUP?",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary,
-                )
+        ConfirmationDialog(
+            title = "DELETE BACKUP?",
+            message = "THIS BACKUP WILL BE PERMANENTLY DELETED.",
+            confirmText = "DELETE",
+            dismissText = "CANCEL",
+            onConfirm = {
+                viewModel.deleteBackup(backup)
+                confirmDelete = null
             },
-            text = {
-                Text(
-                    text = "THIS BACKUP WILL BE PERMANENTLY DELETED.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary,
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.deleteBackup(backup)
-                    confirmDelete = null
-                }) {
-                    Text("DELETE", color = Blood)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmDelete = null }) {
-                    Text("CANCEL", color = TextTertiary)
-                }
-            },
-            containerColor = Void,
+            onDismiss = { confirmDelete = null },
         )
     }
 
     // -- Delete All confirm dialog --------------------------------------------
     if (confirmDeleteAll) {
-        AlertDialog(
-            onDismissRequest = { confirmDeleteAll = false },
-            title = {
-                Text(
-                    text = "DELETE ALL DATA?",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary,
-                )
+        ConfirmationDialog(
+            title = "DELETE ALL DATA?",
+            message = "ALL WORKOUT DATA, PROGRESS PHOTOS, AND SETTINGS WILL BE PERMANENTLY DELETED. A SAFETY BACKUP WILL BE CREATED FIRST. THIS CANNOT BE UNDONE.",
+            confirmText = "DELETE EVERYTHING",
+            dismissText = "CANCEL",
+            onConfirm = {
+                viewModel.deleteAllData()
+                confirmDeleteAll = false
             },
-            text = {
-                Text(
-                    text = "ALL WORKOUT DATA, PROGRESS PHOTOS, AND SETTINGS WILL BE PERMANENTLY DELETED. A SAFETY BACKUP WILL BE CREATED FIRST. THIS CANNOT BE UNDONE.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary,
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.deleteAllData()
-                    confirmDeleteAll = false
-                }) {
-                    Text("DELETE EVERYTHING", color = Blood)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmDeleteAll = false }) {
-                    Text("CANCEL", color = TextTertiary)
-                }
-            },
-            containerColor = Void,
+            onDismiss = { confirmDeleteAll = false },
         )
     }
 
@@ -467,7 +408,7 @@ private fun BackupHistoryItem(
                     style = MaterialTheme.typography.titleMedium,
                     color = TextPrimary,
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // File size

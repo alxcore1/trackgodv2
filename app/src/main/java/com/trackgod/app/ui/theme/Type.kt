@@ -66,6 +66,12 @@ val TrackGodTypography = Typography(
         fontSize = 20.sp,
         letterSpacing = (-0.1).sp,
     ),
+    headlineSmall = TextStyle(
+        fontFamily = SpaceGroteskFamily,
+        fontWeight = FontWeight.Black,
+        fontSize = 18.sp,
+        letterSpacing = (-0.1).sp,
+    ),
     titleLarge = TextStyle(
         fontFamily = SpaceGroteskFamily,
         fontWeight = FontWeight.Bold,
@@ -76,6 +82,11 @@ val TrackGodTypography = Typography(
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp,
     ),
+    titleSmall = TextStyle(
+        fontFamily = SpaceGroteskFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 14.sp,
+    ),
     bodyLarge = TextStyle(
         fontFamily = WorkSansFamily,
         fontWeight = FontWeight.Normal,
@@ -85,6 +96,11 @@ val TrackGodTypography = Typography(
         fontFamily = WorkSansFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
+    ),
+    bodySmall = TextStyle(
+        fontFamily = WorkSansFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
     ),
     labelLarge = TextStyle(
         fontFamily = SpaceGroteskFamily,

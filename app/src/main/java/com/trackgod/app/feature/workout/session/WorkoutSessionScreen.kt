@@ -15,6 +15,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -590,7 +592,7 @@ private fun SessionHeader(
         // LIVE indicator with pulsing red dot
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Box(
                 modifier = Modifier
@@ -686,7 +688,11 @@ private fun SessionExerciseCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .background(SurfaceLow, RectangleShape)
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -721,7 +727,11 @@ private fun ChooseExerciseTile(onClick: () -> Unit) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .background(SurfaceLow, shape = RectangleShape)
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
             .padding(vertical = 32.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -1011,14 +1021,24 @@ private fun ExerciseInputSection(
                     else -> "WORK"
                 }
                 val typeBg = if (state.setTypeInput == "working") SurfaceLow else Blood.copy(alpha = 0.3f)
+                val setTypeInteraction = remember { MutableInteractionSource() }
+                val setTypePressed by setTypeInteraction.collectIsPressedAsState()
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Box(
                         modifier = Modifier
                             .size(44.dp)
+                            .graphicsLayer {
+                                val s = if (setTypePressed) 0.95f else 1f
+                                scaleX = s; scaleY = s
+                            }
                             .background(typeBg, RectangleShape)
-                            .clickable { onCycleSetType() },
+                            .clickable(
+                                interactionSource = setTypeInteraction,
+                                indication = null,
+                                onClick = { onCycleSetType() },
+                            ),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(

@@ -307,7 +307,7 @@ private fun SettingToggleRow(
             ),
         )
     }
-    Spacer(modifier = Modifier.height(2.dp))
+    Spacer(modifier = Modifier.height(4.dp))
 }
 
 @Composable
@@ -349,7 +349,7 @@ private fun SettingToggleRowWithSubtitle(
             ),
         )
     }
-    Spacer(modifier = Modifier.height(2.dp))
+    Spacer(modifier = Modifier.height(4.dp))
 }
 
 @Composable
@@ -379,7 +379,7 @@ private fun SettingValueRow(
             color = TextTertiary,
         )
     }
-    Spacer(modifier = Modifier.height(2.dp))
+    Spacer(modifier = Modifier.height(4.dp))
 }
 
 @Composable
@@ -413,7 +413,7 @@ private fun SettingChipRow(
             }
         }
     }
-    Spacer(modifier = Modifier.height(2.dp))
+    Spacer(modifier = Modifier.height(4.dp))
 }
 
 // -- Dialogs ------------------------------------------------------------------
@@ -493,7 +493,7 @@ private fun ListPickerDialog(
                             color = if (option == selected) TextPrimary else TextTertiary,
                         )
                     }
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
         },
