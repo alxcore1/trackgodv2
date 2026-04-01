@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.trackgod.app.core.database.SeedDatabase
 import com.trackgod.app.ui.component.BrandItem
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,15 +29,46 @@ class SeedingChoiceViewModel @Inject constructor(
     private val _selectedBrands = MutableStateFlow<Set<String>>(emptySet())
     val selectedBrands: StateFlow<Set<String>> = _selectedBrands.asStateFlow()
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    private fun showErrorAndAutoDismiss(message: String) {
+        _errorMessage.value = message
+        viewModelScope.launch {
+            delay(4_000L)
+            _errorMessage.value = null
+        }
+    }
+
     fun showBrandSelection() {
         _showBrandPicker.value = true
         viewModelScope.launch {
-            val brands = seedDatabase.getAvailableBrands()
-            _availableBrands.value = brands.map { (name, count) ->
-                BrandItem(name = name, exerciseCount = count, isSelected = false)
+            try {
+                val brands = seedDatabase.getAvailableBrands()
+                _availableBrands.value = brands.map { (name, count) ->
+                    BrandItem(name = name, exerciseCount = count, isSelected = false)
+                }
+                _selectedBrands.value = emptySet()
+            } catch (_: Exception) {
+                _showBrandPicker.value = false
+                showErrorAndAutoDismiss("SETUP FAILED. PLEASE TRY AGAIN.")
             }
-            _selectedBrands.value = emptySet()
         }
+    }
+
+    fun goBackToStep1() {
+        _showBrandPicker.value = false
+    }
+
+    fun selectAllBrands() {
+        val allNames = _availableBrands.value.map { it.name }.toSet()
+        _selectedBrands.value = allNames
+        _availableBrands.value = _availableBrands.value.map { it.copy(isSelected = true) }
+    }
+
+    fun deselectAllBrands() {
+        _selectedBrands.value = emptySet()
+        _availableBrands.value = _availableBrands.value.map { it.copy(isSelected = false) }
     }
 
     fun toggleBrand(name: String) {
@@ -57,6 +89,7 @@ class SeedingChoiceViewModel @Inject constructor(
                 onComplete()
             } catch (_: Exception) {
                 _isSeeding.value = false
+                showErrorAndAutoDismiss("SETUP FAILED. PLEASE TRY AGAIN.")
             }
         }
     }
@@ -66,10 +99,11 @@ class SeedingChoiceViewModel @Inject constructor(
         _isSeeding.value = true
         viewModelScope.launch {
             try {
-                seedDatabase.seedBasicsOnly()
+                seedDatabase.seedIfNeeded()
                 onComplete()
             } catch (_: Exception) {
                 _isSeeding.value = false
+                showErrorAndAutoDismiss("SETUP FAILED. PLEASE TRY AGAIN.")
             }
         }
     }
@@ -83,6 +117,7 @@ class SeedingChoiceViewModel @Inject constructor(
                 onComplete()
             } catch (_: Exception) {
                 _isSeeding.value = false
+                showErrorAndAutoDismiss("SETUP FAILED. PLEASE TRY AGAIN.")
             }
         }
     }
@@ -96,6 +131,7 @@ class SeedingChoiceViewModel @Inject constructor(
                 onComplete()
             } catch (_: Exception) {
                 _isSeeding.value = false
+                showErrorAndAutoDismiss("SETUP FAILED. PLEASE TRY AGAIN.")
             }
         }
     }

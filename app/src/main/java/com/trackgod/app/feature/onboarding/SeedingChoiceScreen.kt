@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.onboarding
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -15,20 +16,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +47,7 @@ import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
+import com.trackgod.app.ui.theme.TrackGodTheme
 
 @Composable
 fun SeedingChoiceScreen(
@@ -54,11 +55,16 @@ fun SeedingChoiceScreen(
     onComplete: () -> Unit,
     onNavigateToV1Import: () -> Unit,
 ) {
-    val context = LocalContext.current
+    val spacing = TrackGodTheme.spacing
     val isSeeding by viewModel.isSeeding.collectAsState()
     val showBrandPicker by viewModel.showBrandPicker.collectAsState()
     val availableBrands by viewModel.availableBrands.collectAsState()
     val selectedBrands by viewModel.selectedBrands.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
+    BackHandler(enabled = showBrandPicker) {
+        viewModel.goBackToStep1()
+    }
 
     MetalTextureBackground {
     AnimatedContent(
@@ -72,27 +78,36 @@ fun SeedingChoiceScreen(
         if (isBrandStep) {
             // ── Step 2: Brand Picker ────────────────────────────────────────
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
+                modifier = Modifier.fillMaxSize(),
             ) {
-                // ── Header ──────────────────────────────────────────────────
+                // ── Header with Back Button ────────────────────────────────
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
-                    contentAlignment = Alignment.Center,
+                        .padding(horizontal = spacing.xs, vertical = spacing.lg),
                 ) {
+                    IconButton(
+                        onClick = { viewModel.goBackToStep1() },
+                        modifier = Modifier.align(Alignment.CenterStart),
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = TextSecondary,
+                            modifier = Modifier.size(spacing.xl),
+                        )
+                    }
                     Text(
                         text = "TRACKGOD",
                         style = MaterialTheme.typography.labelLarge,
                         color = TextTertiary,
                         letterSpacing = 4.sp,
+                        modifier = Modifier.align(Alignment.Center),
                     )
                 }
 
                 // ── Heading ─────────────────────────────────────────────────
-                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Column(modifier = Modifier.padding(horizontal = spacing.xl)) {
                     Text(
                         text = buildAnnotatedString {
                             append("SELECT YOUR\n")
@@ -105,31 +120,51 @@ fun SeedingChoiceScreen(
                         lineHeight = 34.sp,
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(spacing.sm))
 
                     Text(
-                        text = "You can change this later in Settings.",
+                        text = "You can change this later in Profile > My Gym.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextTertiary,
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(spacing.xl))
 
-                // ── Brand Grid ──────────────────────────────────────────────
+                // ── Brand Grid (fills remaining space, scrolls internally) ─
                 BrandPicker(
                     brands = availableBrands,
                     onToggleBrand = viewModel::toggleBrand,
+                    onSelectAll = if (selectedBrands.size < availableBrands.size) viewModel::selectAllBrands else null,
+                    onDeselectAll = if (selectedBrands.size == availableBrands.size) viewModel::deselectAllBrands else null,
                     modifier = Modifier
-                        .padding(horizontal = 24.dp)
-                        .fillMaxWidth()
-                        .height(400.dp),
+                        .weight(1f)
+                        .padding(horizontal = spacing.xl),
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                // ── Error Message ──────────────────────────────────────────
+                if (errorMessage != null) {
+                    Text(
+                        text = errorMessage.orEmpty(),
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp,
+                        ),
+                        color = BloodBright,
+                        modifier = Modifier
+                            .padding(horizontal = spacing.xl, vertical = spacing.sm),
+                    )
+                }
 
-                // ── Buttons ─────────────────────────────────────────────────
-                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                // ── Buttons (fixed at bottom) ──────────────────────────────
+                Column(
+                    modifier = Modifier.padding(
+                        start = spacing.xl,
+                        end = spacing.xl,
+                        top = spacing.lg,
+                        bottom = spacing.xxl,
+                    ),
+                ) {
                     TrackGodButton(
                         text = if (isSeeding) "LOADING..." else "CONTINUE",
                         onClick = { viewModel.seedWithSelectedBrands(onComplete) },
@@ -137,7 +172,7 @@ fun SeedingChoiceScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(spacing.md))
 
                     TrackGodButton(
                         text = "SKIP",
@@ -147,8 +182,6 @@ fun SeedingChoiceScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-
-                Spacer(modifier = Modifier.height(32.dp))
             }
         } else {
             // ── Step 1: Original 3-option choice ────────────────────────────
@@ -161,7 +194,7 @@ fun SeedingChoiceScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                        .padding(horizontal = spacing.xl, vertical = spacing.lg),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -173,7 +206,7 @@ fun SeedingChoiceScreen(
                 }
 
                 // ── Heading ─────────────────────────────────────────────────
-                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Column(modifier = Modifier.padding(horizontal = spacing.xl)) {
                     Text(
                         text = buildAnnotatedString {
                             append("LOAD\n")
@@ -186,7 +219,7 @@ fun SeedingChoiceScreen(
                         lineHeight = 34.sp,
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(spacing.sm))
 
                     Text(
                         text = "Choose your starting loadout.",
@@ -195,10 +228,10 @@ fun SeedingChoiceScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(spacing.xxl))
 
                 // ── Option 1: Full Arsenal ──────────────────────────────────
-                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Column(modifier = Modifier.padding(horizontal = spacing.xl)) {
                     TrackGodCard(
                         accentBorder = true,
                     ) {
@@ -209,13 +242,13 @@ fun SeedingChoiceScreen(
                             fontWeight = FontWeight.Black,
                             letterSpacing = 2.sp,
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(spacing.xs))
                         Text(
-                            text = "200+ exercises across all categories. Everything ready.",
+                            text = "390+ exercises across all categories. Pick your gym's brands next.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = TextTertiary,
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(spacing.md))
                         TrackGodButton(
                             text = if (isSeeding) "LOADING..." else "SELECT",
                             onClick = { viewModel.showBrandSelection() },
@@ -224,7 +257,7 @@ fun SeedingChoiceScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(spacing.lg))
 
                     // ── Option 2: Basics Only ───────────────────────────────
                     TrackGodCard {
@@ -235,13 +268,13 @@ fun SeedingChoiceScreen(
                             fontWeight = FontWeight.Black,
                             letterSpacing = 2.sp,
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(spacing.xs))
                         Text(
                             text = "Common free weight exercises. No machines. Clean start.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = TextTertiary,
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(spacing.md))
                         TrackGodButton(
                             text = "SELECT",
                             onClick = { viewModel.seedBasics(onComplete) },
@@ -251,7 +284,7 @@ fun SeedingChoiceScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(spacing.lg))
 
                     // ── Option 3: Empty Slate ───────────────────────────────
                     TrackGodCard {
@@ -262,13 +295,13 @@ fun SeedingChoiceScreen(
                             fontWeight = FontWeight.Black,
                             letterSpacing = 2.sp,
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(spacing.xs))
                         Text(
                             text = "Add everything yourself. Full control.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = TextTertiary,
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(spacing.md))
                         TrackGodButton(
                             text = "SELECT",
                             onClick = { viewModel.seedEmpty(onComplete) },
@@ -278,7 +311,20 @@ fun SeedingChoiceScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(spacing.xxl))
+
+                    // ── Error Message ───────────────────────────────────────
+                    if (errorMessage != null) {
+                        Text(
+                            text = errorMessage.orEmpty(),
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp,
+                            ),
+                            color = BloodBright,
+                            modifier = Modifier.padding(bottom = spacing.lg),
+                        )
+                    }
 
                     // ── Divider ─────────────────────────────────────────────
                     Row(
@@ -304,7 +350,7 @@ fun SeedingChoiceScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(spacing.lg))
 
                     // ── V1 Import ───────────────────────────────────────────
                     TrackGodButton(
@@ -315,7 +361,7 @@ fun SeedingChoiceScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(spacing.xxl))
                 }
             }
         }

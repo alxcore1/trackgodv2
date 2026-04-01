@@ -116,7 +116,7 @@ class SeedDatabase @Inject constructor(
             .filter { it.equipmentType == "machine" && !it.brand.isNullOrBlank() }
             .groupBy { it.brand!! }
             .map { (brand, exercises) -> brand to exercises.size }
-            .sortedBy { it.first }
+            .sortedByDescending { it.second }
     }
 
     /** Remove duplicate exercises that snuck in from double-seeding. */

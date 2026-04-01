@@ -119,7 +119,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(spacing.sm))
             ProfileMenuItemWithSubtitle(
                 label = "MY GYM",
-                subtitle = "Manage machine brands",
+                subtitle = "Manage gym equipment brands",
                 onClick = onNavigateToMyGym,
             )
 
