@@ -171,10 +171,22 @@ class SettingsRepository @Inject constructor(
     // --- Brand Filter (persisted machine brand selection) ---
 
     fun getSelectedBrands(): Set<String> =
-        prefs.getStringSet("selected_brands", emptySet()) ?: emptySet()
+        prefs.getStringSet("selected_brands", emptySet())?.toSet() ?: emptySet()
 
     fun setSelectedBrands(brands: Set<String>) {
         prefs.edit().putStringSet("selected_brands", brands).apply()
+    }
+
+    fun addSelectedBrand(brand: String) {
+        val current = getSelectedBrands().toMutableSet()
+        current.add(brand)
+        setSelectedBrands(current)
+    }
+
+    fun removeSelectedBrand(brand: String) {
+        val current = getSelectedBrands().toMutableSet()
+        current.remove(brand)
+        setSelectedBrands(current)
     }
 
     // --- Exercise Search Filters (persisted category & equipment selection) ---

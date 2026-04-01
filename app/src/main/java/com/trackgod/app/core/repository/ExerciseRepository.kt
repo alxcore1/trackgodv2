@@ -64,6 +64,20 @@ class ExerciseRepository @Inject constructor(
         exerciseDao.insertAll(exercises)
     }
 
+    suspend fun deactivateByBrand(brand: String) {
+        exerciseDao.deactivateByBrand(brand)
+    }
+
+    suspend fun activateByBrand(brand: String) {
+        exerciseDao.activateByBrand(brand)
+    }
+
+    suspend fun getExerciseCountByBrand(brand: String): Int =
+        exerciseDao.getExerciseCountByBrand(brand)
+
+    suspend fun getNamesByBrand(brand: String): List<String> =
+        exerciseDao.getNamesByBrand(brand)
+
     suspend fun removeDuplicates(): Int =
         exerciseDao.removeDuplicates()
 

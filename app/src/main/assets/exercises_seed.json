@@ -1,219 +1,2471 @@
 [
-  {"name": "Barbell Bench Press", "category": "Chest", "equipmentType": "barbell"},
-  {"name": "Incline Barbell Press", "category": "Chest", "equipmentType": "barbell"},
-  {"name": "Dumbbell Bench Press", "category": "Chest", "equipmentType": "dumbbell"},
-  {"name": "Incline Dumbbell Press", "category": "Chest", "equipmentType": "dumbbell"},
-  {"name": "Dumbbell Fly", "category": "Chest", "equipmentType": "dumbbell"},
-  {"name": "Cable Fly", "category": "Chest", "equipmentType": "cable"},
-  {"name": "Chest Dip", "category": "Chest", "equipmentType": "bodyweight"},
-  {"name": "Machine Chest Press", "category": "Chest", "equipmentType": "machine"},
-  {"name": "Pec Deck", "category": "Chest", "equipmentType": "machine"},
-  {"name": "Cable Crossover", "category": "Chest", "equipmentType": "cable"},
-  {"name": "Push-Up", "category": "Chest", "equipmentType": "bodyweight"},
-  {"name": "Decline Bench Press", "category": "Chest", "equipmentType": "barbell"},
-  {"name": "Landmine Press", "category": "Chest", "equipmentType": "barbell"},
-
-  {"name": "Barbell Row", "category": "Back", "equipmentType": "barbell"},
-  {"name": "Dumbbell Row", "category": "Back", "equipmentType": "dumbbell"},
-  {"name": "Pull-Up", "category": "Back", "equipmentType": "bodyweight"},
-  {"name": "Chin-Up", "category": "Back", "equipmentType": "bodyweight"},
-  {"name": "Lat Pulldown", "category": "Back", "equipmentType": "cable"},
-  {"name": "Seated Cable Row", "category": "Back", "equipmentType": "cable"},
-  {"name": "T-Bar Row", "category": "Back", "equipmentType": "barbell"},
-  {"name": "Face Pull", "category": "Back", "equipmentType": "cable"},
-  {"name": "Straight Arm Pulldown", "category": "Back", "equipmentType": "cable"},
-  {"name": "Machine Row", "category": "Back", "equipmentType": "machine"},
-  {"name": "Deadlift", "category": "Back", "equipmentType": "barbell"},
-  {"name": "Rack Pull", "category": "Back", "equipmentType": "barbell"},
-  {"name": "Pendlay Row", "category": "Back", "equipmentType": "barbell"},
-  {"name": "Inverted Row", "category": "Back", "equipmentType": "bodyweight"},
-
-  {"name": "Overhead Press", "category": "Shoulders", "equipmentType": "barbell"},
-  {"name": "Dumbbell Shoulder Press", "category": "Shoulders", "equipmentType": "dumbbell"},
-  {"name": "Lateral Raise", "category": "Shoulders", "equipmentType": "dumbbell"},
-  {"name": "Front Raise", "category": "Shoulders", "equipmentType": "dumbbell"},
-  {"name": "Rear Delt Fly", "category": "Shoulders", "equipmentType": "dumbbell"},
-  {"name": "Arnold Press", "category": "Shoulders", "equipmentType": "dumbbell"},
-  {"name": "Upright Row", "category": "Shoulders", "equipmentType": "barbell"},
-  {"name": "Cable Lateral Raise", "category": "Shoulders", "equipmentType": "cable"},
-  {"name": "Machine Shoulder Press", "category": "Shoulders", "equipmentType": "machine"},
-  {"name": "Shrug", "category": "Shoulders", "equipmentType": "dumbbell"},
-  {"name": "Reverse Fly Machine", "category": "Shoulders", "equipmentType": "machine"},
-  {"name": "Barbell Shrug", "category": "Shoulders", "equipmentType": "barbell"},
-
-  {"name": "Barbell Curl", "category": "Arms", "equipmentType": "barbell"},
-  {"name": "Dumbbell Curl", "category": "Arms", "equipmentType": "dumbbell"},
-  {"name": "Hammer Curl", "category": "Arms", "equipmentType": "dumbbell"},
-  {"name": "Preacher Curl", "category": "Arms", "equipmentType": "barbell"},
-  {"name": "Cable Curl", "category": "Arms", "equipmentType": "cable"},
-  {"name": "Tricep Pushdown", "category": "Arms", "equipmentType": "cable"},
-  {"name": "Skull Crusher", "category": "Arms", "equipmentType": "barbell"},
-  {"name": "Overhead Tricep Extension", "category": "Arms", "equipmentType": "dumbbell"},
-  {"name": "Dip", "category": "Arms", "equipmentType": "bodyweight"},
-  {"name": "Close Grip Bench Press", "category": "Arms", "equipmentType": "barbell"},
-  {"name": "Concentration Curl", "category": "Arms", "equipmentType": "dumbbell"},
-  {"name": "Cable Tricep Kickback", "category": "Arms", "equipmentType": "cable"},
-  {"name": "EZ Bar Curl", "category": "Arms", "equipmentType": "barbell"},
-  {"name": "Rope Pushdown", "category": "Arms", "equipmentType": "cable"},
-
-  {"name": "Barbell Back Squat", "category": "Legs", "equipmentType": "barbell"},
-  {"name": "Front Squat", "category": "Legs", "equipmentType": "barbell"},
-  {"name": "Leg Press", "category": "Legs", "equipmentType": "machine"},
-  {"name": "Leg Extension", "category": "Legs", "equipmentType": "machine"},
-  {"name": "Leg Curl", "category": "Legs", "equipmentType": "machine"},
-  {"name": "Romanian Deadlift", "category": "Legs", "equipmentType": "barbell"},
-  {"name": "Bulgarian Split Squat", "category": "Legs", "equipmentType": "dumbbell"},
-  {"name": "Goblet Squat", "category": "Legs", "equipmentType": "dumbbell"},
-  {"name": "Hack Squat", "category": "Legs", "equipmentType": "machine"},
-  {"name": "Calf Raise", "category": "Legs", "equipmentType": "machine"},
-  {"name": "Hip Thrust", "category": "Legs", "equipmentType": "barbell"},
-  {"name": "Lunges", "category": "Legs", "equipmentType": "dumbbell"},
-  {"name": "Sumo Deadlift", "category": "Legs", "equipmentType": "barbell"},
-  {"name": "Glute Bridge", "category": "Legs", "equipmentType": "bodyweight"},
-  {"name": "Seated Calf Raise", "category": "Legs", "equipmentType": "machine"},
-  {"name": "Walking Lunges", "category": "Legs", "equipmentType": "dumbbell"},
-
-  {"name": "Plank", "category": "Core", "equipmentType": "bodyweight"},
-  {"name": "Hanging Leg Raise", "category": "Core", "equipmentType": "bodyweight"},
-  {"name": "Cable Crunch", "category": "Core", "equipmentType": "cable"},
-  {"name": "Ab Wheel Rollout", "category": "Core", "equipmentType": "other"},
-  {"name": "Russian Twist", "category": "Core", "equipmentType": "other"},
-  {"name": "Decline Sit-Up", "category": "Core", "equipmentType": "bodyweight"},
-  {"name": "Woodchop", "category": "Core", "equipmentType": "cable"},
-  {"name": "Pallof Press", "category": "Core", "equipmentType": "cable"},
-  {"name": "Dead Bug", "category": "Core", "equipmentType": "bodyweight"},
-  {"name": "Mountain Climber", "category": "Core", "equipmentType": "bodyweight"},
-
-  {"name": "Life Fitness Insignia Assist Dip Chin", "category": "Chest", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Shoulder Press", "category": "Shoulders", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Seated Row", "category": "Back", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Chest Press", "category": "Chest", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Triceps Press", "category": "Arms", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Lateral Raise", "category": "Shoulders", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Triceps Extension", "category": "Arms", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Biceps Curl Dependent", "category": "Arms", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Biceps Curl Standard", "category": "Arms", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Chest Press Dual Axis", "category": "Chest", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Pulldown", "category": "Back", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Pulldown Dual Axis", "category": "Back", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Pectoral Fly", "category": "Chest", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Rear Deltoid Fly", "category": "Shoulders", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Leg Extension", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Leg Curl", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Seated Leg Curl", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Calf Extension", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Arc Leg Press", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Glute Drive", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Glute Bridge", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Abdominal Crunch", "category": "Core", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Advanced Ab Crunch", "category": "Core", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Torso Rotation", "category": "Core", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Back Extension", "category": "Back", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Hip Abduction", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Hip Adduction", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Insignia Hip Abduction Adduction", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-
-  {"name": "Life Fitness Axiom Chest Press", "category": "Chest", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Leg Press", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Seated Row", "category": "Back", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Shoulder Press", "category": "Shoulders", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Lat Pulldown", "category": "Back", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Biceps Curl", "category": "Arms", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Triceps Extension", "category": "Arms", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Leg Extension", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Leg Curl", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Abdominal Back Extension", "category": "Core", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Multi-Press", "category": "Chest", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Pulldown Low Row", "category": "Back", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Pectoral Fly Rear Deltoid", "category": "Chest", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Biceps Curl Triceps Extension", "category": "Arms", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Hip Abductor Adductor", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Leg Curl Extension", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-  {"name": "Life Fitness Axiom Seated Leg Curl Extension", "category": "Legs", "equipmentType": "machine", "brand": "Life Fitness"},
-
-  {"name": "Hammer Strength Plate-Loaded Linear Leg Press", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Pulldown", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Row", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Kneeling Leg Curl", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Smith Machine", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Biceps Curl", "category": "Arms", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded High Row", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Seated Dip", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Leg Extension", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Smith Rack", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Decline Press", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Incline Press", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Shoulder Press", "category": "Shoulders", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Plate-Loaded Calf Raise", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-
-  {"name": "Hammer Strength Select Chest Press", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Fixed Pulldown", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Assist Dip Chin", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Biceps Curl", "category": "Arms", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Seated Row", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Shoulder Press", "category": "Shoulders", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Triceps Extension", "category": "Arms", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Lat Pulldown", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Lateral Raise", "category": "Shoulders", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Pectoral Fly", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Rear Deltoid Fly", "category": "Shoulders", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Back Extension", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Hip Abduction", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Hip Adduction", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Leg Extension", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Seated Leg Press", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Seated Leg Curl", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Standing Calf", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Abdominal Crunch", "category": "Core", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Hip Glute", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Horizontal Calf", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength Select Leg Curl", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-
-  {"name": "Hammer Strength MTS Abdominal Crunch", "category": "Core", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral Decline Press", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral Leg Extension", "category": "Legs", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral High Row", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral Biceps Curl", "category": "Arms", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral Chest Press", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral Incline Press", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral Low Row", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral Pulldown", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral Shoulder Press", "category": "Shoulders", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral Super Incline Press", "category": "Chest", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral Front Lat Pulldown", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-  {"name": "Hammer Strength MTS Iso-Lateral D.Y. Row", "category": "Back", "equipmentType": "machine", "brand": "Hammer Strength"},
-
-  {"name": "GYM80 Cable Art No. 1", "category": "Back", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Cable Art No. 2", "category": "Chest", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Cable Art No. 3", "category": "Shoulders", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Cable Art No. 4", "category": "Arms", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Cable Art No. 5", "category": "Core", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Cable Art No. 6", "category": "Legs", "equipmentType": "machine", "brand": "GYM80"},
-
-  {"name": "GYM80 Stations Rowing Station", "category": "Back", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Stations Cable Crossover Station", "category": "Chest", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Stations Adjustable Cable Crossover Station", "category": "Chest", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Stations Lat Pull Station", "category": "Back", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Stations Incline Row Combo", "category": "Back", "equipmentType": "machine", "brand": "GYM80"},
-
-  {"name": "GYM80 Pure Kraft 45\u00b0 Leg Press", "category": "Legs", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft Squat Machine", "category": "Legs", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft Hack Squat", "category": "Legs", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft Lying Abdominal", "category": "Core", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft Lat Pulldown Dual", "category": "Back", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft Seated Calf Raise", "category": "Legs", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft Seated Leg Press Dual", "category": "Legs", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft T-Bar Row", "category": "Back", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft Lying Leg Curl", "category": "Legs", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft Biceps Curl", "category": "Arms", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft Triceps Extension", "category": "Arms", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft High Row Dual", "category": "Back", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft Butterfly 45\u00b0 Dual", "category": "Chest", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 Pure Kraft Butterfly Reverse Dual", "category": "Shoulders", "equipmentType": "machine", "brand": "GYM80"},
-
-  {"name": "GYM80 80Athletics Glute Booster Rack", "category": "Legs", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 80Athletics Sissy Squat", "category": "Legs", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 80Athletics Glute Ham Developer", "category": "Legs", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 80Athletics Adjustable Bench Press", "category": "Chest", "equipmentType": "machine", "brand": "GYM80"},
-  {"name": "GYM80 80Athletics Rowing Bench", "category": "Back", "equipmentType": "machine", "brand": "GYM80"}
+  {
+    "name": "Barbell Bench Press",
+    "category": "Chest",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Incline Barbell Press",
+    "category": "Chest",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Dumbbell Bench Press",
+    "category": "Chest",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Incline Dumbbell Press",
+    "category": "Chest",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Dumbbell Fly",
+    "category": "Chest",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Cable Fly",
+    "category": "Chest",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Chest Dip",
+    "category": "Chest",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Machine Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine"
+  },
+  {
+    "name": "Pec Deck",
+    "category": "Chest",
+    "equipmentType": "machine"
+  },
+  {
+    "name": "Cable Crossover",
+    "category": "Chest",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Push-Up",
+    "category": "Chest",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Decline Bench Press",
+    "category": "Chest",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Landmine Press",
+    "category": "Chest",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Barbell Row",
+    "category": "Back",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Dumbbell Row",
+    "category": "Back",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Pull-Up",
+    "category": "Back",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Chin-Up",
+    "category": "Back",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Seated Cable Row",
+    "category": "Back",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "T-Bar Row",
+    "category": "Back",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Face Pull",
+    "category": "Back",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Straight Arm Pulldown",
+    "category": "Back",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Machine Row",
+    "category": "Back",
+    "equipmentType": "machine"
+  },
+  {
+    "name": "Deadlift",
+    "category": "Back",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Rack Pull",
+    "category": "Back",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Pendlay Row",
+    "category": "Back",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Inverted Row",
+    "category": "Back",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Overhead Press",
+    "category": "Shoulders",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Dumbbell Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Lateral Raise",
+    "category": "Shoulders",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Front Raise",
+    "category": "Shoulders",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Rear Delt Fly",
+    "category": "Shoulders",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Arnold Press",
+    "category": "Shoulders",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Upright Row",
+    "category": "Shoulders",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Cable Lateral Raise",
+    "category": "Shoulders",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Machine Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine"
+  },
+  {
+    "name": "Shrug",
+    "category": "Shoulders",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Reverse Fly Machine",
+    "category": "Shoulders",
+    "equipmentType": "machine"
+  },
+  {
+    "name": "Barbell Shrug",
+    "category": "Shoulders",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Barbell Curl",
+    "category": "Arms",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Dumbbell Curl",
+    "category": "Arms",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Hammer Curl",
+    "category": "Arms",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Preacher Curl",
+    "category": "Arms",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Cable Curl",
+    "category": "Arms",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Tricep Pushdown",
+    "category": "Arms",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Skull Crusher",
+    "category": "Arms",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Overhead Tricep Extension",
+    "category": "Arms",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Dip",
+    "category": "Arms",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Close Grip Bench Press",
+    "category": "Arms",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Concentration Curl",
+    "category": "Arms",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Cable Tricep Kickback",
+    "category": "Arms",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "EZ Bar Curl",
+    "category": "Arms",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Rope Pushdown",
+    "category": "Arms",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Barbell Back Squat",
+    "category": "Legs",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Front Squat",
+    "category": "Legs",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine"
+  },
+  {
+    "name": "Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine"
+  },
+  {
+    "name": "Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine"
+  },
+  {
+    "name": "Romanian Deadlift",
+    "category": "Legs",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Bulgarian Split Squat",
+    "category": "Legs",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Goblet Squat",
+    "category": "Legs",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Hack Squat",
+    "category": "Legs",
+    "equipmentType": "machine"
+  },
+  {
+    "name": "Calf Raise",
+    "category": "Legs",
+    "equipmentType": "machine"
+  },
+  {
+    "name": "Hip Thrust",
+    "category": "Legs",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Lunges",
+    "category": "Legs",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Sumo Deadlift",
+    "category": "Legs",
+    "equipmentType": "barbell"
+  },
+  {
+    "name": "Glute Bridge",
+    "category": "Legs",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Seated Calf Raise",
+    "category": "Legs",
+    "equipmentType": "machine"
+  },
+  {
+    "name": "Walking Lunges",
+    "category": "Legs",
+    "equipmentType": "dumbbell"
+  },
+  {
+    "name": "Plank",
+    "category": "Core",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Hanging Leg Raise",
+    "category": "Core",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Cable Crunch",
+    "category": "Core",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Ab Wheel Rollout",
+    "category": "Core",
+    "equipmentType": "other"
+  },
+  {
+    "name": "Russian Twist",
+    "category": "Core",
+    "equipmentType": "other"
+  },
+  {
+    "name": "Decline Sit-Up",
+    "category": "Core",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Woodchop",
+    "category": "Core",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Pallof Press",
+    "category": "Core",
+    "equipmentType": "cable"
+  },
+  {
+    "name": "Dead Bug",
+    "category": "Core",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Mountain Climber",
+    "category": "Core",
+    "equipmentType": "bodyweight"
+  },
+  {
+    "name": "Life Fitness Insignia Assist Dip Chin",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Seated Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Triceps Press",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Lateral Raise",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Triceps Extension",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Biceps Curl Dependent",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Biceps Curl Standard",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Chest Press Dual Axis",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Pulldown Dual Axis",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Pectoral Fly",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Rear Deltoid Fly",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Seated Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Calf Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Arc Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Glute Drive",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Glute Bridge",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Abdominal Crunch",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Advanced Ab Crunch",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Torso Rotation",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Back Extension",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Hip Abduction",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Hip Adduction",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Insignia Hip Abduction Adduction",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Seated Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Biceps Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Triceps Extension",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Abdominal Back Extension",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Multi-Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Pulldown Low Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Pectoral Fly Rear Deltoid",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Biceps Curl Triceps Extension",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Hip Abductor Adductor",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Leg Curl Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Life Fitness Axiom Seated Leg Curl Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Life Fitness"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Linear Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Kneeling Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Smith Machine",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Biceps Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded High Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Seated Dip",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Smith Rack",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Decline Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Incline Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Plate-Loaded Calf Raise",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Fixed Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Assist Dip Chin",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Biceps Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Seated Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Triceps Extension",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Lateral Raise",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Pectoral Fly",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Rear Deltoid Fly",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Back Extension",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Hip Abduction",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Hip Adduction",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Seated Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Seated Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Standing Calf",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Abdominal Crunch",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Hip Glute",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Horizontal Calf",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength Select Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Abdominal Crunch",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral Decline Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral High Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral Biceps Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral Incline Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral Low Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral Super Incline Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral Front Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "Hammer Strength MTS Iso-Lateral D.Y. Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Hammer Strength"
+  },
+  {
+    "name": "GYM80 Cable Art No. 1",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Cable Art No. 2",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Cable Art No. 3",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Cable Art No. 4",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Cable Art No. 5",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Cable Art No. 6",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Stations Rowing Station",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Stations Cable Crossover Station",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Stations Adjustable Cable Crossover Station",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Stations Lat Pull Station",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Stations Incline Row Combo",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft 45° Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft Squat Machine",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft Hack Squat",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft Lying Abdominal",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft Lat Pulldown Dual",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft Seated Calf Raise",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft Seated Leg Press Dual",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft T-Bar Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft Lying Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft Biceps Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft Triceps Extension",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft High Row Dual",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft Butterfly 45° Dual",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 Pure Kraft Butterfly Reverse Dual",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 80Athletics Glute Booster Rack",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 80Athletics Sissy Squat",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 80Athletics Glute Ham Developer",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 80Athletics Adjustable Bench Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "GYM80 80Athletics Rowing Bench",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "GYM80"
+  },
+  {
+    "name": "Precor Resolute Biceps Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Resolute"
+  },
+  {
+    "name": "Precor Resolute Triceps Extension",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Resolute"
+  },
+  {
+    "name": "Precor Resolute Seated Dip",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Resolute"
+  },
+  {
+    "name": "Precor Resolute Seated Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Resolute"
+  },
+  {
+    "name": "Precor Resolute Diverging Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Resolute"
+  },
+  {
+    "name": "Precor Resolute Rotary Torso",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Resolute"
+  },
+  {
+    "name": "Precor Resolute Abdominal Crunch",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Resolute"
+  },
+  {
+    "name": "Precor Resolute Back Extension",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Resolute"
+  },
+  {
+    "name": "Precor Resolute Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Resolute"
+  },
+  {
+    "name": "Precor Resolute Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Resolute"
+  },
+  {
+    "name": "Precor Discovery Series Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Discovery"
+  },
+  {
+    "name": "Precor Discovery Series Seated Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Discovery"
+  },
+  {
+    "name": "Precor Discovery Series Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Discovery"
+  },
+  {
+    "name": "Precor Discovery Series Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Discovery"
+  },
+  {
+    "name": "Precor Discovery Series Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Precor",
+    "series": "Discovery"
+  },
+  {
+    "name": "Matrix Magnum Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Smith Machine",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Vertical Bench Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Incline Bench Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Decline Bench Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Seated Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Iso-Lateral Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Iso-Lateral Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Hack Squat",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Matrix Magnum Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Matrix Fitness",
+    "series": "Magnum"
+  },
+  {
+    "name": "Panatta Multi Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Decline Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Incline Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Horizontal Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Low Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Pullover",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Biceps Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Triceps Extension",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Hack Squat",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Panatta Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Panatta",
+    "series": "Free Weight Special"
+  },
+  {
+    "name": "Atlantis Seated Converging Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Plate Loaded"
+  },
+  {
+    "name": "Atlantis Incline Converging Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Plate Loaded"
+  },
+  {
+    "name": "Atlantis Pullover",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Plate Loaded"
+  },
+  {
+    "name": "Atlantis Decline / Flat Converging Bench Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Plate Loaded"
+  },
+  {
+    "name": "Atlantis Shrug and Deadlift Machine",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Power Series"
+  },
+  {
+    "name": "Atlantis Unilateral Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Power Series"
+  },
+  {
+    "name": "Atlantis Seal Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Power Series"
+  },
+  {
+    "name": "Atlantis Power Squat",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Power Series"
+  },
+  {
+    "name": "Atlantis Pivot Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Power Series"
+  },
+  {
+    "name": "Atlantis Pendulum Squat",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Power Series"
+  },
+  {
+    "name": "Atlantis 40 Degree Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Power Series"
+  },
+  {
+    "name": "Atlantis Hack Squat",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Power Series"
+  },
+  {
+    "name": "Atlantis Incline T-Bar Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Power Series"
+  },
+  {
+    "name": "Atlantis Seated Converging Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Selectorized"
+  },
+  {
+    "name": "Atlantis Standing Lateral Raise",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Selectorized"
+  },
+  {
+    "name": "Atlantis Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Atlantis",
+    "series": "Selectorized"
+  },
+  {
+    "name": "Cybex Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Overhead Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Arm Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Arm Extension",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Triceps Press",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Lateral Raise",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Fly / Rear Delt",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Dip / Chin Assist",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Seated Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Prone Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Hip Abduction",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Hip Adduction",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Standing Calf",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Glute",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Abdominal",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Back Extension",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Torso Rotation",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex MG-525 Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Multi-Gym"
+  },
+  {
+    "name": "Cybex MG-525 Overhead Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Multi-Gym"
+  },
+  {
+    "name": "Cybex MG-525 Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Multi-Gym"
+  },
+  {
+    "name": "Cybex MG-525 Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Multi-Gym"
+  },
+  {
+    "name": "Cybex MG-525 Arm Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Multi-Gym"
+  },
+  {
+    "name": "Cybex MG-525 Tricep Pushdown",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Multi-Gym"
+  },
+  {
+    "name": "Cybex MG-525 Lat Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Multi-Gym"
+  },
+  {
+    "name": "Cybex MG-525 Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Multi-Gym"
+  },
+  {
+    "name": "HOIST Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "Commercial Selectorized"
+  },
+  {
+    "name": "HOIST Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "Commercial Selectorized"
+  },
+  {
+    "name": "HOIST Mid Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "Commercial Selectorized"
+  },
+  {
+    "name": "HOIST Pec Fly / Rear Delt",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "Commercial Selectorized"
+  },
+  {
+    "name": "HOIST Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "Commercial Selectorized"
+  },
+  {
+    "name": "HOIST Leg Press / Calf Raise",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "HD Dual Series"
+  },
+  {
+    "name": "HOIST Lat Pulldown / Mid Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "HD Dual Series"
+  },
+  {
+    "name": "HOIST Chest Press / Shoulder Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "HD Dual Series"
+  },
+  {
+    "name": "HOIST Leg Extension / Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "HD Dual Series"
+  },
+  {
+    "name": "HOIST Chin / Dip Assist",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "HD Dual Series"
+  },
+  {
+    "name": "HOIST Pec Fly / Rear Delt",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "HD Dual Series"
+  },
+  {
+    "name": "HOIST Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "ROC-IT Selectorized"
+  },
+  {
+    "name": "HOIST Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "ROC-IT Selectorized"
+  },
+  {
+    "name": "HOIST Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "ROC-IT Selectorized"
+  },
+  {
+    "name": "HOIST Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "ROC-IT Selectorized"
+  },
+  {
+    "name": "HOIST Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "ROC-IT Selectorized"
+  },
+  {
+    "name": "HOIST Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "ROC-IT Plate Loaded"
+  },
+  {
+    "name": "HOIST Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "ROC-IT Plate Loaded"
+  },
+  {
+    "name": "HOIST Decline Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "ROC-IT Plate Loaded"
+  },
+  {
+    "name": "HOIST Dual Action Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "HOIST",
+    "series": "ROC-IT Plate Loaded"
+  },
+  {
+    "name": "TRUE Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Seated Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Knee Raise / Ab Crunch",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Biceps Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Hip Thrust",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Squat Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Triceps Extension",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Hack Squat",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Incline Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Standing Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Pendulum Squat",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Plate Loaded"
+  },
+  {
+    "name": "TRUE Seated Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Selectorized"
+  },
+  {
+    "name": "TRUE Seated Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Selectorized"
+  },
+  {
+    "name": "TRUE Seated Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Selectorized"
+  },
+  {
+    "name": "TRUE Tricep Pushdown",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Selectorized"
+  },
+  {
+    "name": "TRUE Seated Bicep Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Selectorized"
+  },
+  {
+    "name": "TRUE Seated Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Selectorized"
+  },
+  {
+    "name": "TRUE Deltoid Raise",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Selectorized"
+  },
+  {
+    "name": "TRUE Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Selectorized"
+  },
+  {
+    "name": "TRUE Pec Fly / Rear Delt",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Selectorized"
+  },
+  {
+    "name": "TRUE Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Selectorized"
+  },
+  {
+    "name": "TRUE Seated Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "TRUE Fitness",
+    "series": "Palladium Selectorized"
+  },
+  {
+    "name": "Legend Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Incline Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Decline Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Seated Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend High Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Biceps Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Triceps Press",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Hack Squat",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Legend Ab Crunch",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Legend Fitness",
+    "series": "Plate-Loaded"
+  },
+  {
+    "name": "Cybex Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Incline Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Seated Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Seated Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Glute",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Dip Chin Assist",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Abdominal Crunch",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Back Extension",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Rotary Torso",
+    "category": "Core",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Prestige"
+  },
+  {
+    "name": "Cybex Plate Loaded Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Plate Loaded"
+  },
+  {
+    "name": "Cybex Converging Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Plate Loaded"
+  },
+  {
+    "name": "Cybex Converging Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Plate Loaded"
+  },
+  {
+    "name": "Cybex Plate Loaded Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Plate Loaded"
+  },
+  {
+    "name": "Cybex Plate Loaded Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Plate Loaded"
+  },
+  {
+    "name": "Cybex Plate Loaded Biceps Curl",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Plate Loaded"
+  },
+  {
+    "name": "Cybex Plate Loaded Triceps Press",
+    "category": "Arms",
+    "equipmentType": "machine",
+    "brand": "Cybex",
+    "series": "Plate Loaded"
+  },
+  {
+    "name": "Technogym Selection 700 Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Selection 700"
+  },
+  {
+    "name": "Technogym Selection 700 Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Selection 700"
+  },
+  {
+    "name": "Technogym Selection 700 Lat Machine",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Selection 700"
+  },
+  {
+    "name": "Technogym Selection 700 Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Selection 700"
+  },
+  {
+    "name": "Technogym Selection 700 Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Selection 700"
+  },
+  {
+    "name": "Technogym Selection 700 Seated Leg Curl",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Selection 700"
+  },
+  {
+    "name": "Technogym Selection 700 Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Selection 700"
+  },
+  {
+    "name": "Technogym Pure Strength Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Pure Strength"
+  },
+  {
+    "name": "Technogym Pure Strength Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Pure Strength"
+  },
+  {
+    "name": "Technogym Pure Strength Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Pure Strength"
+  },
+  {
+    "name": "Technogym Pure Strength Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Pure Strength"
+  },
+  {
+    "name": "Technogym Pure Strength Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Pure Strength"
+  },
+  {
+    "name": "Technogym Pure Strength Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Technogym",
+    "series": "Pure Strength"
+  },
+  {
+    "name": "Nautilus Leverage Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Nautilus",
+    "series": "Leverage"
+  },
+  {
+    "name": "Nautilus Leverage Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Nautilus",
+    "series": "Leverage"
+  },
+  {
+    "name": "Nautilus Leverage Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Nautilus",
+    "series": "Leverage"
+  },
+  {
+    "name": "Nautilus Leverage Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Nautilus",
+    "series": "Leverage"
+  },
+  {
+    "name": "Nautilus Leverage Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Nautilus",
+    "series": "Leverage"
+  },
+  {
+    "name": "Nautilus Inspiration Chest Press",
+    "category": "Chest",
+    "equipmentType": "machine",
+    "brand": "Nautilus",
+    "series": "Inspiration"
+  },
+  {
+    "name": "Nautilus Inspiration Shoulder Press",
+    "category": "Shoulders",
+    "equipmentType": "machine",
+    "brand": "Nautilus",
+    "series": "Inspiration"
+  },
+  {
+    "name": "Nautilus Inspiration Lat Pulldown",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Nautilus",
+    "series": "Inspiration"
+  },
+  {
+    "name": "Nautilus Inspiration Row",
+    "category": "Back",
+    "equipmentType": "machine",
+    "brand": "Nautilus",
+    "series": "Inspiration"
+  },
+  {
+    "name": "Nautilus Inspiration Leg Press",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Nautilus",
+    "series": "Inspiration"
+  },
+  {
+    "name": "Nautilus Inspiration Leg Extension",
+    "category": "Legs",
+    "equipmentType": "machine",
+    "brand": "Nautilus",
+    "series": "Inspiration"
+  }
 ]

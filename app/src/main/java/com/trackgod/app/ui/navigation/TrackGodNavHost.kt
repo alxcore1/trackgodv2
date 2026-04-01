@@ -35,6 +35,8 @@ import com.trackgod.app.feature.onboarding.SeedingChoiceScreen
 import com.trackgod.app.feature.onboarding.SeedingChoiceViewModel
 import com.trackgod.app.feature.onboarding.V1ImportScreen
 import com.trackgod.app.feature.profile.EditProfileScreen
+import com.trackgod.app.feature.profile.MyGymScreen
+import com.trackgod.app.feature.profile.MyGymViewModel
 import com.trackgod.app.feature.profile.PrivacyPolicyScreen
 import com.trackgod.app.feature.profile.ProfileScreen
 import com.trackgod.app.feature.profile.SettingsScreen
@@ -213,6 +215,9 @@ fun TrackGodNavHost() {
                             onNavigateToBackup = {
                                 navController.navigate(Screen.Backup.route)
                             },
+                            onNavigateToMyGym = {
+                                navController.navigate(Screen.MyGym.route)
+                            },
                             onNavigateToPrivacyPolicy = {
                                 navController.navigate(Screen.PrivacyPolicy.route)
                             },
@@ -357,6 +362,13 @@ fun TrackGodNavHost() {
             }
             composable(Screen.PrivacyPolicy.route) {
                 PrivacyPolicyScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                )
+            }
+            composable(Screen.MyGym.route) {
+                val viewModel: MyGymViewModel = hiltViewModel()
+                MyGymScreen(
+                    viewModel = viewModel,
                     onNavigateBack = { navController.popBackStack() },
                 )
             }

@@ -1,5 +1,11 @@
 package com.trackgod.app.feature.onboarding
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +36,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.collectAsState
+import com.trackgod.app.ui.component.BrandPicker
 import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.TrackGodButton
@@ -49,172 +56,268 @@ fun SeedingChoiceScreen(
 ) {
     val context = LocalContext.current
     val isSeeding by viewModel.isSeeding.collectAsState()
+    val showBrandPicker by viewModel.showBrandPicker.collectAsState()
+    val availableBrands by viewModel.availableBrands.collectAsState()
+    val selectedBrands by viewModel.selectedBrands.collectAsState()
 
     MetalTextureBackground {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-    ) {
-        // ── Header ──────────────────────────────────────────────────────────
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "TRACKGOD",
-                style = MaterialTheme.typography.labelLarge,
-                color = TextTertiary,
-                letterSpacing = 4.sp,
-            )
-        }
+    AnimatedContent(
+        targetState = showBrandPicker,
+        transitionSpec = {
+            (slideInHorizontally { it } + fadeIn())
+                .togetherWith(slideOutHorizontally { -it } + fadeOut())
+        },
+        label = "seedingStep",
+    ) { isBrandStep ->
+        if (isBrandStep) {
+            // ── Step 2: Brand Picker ────────────────────────────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                // ── Header ──────────────────────────────────────────────────
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "TRACKGOD",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = TextTertiary,
+                        letterSpacing = 4.sp,
+                    )
+                }
 
-        // ── Heading ─────────────────────────────────────────────────────────
-        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-            Text(
-                text = buildAnnotatedString {
-                    append("LOAD\n")
-                    withStyle(SpanStyle(color = Blood)) {
-                        append("ARSENAL")
+                // ── Heading ─────────────────────────────────────────────────
+                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                    Text(
+                        text = buildAnnotatedString {
+                            append("SELECT YOUR\n")
+                            withStyle(SpanStyle(color = Blood)) {
+                                append("GYM'S BRANDS")
+                            }
+                        },
+                        style = MaterialTheme.typography.displaySmall,
+                        color = TextPrimary,
+                        lineHeight = 34.sp,
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "You can change this later in Settings.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextTertiary,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // ── Brand Grid ──────────────────────────────────────────────
+                BrandPicker(
+                    brands = availableBrands,
+                    onToggleBrand = viewModel::toggleBrand,
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .fillMaxWidth()
+                        .height(400.dp),
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // ── Buttons ─────────────────────────────────────────────────
+                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                    TrackGodButton(
+                        text = if (isSeeding) "LOADING..." else "CONTINUE",
+                        onClick = { viewModel.seedWithSelectedBrands(onComplete) },
+                        enabled = !isSeeding && selectedBrands.isNotEmpty(),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    TrackGodButton(
+                        text = "SKIP",
+                        onClick = { viewModel.skipBrandSelection(onComplete) },
+                        enabled = !isSeeding,
+                        variant = ButtonVariant.Ghost,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        } else {
+            // ── Step 1: Original 3-option choice ────────────────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                // ── Header ──────────────────────────────────────────────────
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "TRACKGOD",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = TextTertiary,
+                        letterSpacing = 4.sp,
+                    )
+                }
+
+                // ── Heading ─────────────────────────────────────────────────
+                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                    Text(
+                        text = buildAnnotatedString {
+                            append("LOAD\n")
+                            withStyle(SpanStyle(color = Blood)) {
+                                append("ARSENAL")
+                            }
+                        },
+                        style = MaterialTheme.typography.displaySmall,
+                        color = TextPrimary,
+                        lineHeight = 34.sp,
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Choose your starting loadout.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextTertiary,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // ── Option 1: Full Arsenal ──────────────────────────────────
+                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                    TrackGodCard(
+                        accentBorder = true,
+                    ) {
+                        Text(
+                            text = "FULL ARSENAL",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "200+ exercises across all categories. Everything ready.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextTertiary,
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        TrackGodButton(
+                            text = if (isSeeding) "LOADING..." else "SELECT",
+                            onClick = { viewModel.showBrandSelection() },
+                            enabled = !isSeeding,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                     }
-                },
-                style = MaterialTheme.typography.displaySmall,
-                color = TextPrimary,
-                lineHeight = 34.sp,
-            )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Choose your starting loadout.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextTertiary,
-            )
-        }
+                    // ── Option 2: Basics Only ───────────────────────────────
+                    TrackGodCard {
+                        Text(
+                            text = "BASICS ONLY",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Common free weight exercises. No machines. Clean start.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextTertiary,
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        TrackGodButton(
+                            text = "SELECT",
+                            onClick = { viewModel.seedBasics(onComplete) },
+                            enabled = !isSeeding,
+                            variant = ButtonVariant.Secondary,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
 
-        Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-        // ── Option 1: Full Arsenal ──────────────────────────────────────────
-        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-            TrackGodCard(
-                accentBorder = true,
-            ) {
-                Text(
-                    text = "FULL ARSENAL",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "200+ exercises across all categories. Everything ready.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextTertiary,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                TrackGodButton(
-                    text = if (isSeeding) "LOADING..." else "SELECT",
-                    onClick = { viewModel.seedFull(onComplete) },
-                    enabled = !isSeeding,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                    // ── Option 3: Empty Slate ───────────────────────────────
+                    TrackGodCard {
+                        Text(
+                            text = "EMPTY SLATE",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Add everything yourself. Full control.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextTertiary,
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        TrackGodButton(
+                            text = "SELECT",
+                            onClick = { viewModel.seedEmpty(onComplete) },
+                            enabled = !isSeeding,
+                            variant = ButtonVariant.Secondary,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // ── Divider ─────────────────────────────────────────────
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(1.dp)
+                                .background(SurfaceHighest),
+                        )
+                        Text(
+                            text = "  OR  ",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = TextTertiary,
+                        )
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(1.dp)
+                                .background(SurfaceHighest),
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // ── V1 Import ───────────────────────────────────────────
+                    TrackGodButton(
+                        text = "IMPORT FROM TRACKGOD V1",
+                        onClick = onNavigateToV1Import,
+                        variant = ButtonVariant.Secondary,
+                        enabled = !isSeeding,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ── Option 2: Basics Only ───────────────────────────────────────
-            TrackGodCard {
-                Text(
-                    text = "BASICS ONLY",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Common free weight exercises. No machines. Clean start.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextTertiary,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                TrackGodButton(
-                    text = "SELECT",
-                    onClick = { viewModel.seedBasics(onComplete) },
-                    enabled = !isSeeding,
-                    variant = ButtonVariant.Secondary,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ── Option 3: Empty Slate ───────────────────────────────────────
-            TrackGodCard {
-                Text(
-                    text = "EMPTY SLATE",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Add everything yourself. Full control.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextTertiary,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                TrackGodButton(
-                    text = "SELECT",
-                    onClick = { viewModel.seedEmpty(onComplete) },
-                    enabled = !isSeeding,
-                    variant = ButtonVariant.Secondary,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // ── Divider ─────────────────────────────────────────────────────
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(1.dp)
-                        .background(SurfaceHighest),
-                )
-                Text(
-                    text = "  OR  ",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = TextTertiary,
-                )
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(1.dp)
-                        .background(SurfaceHighest),
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ── V1 Import ───────────────────────────────────────────────────
-            TrackGodButton(
-                text = "IMPORT FROM TRACKGOD V1",
-                onClick = onNavigateToV1Import,
-                variant = ButtonVariant.Secondary,
-                enabled = !isSeeding,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
     } // MetalTextureBackground

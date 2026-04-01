@@ -56,6 +56,7 @@ fun ProfileScreen(
     onNavigateToSettings: () -> Unit = {},
     onNavigateToWeightLoss: () -> Unit = {},
     onNavigateToBackup: () -> Unit = {},
+    onNavigateToMyGym: () -> Unit = {},
     onNavigateToPrivacyPolicy: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -115,6 +116,12 @@ fun ProfileScreen(
             SectionDivider(text = "DATA", modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(spacing.lg))
             ProfileMenuItem(label = "BACKUP & RESTORE", onClick = onNavigateToBackup)
+            Spacer(modifier = Modifier.height(spacing.sm))
+            ProfileMenuItemWithSubtitle(
+                label = "MY GYM",
+                subtitle = "Manage machine brands",
+                onClick = onNavigateToMyGym,
+            )
 
             Spacer(modifier = Modifier.height(spacing.xl))
 
@@ -283,6 +290,39 @@ private fun ProfileMenuItem(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground,
             )
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.outline,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileMenuItemWithSubtitle(
+    label: String,
+    subtitle: String,
+    onClick: () -> Unit,
+) {
+    TrackGodCard(onClick = onClick) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextTertiary,
+                )
+            }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,

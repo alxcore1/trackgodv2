@@ -46,5 +46,6 @@ sealed class Screen(val route: String) {
     data object WeightLoss : Screen("weight_loss")
     data object PhotoComparison : Screen("photo_comparison")
     data object Backup : Screen("backup")
+    data object MyGym : Screen("my_gym")
     data object PrivacyPolicy : Screen("privacy_policy")
 }

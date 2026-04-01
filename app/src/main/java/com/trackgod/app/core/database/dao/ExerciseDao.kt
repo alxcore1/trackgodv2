@@ -63,6 +63,18 @@ interface ExerciseDao {
     @Query("UPDATE exercises SET is_active = 0 WHERE id = :id")
     suspend fun deactivate(id: Long)
 
+    @Query("UPDATE exercises SET is_active = 0 WHERE brand = :brand")
+    suspend fun deactivateByBrand(brand: String)
+
+    @Query("UPDATE exercises SET is_active = 1 WHERE brand = :brand")
+    suspend fun activateByBrand(brand: String)
+
+    @Query("SELECT COUNT(*) FROM exercises WHERE brand = :brand")
+    suspend fun getExerciseCountByBrand(brand: String): Int
+
+    @Query("SELECT name FROM exercises WHERE brand = :brand")
+    suspend fun getNamesByBrand(brand: String): List<String>
+
     @Query("UPDATE exercises SET usage_count = usage_count + :count, last_used_at = CASE WHEN :lastUsed IS NOT NULL AND (last_used_at IS NULL OR :lastUsed > last_used_at) THEN :lastUsed ELSE last_used_at END WHERE id = :id")
     suspend fun transferUsage(id: Long, count: Int, lastUsed: Long?)
 
