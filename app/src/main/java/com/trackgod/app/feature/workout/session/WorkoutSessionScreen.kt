@@ -88,6 +88,7 @@ import com.trackgod.app.ui.component.TrackGodTextField
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.SurfaceLow
+import com.trackgod.app.ui.theme.TrackGodTheme
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.Void
@@ -246,6 +247,7 @@ private fun WorkoutSessionContent(
     onDeclineSuperset: () -> Unit = {},
     generateWorkoutName: () -> String,
 ) {
+    val spacing = TrackGodTheme.spacing
     var showBackConfirm by remember { mutableStateOf(false) }
     var deleteSetId by remember { mutableStateOf<Long?>(null) }
     var restTimerMinimized by remember { mutableStateOf(false) }
@@ -260,7 +262,7 @@ private fun WorkoutSessionContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 4.dp),
+            .padding(top = spacing.xs),
     ) {
         // Header
         SessionHeader(
@@ -286,7 +288,7 @@ private fun WorkoutSessionContent(
             variant = ButtonVariant.Secondary,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = spacing.lg, vertical = spacing.sm),
         )
 
         // Main content area (scrollable) with rest timer overlay
@@ -305,9 +307,9 @@ private fun WorkoutSessionContent(
                             text = "SESSION LOG",
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
+                                .padding(horizontal = spacing.lg),
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(spacing.sm))
                     }
 
                     items(
@@ -322,7 +324,7 @@ private fun WorkoutSessionContent(
                         )
                     }
 
-                    item { Spacer(modifier = Modifier.height(16.dp)) }
+                    item { Spacer(modifier = Modifier.height(spacing.lg)) }
                 }
 
                 item {
@@ -330,9 +332,9 @@ private fun WorkoutSessionContent(
                         text = if (state.allExercisesInSession.isEmpty()) "SELECT AN EXERCISE" else "ADD ANOTHER",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = spacing.lg),
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(spacing.lg))
                     ChooseExerciseTile(onClick = onNavigateToExercisePicker)
                 }
             } else {
@@ -356,14 +358,14 @@ private fun WorkoutSessionContent(
                 // Completed sets
                 if (state.completedSets.isNotEmpty()) {
                     item {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(spacing.lg))
                         SectionDivider(
                             text = "COMPLETED SETS",
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
+                                .padding(horizontal = spacing.lg),
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(spacing.sm))
                     }
 
                     itemsIndexed(
@@ -409,7 +411,7 @@ private fun WorkoutSessionContent(
                                 Box(
                                     modifier = Modifier
                                         .matchParentSize()
-                                        .padding(horizontal = 16.dp, vertical = 2.dp)
+                                        .padding(horizontal = spacing.lg, vertical = 2.dp)
                                         .alpha(highlightAlpha.value * 0.15f)
                                         .background(Blood),
                                 )
@@ -420,11 +422,11 @@ private fun WorkoutSessionContent(
 
                 // Close exercise button (return to session hub)
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(spacing.lg))
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = spacing.lg),
                     ) {
                         TrackGodButton(
                             text = "CLOSE EXERCISE",
@@ -433,7 +435,7 @@ private fun WorkoutSessionContent(
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(spacing.xl))
                 }
             }
 
@@ -532,6 +534,7 @@ private fun SessionHeader(
     restTimeRemaining: Int = 0,
     onExpandRestTimer: () -> Unit = {},
 ) {
+    val spacing = TrackGodTheme.spacing
     val infiniteTransition = rememberInfiniteTransition(label = "livePulse")
     val liveDotAlpha by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -548,7 +551,7 @@ private fun SessionHeader(
             .fillMaxWidth()
             .height(56.dp)
             .background(Void)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = spacing.lg),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
@@ -558,31 +561,30 @@ private fun SessionHeader(
             modifier = Modifier.size(24.dp),
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(spacing.md))
 
         Text(
             text = "WORKOUT",
+            style = MaterialTheme.typography.headlineMedium.copy(letterSpacing = 2.sp),
             color = TextPrimary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = 2.sp,
         )
 
         // Minimized rest timer badge
         if (restTimerMinimized) {
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(spacing.sm))
             Box(
                 modifier = Modifier
                     .background(Blood.copy(alpha = 0.3f), RectangleShape)
                     .clickable { onExpandRestTimer() }
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    .padding(horizontal = spacing.sm, vertical = spacing.xs),
             ) {
                 Text(
                     text = formatRestTime(restTimeRemaining),
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.Monospace,
+                    ),
                     color = BloodBright,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Black,
-                    fontFamily = FontFamily.Monospace,
                 )
             }
         }
@@ -602,10 +604,8 @@ private fun SessionHeader(
             )
             Text(
                 text = "LIVE",
+                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 3.sp),
                 color = BloodBright,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp,
             )
         }
 
@@ -633,11 +633,12 @@ private fun StatsPanel(
     durationSeconds: Long,
     weightUnit: String,
 ) {
+    val spacing = TrackGodTheme.spacing
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(SurfaceLow)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = spacing.lg, vertical = spacing.md),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         StatColumn(label = "EXERCISES", value = exerciseCount.toString())
@@ -653,21 +654,20 @@ private fun StatColumn(
     value: String,
     monospace: Boolean = false,
 ) {
+    val spacing = TrackGodTheme.spacing
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = label,
+            style = MaterialTheme.typography.labelMedium,
             color = TextTertiary,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp,
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(spacing.xs))
         Text(
             text = value,
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = if (monospace) FontFamily.Monospace else null,
+            ),
             color = TextPrimary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Black,
-            fontFamily = if (monospace) FontFamily.Monospace else null,
         )
     }
 }
@@ -683,17 +683,18 @@ private fun SessionExerciseCard(
     category: String,
     onClick: () -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = spacing.lg, vertical = spacing.xs)
             .background(SurfaceLow, RectangleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,
             )
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = spacing.lg, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -722,17 +723,18 @@ private fun SessionExerciseCard(
 
 @Composable
 private fun ChooseExerciseTile(onClick: () -> Unit) {
+    val spacing = TrackGodTheme.spacing
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = spacing.lg)
             .background(SurfaceLow, shape = RectangleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,
             )
-            .padding(vertical = 32.dp),
+            .padding(vertical = spacing.xxl),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -742,21 +744,20 @@ private fun ChooseExerciseTile(onClick: () -> Unit) {
                 tint = BloodBright,
                 modifier = Modifier.size(32.dp),
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
             Text(
                 text = "+ CHOOSE EXERCISE",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp,
+                ),
                 color = TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 2.sp,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(spacing.xs))
             Text(
                 text = "BROWSE MANUALLY",
+                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 3.sp),
                 color = TextTertiary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp,
             )
         }
     }
@@ -778,6 +779,7 @@ private fun ExerciseInputSection(
     onCycleSetType: () -> Unit = {},
     onResumeExercise: (ExerciseEntity) -> Unit = {},
 ) {
+    val spacing = TrackGodTheme.spacing
     val exercise = state.currentExercise ?: return
     val isEditing = state.editingSetId != null
 
@@ -787,7 +789,7 @@ private fun ExerciseInputSection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = spacing.lg),
     ) {
         // Exercise name
         Text(
@@ -798,7 +800,7 @@ private fun ExerciseInputSection(
             letterSpacing = 2.sp,
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(spacing.xs))
 
         // Category + equipment
         Text(
@@ -815,13 +817,14 @@ private fun ExerciseInputSection(
             val partnerName = state.allExercisesInSession
                 .firstOrNull { it.exercise.id == partnerId }?.exercise?.name?.uppercase()
             if (partnerName != null) {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(spacing.xs))
                 Text(
                     text = "SS → $partnerName",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp,
+                    ),
                     color = Blood,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 1.sp,
                     modifier = Modifier.clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -836,27 +839,23 @@ private fun ExerciseInputSection(
 
         // Progressive overload suggestion
         if (state.overloadHint != null) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
             Text(
                 text = "SUGGESTED",
+                style = MaterialTheme.typography.labelSmall,
                 color = TextTertiary,
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp,
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = state.overloadHint,
+                style = MaterialTheme.typography.labelLarge.copy(letterSpacing = 1.sp),
                 color = BloodBright,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp,
             )
         }
 
         // Previous session sets (expandable)
         if (state.lastSessionSets.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
             LastSessionSets(
                 sets = state.lastSessionSets,
                 weightUnit = state.weightUnit,
@@ -883,7 +882,7 @@ private fun ExerciseInputSection(
                 step = state.weightIncrement,
                 modifier = Modifier.weight(1f),
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(spacing.lg))
             NumberInput(
                 value = state.repsInput,
                 onValueChange = onRepsChanged,
@@ -897,13 +896,11 @@ private fun ExerciseInputSection(
         // Plate calculator link
         var showPlateCalc by remember { mutableStateOf(false) }
         if (state.weightInput.isNotEmpty() && !isEditing) {
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(spacing.xs))
             Text(
                 text = "PLATE CALCULATOR",
+                style = MaterialTheme.typography.labelMedium,
                 color = TextTertiary,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
                 modifier = Modifier.clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -920,7 +917,7 @@ private fun ExerciseInputSection(
 
         // RPE / RIR inputs (conditional)
         if (state.showRpe || state.showRir) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(spacing.md))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -948,17 +945,15 @@ private fun ExerciseInputSection(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(spacing.md))
 
         // Optional note — collapsible to save space
         var noteExpanded by remember(state.currentExercise?.id) { mutableStateOf(state.noteInput.isNotBlank()) }
         if (!noteExpanded) {
             Text(
                 text = "+ NOTE",
+                style = MaterialTheme.typography.labelLarge,
                 color = TextTertiary,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
                 modifier = Modifier.clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -975,7 +970,7 @@ private fun ExerciseInputSection(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(spacing.lg))
 
         // Log / Save / Cancel buttons
         if (isEditing) {
@@ -1004,7 +999,7 @@ private fun ExerciseInputSection(
                     color = BloodBright,
                     letterSpacing = 1.sp,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(spacing.sm))
             }
 
             // Set type + LOG SET in one row
@@ -1043,18 +1038,17 @@ private fun ExerciseInputSection(
                     ) {
                         Text(
                             text = typeLabel,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp,
+                            ),
                             color = if (state.setTypeInput == "working") TextTertiary else BloodBright,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp,
                         )
                     }
                     Text(
                         text = "SET TYPE",
+                        style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
                         color = TextTertiary,
-                        fontSize = 7.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
                     )
                 }
                 TrackGodButton(
@@ -1084,11 +1078,12 @@ private fun RestTimerOverlay(
     onMinimize: () -> Unit,
     onDisableForSession: () -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(color = SurfaceLow.copy(alpha = 0.95f), shape = RectangleShape)
-            .padding(16.dp),
+            .padding(spacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Title row with minimize button
@@ -1098,10 +1093,8 @@ private fun RestTimerOverlay(
         ) {
             Text(
                 text = "REST TIMER",
+                style = MaterialTheme.typography.labelLarge.copy(letterSpacing = 4.sp),
                 color = TextTertiary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 4.sp,
                 modifier = Modifier.weight(1f),
             )
             IconButton(onClick = onMinimize, modifier = Modifier.size(32.dp)) {
@@ -1114,7 +1107,7 @@ private fun RestTimerOverlay(
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(spacing.sm))
 
         // Large countdown
         Text(
@@ -1129,14 +1122,12 @@ private fun RestTimerOverlay(
         if (isPaused) {
             Text(
                 text = "PAUSED",
+                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 3.sp),
                 color = TextTertiary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp,
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(spacing.md))
 
         // +/- 15s adjust buttons
         Row(
@@ -1157,7 +1148,7 @@ private fun RestTimerOverlay(
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(spacing.sm))
 
         // Pause/Resume + Skip in a row
         Row(
@@ -1177,15 +1168,13 @@ private fun RestTimerOverlay(
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(spacing.sm))
 
         // Disable for session toggle
         Text(
             text = "DISABLE FOR SESSION",
+            style = MaterialTheme.typography.labelMedium,
             color = TextTertiary,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.clickable { onDisableForSession() },
         )
@@ -1209,6 +1198,7 @@ private fun CompletedSetRow(
     onClick: () -> Unit,
     onLongClick: () -> Unit = {},
 ) {
+    val spacing = TrackGodTheme.spacing
     val weightStr = if (weightIncrement % 1f == 0f) {
         weight.toInt().toString()
     } else {
@@ -1218,7 +1208,7 @@ private fun CompletedSetRow(
     TrackGodCard(
         accentBorder = isEditing || isPr,
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 2.dp)
+            .padding(horizontal = spacing.lg, vertical = 2.dp)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick,
@@ -1235,10 +1225,8 @@ private fun CompletedSetRow(
             ) {
                 Text(
                     text = "SET $setNumber",
+                    style = MaterialTheme.typography.labelLarge,
                     color = TextTertiary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
                 )
                 // Set type badge (only for non-working sets)
                 if (setType != "working") {
@@ -1249,10 +1237,11 @@ private fun CompletedSetRow(
                             "failure" -> "F"
                             else -> ""
                         },
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp,
+                        ),
                         color = if (setType == "warmup") TextTertiary else Blood,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp,
                     )
                 }
                 if (isPr) {
@@ -1264,34 +1253,31 @@ private fun CompletedSetRow(
                     )
                     Text(
                         text = "PR",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Black),
                         color = Blood,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp,
                     )
                 }
             }
             val isWarmupSet = setType == "warmup"
             Text(
                 text = "$weightStr${weightUnit.uppercase()} x $reps",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp,
+                ),
                 color = when {
                     isPr -> BloodBright
                     isWarmupSet -> TextTertiary
                     else -> TextPrimary
                 },
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp,
             )
         }
         if (!note.isNullOrBlank()) {
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(spacing.xs))
             Text(
                 text = note.uppercase(),
+                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp),
                 color = TextTertiary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp,
             )
         }
     }
@@ -1306,6 +1292,7 @@ private fun LastSessionSets(
     weightIncrement: Float,
     onSetTapped: (com.trackgod.app.core.database.entity.SetEntity) -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     var expanded by remember { mutableStateOf(sets.size < 5) }
     val unit = weightUnit.uppercase()
 
@@ -1355,21 +1342,21 @@ private fun LastSessionSets(
                             .fillMaxWidth()
                             .background(SurfaceLow, RectangleShape)
                             .clickable { onSetTapped(set) }
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                            .padding(horizontal = spacing.md, vertical = spacing.sm),
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(
                             text = "SET ${index + 1}",
+                            style = MaterialTheme.typography.labelLarge,
                             color = TextTertiary,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp,
                         )
                         Text(
                             text = "$weightStr$unit  ×  ${set.reps}",
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Black,
+                            ),
                             color = TextPrimary,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Black,
                         )
                     }
                 }

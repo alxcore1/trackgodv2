@@ -62,6 +62,7 @@ import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.TrackGodTheme
+import com.trackgod.app.ui.theme.screenPadding
 
 @Composable
 fun StatsScreen(
@@ -80,6 +81,8 @@ private fun StatsContent(
     state: StatsState,
     onTimeRangeChanged: (TimeRange) -> Unit = {},
 ) {
+    val spacing = TrackGodTheme.spacing
+
     MetalTextureBackground {
     if (state.isLoading) {
         Box(
@@ -96,12 +99,12 @@ private fun StatsContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 4.dp)
-                .padding(horizontal = 16.dp),
+                .padding(top = spacing.xs)
+                .padding(horizontal = spacing.screenPadding),
         ) {
             TrackGodHeader()
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(spacing.md))
 
             // Hero heading even in empty state
             Text(
@@ -119,7 +122,7 @@ private fun StatsContent(
                 maxLines = 1,
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
 
             SectionDivider(
                 text = "ARSENAL ANALYTICS",
@@ -141,7 +144,7 @@ private fun StatsContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 4.dp),
+            .padding(top = spacing.xs),
     ) {
         // Inline progress bar for time-range switches
         if (state.isRefreshing) {
@@ -155,11 +158,11 @@ private fun StatsContent(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = spacing.screenPadding),
         ) {
         TrackGodHeader()
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(spacing.md))
 
         // ── Hero Section ─────────────────────────────────────────────────────
         HeroSection(
@@ -175,7 +178,7 @@ private fun StatsContent(
             onSelect = onTimeRangeChanged,
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(spacing.lg))
 
         // ── Tools ───────────────────────────────────────────────────────────
         var showOneRepMaxSheet by remember { mutableStateOf(false) }
@@ -193,7 +196,7 @@ private fun StatsContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(spacing.xl))
 
         // ── 1. Volume Progression ────────────────────────────────────────────
         if (state.volumeByPeriod.isNotEmpty()) {
@@ -202,7 +205,7 @@ private fun StatsContent(
                     data = state.volumeByPeriod,
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
         }
 
         // ── 2. Consistency Heatmap ───────────────────────────────────────────
@@ -212,7 +215,7 @@ private fun StatsContent(
                     data = state.heatmapData,
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
         }
 
         // ── 3. Personal Records ──────────────────────────────────────────────
@@ -221,7 +224,7 @@ private fun StatsContent(
                 records = state.personalRecords,
                 weightUnit = state.weightUnit,
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
         }
 
         // ── 3b. Exercise Progression Charts ─────────────────────────────────
@@ -230,7 +233,7 @@ private fun StatsContent(
                 progressions = state.exerciseProgressions,
                 weightUnit = state.weightUnit,
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
         }
 
         // ── 4. Strength Balance ──────────────────────────────────────────────
@@ -240,7 +243,7 @@ private fun StatsContent(
                     data = state.strengthBalance,
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
         }
 
         // ── 5. Muscle Load Distribution ──────────────────────────────────────
@@ -250,7 +253,7 @@ private fun StatsContent(
                     data = state.muscleGroupVolumes,
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
         }
 
         // ── 6. Exercise Frequency ────────────────────────────────────────────
@@ -260,7 +263,7 @@ private fun StatsContent(
                     data = state.exerciseFrequency,
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
         }
 
         // ── 7. Consistency ───────────────────────────────────────────────────
@@ -273,7 +276,7 @@ private fun StatsContent(
         }
 
         // Bottom padding for nav bar clearance
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(spacing.xxl))
         } // inner scrollable Column
     } // outer Column with progress bar
     } // MetalTextureBackground
@@ -286,6 +289,7 @@ private fun HeroSection(
     totalVolume: Float,
     weightUnit: String,
 ) {
+    val spacing = TrackGodTheme.spacing
     TrackGodCard(accentBorder = true) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -307,7 +311,7 @@ private fun HeroSection(
                     color = BloodBright,
                     maxLines = 1,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(spacing.xs))
                 Text(
                     text = "Performance Protocol :: Active",
                     style = MaterialTheme.typography.labelMedium,

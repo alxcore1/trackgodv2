@@ -39,6 +39,7 @@ import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodCard
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
+import com.trackgod.app.ui.theme.TrackGodTheme
 import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
@@ -51,19 +52,20 @@ fun WeightLossScreen(
     onNavigateToPhotoComparison: () -> Unit = {},
     viewModel: WeightLossViewModel = hiltViewModel(),
 ) {
+    val spacing = TrackGodTheme.spacing
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     MetalTextureBackground {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 4.dp),
+            .padding(top = spacing.xs),
     ) {
         // -- Top bar --
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp),
+                .padding(horizontal = spacing.xs, vertical = spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onNavigateBack) {
@@ -84,9 +86,9 @@ fun WeightLossScreen(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = spacing.lg),
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
 
             if (state.activeGoal == null && !state.isLoading) {
                 // No active goal -- show setup CTA
@@ -94,25 +96,25 @@ fun WeightLossScreen(
             } else if (state.activeGoal != null) {
                 // -- ACTIVE GOAL --
                 SectionDivider(text = "ACTIVE GOAL", modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(spacing.md))
                 GoalOverviewCard(state = state)
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(spacing.xl))
 
                 // -- WEIGHT PROGRESS --
                 SectionDivider(text = "WEIGHT PROGRESS", modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(spacing.md))
                 WeightProgressChart(
                     weightHistory = state.weightHistory,
                     targetWeight = state.activeGoal?.targetWeight,
                     weightUnit = state.weightUnit,
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(spacing.xl))
 
                 // -- QUICK ACTIONS --
                 SectionDivider(text = "QUICK ACTIONS", modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(spacing.md))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -130,11 +132,11 @@ fun WeightLossScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(spacing.xl))
 
                 // -- MILESTONES --
                 SectionDivider(text = "MILESTONES", modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(spacing.md))
                 if (state.milestones.isEmpty()) {
                     Text(
                         text = "NO MILESTONES SET",
@@ -144,7 +146,7 @@ fun WeightLossScreen(
                         letterSpacing = 2.sp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 16.dp),
+                            .padding(vertical = spacing.lg),
                         textAlign = TextAlign.Center,
                     )
                 } else {
@@ -153,23 +155,23 @@ fun WeightLossScreen(
                             milestone = milestone,
                             weightUnit = state.weightUnit,
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(spacing.sm))
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(spacing.xl))
 
                 // -- REFERENCE (BMR/TDEE) --
                 if (state.bmr != null || state.tdee != null) {
                     SectionDivider(text = "REFERENCE", modifier = Modifier.fillMaxWidth())
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(spacing.md))
                     ReferenceCards(bmr = state.bmr, tdee = state.tdee)
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(spacing.xl))
                 }
 
                 // -- PROGRESS PHOTOS --
                 SectionDivider(text = "PROGRESS PHOTOS", modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(spacing.md))
                 ProgressPhotosSection(
                     photos = state.progressPhotos,
                     onPhotoAdded = viewModel::addProgressPhoto,
@@ -178,7 +180,7 @@ fun WeightLossScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(spacing.xxl))
         }
     }
     } // MetalTextureBackground
@@ -219,6 +221,7 @@ fun WeightLossScreen(
 
 @Composable
 private fun NoGoalSection(onSetGoal: () -> Unit) {
+    val spacing = TrackGodTheme.spacing
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -232,17 +235,17 @@ private fun NoGoalSection(onSetGoal: () -> Unit) {
             textAlign = TextAlign.Center,
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(spacing.sm))
 
         Text(
             text = "SET A WEIGHT LOSS GOAL TO START TRACKING YOUR JOURNEY",
             style = MaterialTheme.typography.labelMedium,
             color = TextTertiary,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 32.dp),
+            modifier = Modifier.padding(horizontal = spacing.xxl),
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(spacing.xl))
 
         TrackGodButton(
             text = "SET YOUR GOAL",
@@ -256,6 +259,7 @@ private fun NoGoalSection(onSetGoal: () -> Unit) {
 
 @Composable
 private fun GoalOverviewCard(state: WeightLossState) {
+    val spacing = TrackGodTheme.spacing
     val goal = state.activeGoal ?: return
     val unit = state.weightUnit.uppercase()
 
@@ -269,7 +273,7 @@ private fun GoalOverviewCard(state: WeightLossState) {
             StatColumn(label = "TARGET", value = "%.1f %s".format(goal.targetWeight, unit))
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(spacing.lg))
 
         // Progress percentage (large)
         Text(
@@ -292,7 +296,7 @@ private fun GoalOverviewCard(state: WeightLossState) {
             textAlign = TextAlign.Center,
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(spacing.lg))
 
         // Remaining / Days left row
         Row(
@@ -305,7 +309,7 @@ private fun GoalOverviewCard(state: WeightLossState) {
 
         // Motivation text
         if (!goal.motivationText.isNullOrBlank()) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(spacing.md))
             Text(
                 text = "\"${goal.motivationText.uppercase()}\"",
                 color = TextTertiary,
@@ -321,6 +325,7 @@ private fun GoalOverviewCard(state: WeightLossState) {
 
 @Composable
 private fun StatColumn(label: String, value: String) {
+    val spacing = TrackGodTheme.spacing
     Column {
         Text(
             text = label,
@@ -346,6 +351,7 @@ private fun MilestoneRow(
     milestone: WeightLossMilestoneEntity,
     weightUnit: String,
 ) {
+    val spacing = TrackGodTheme.spacing
     TrackGodCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -359,7 +365,7 @@ private fun MilestoneRow(
                 fontWeight = FontWeight.Black,
             )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(spacing.md))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -394,6 +400,7 @@ private fun MilestoneRow(
 
 @Composable
 private fun ReferenceCards(bmr: Float?, tdee: Float?) {
+    val spacing = TrackGodTheme.spacing
     val numberFormat = NumberFormat.getIntegerInstance(Locale.getDefault())
 
     Row(
@@ -409,7 +416,7 @@ private fun ReferenceCards(bmr: Float?, tdee: Float?) {
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 3.sp,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(spacing.xs))
                 Text(
                     text = "${numberFormat.format(bmr.toInt())} KCAL",
                     color = TextPrimary,
@@ -428,7 +435,7 @@ private fun ReferenceCards(bmr: Float?, tdee: Float?) {
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 3.sp,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(spacing.xs))
                 Text(
                     text = "${numberFormat.format(tdee.toInt())} KCAL",
                     color = TextPrimary,

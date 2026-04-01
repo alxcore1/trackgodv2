@@ -17,39 +17,29 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Timer
 import com.trackgod.app.feature.workout.session.ConfirmationDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,12 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
@@ -80,6 +65,7 @@ import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodHeader
+import com.trackgod.app.ui.component.TrackGodSearchField
 import com.trackgod.app.ui.component.TrackGodTextField
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
@@ -89,7 +75,7 @@ import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.TrackGodTheme
-import com.trackgod.app.ui.theme.VoidDeep
+import com.trackgod.app.ui.theme.screenPadding
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle as JavaTextStyle
@@ -137,6 +123,8 @@ private fun HistoryContent(
     onConfirmDelete: () -> Unit,
     onEditWorkout: (Long) -> Unit = {},
 ) {
+    val spacing = TrackGodTheme.spacing
+
     MetalTextureBackground {
     if (state.isLoading) {
         Box(
@@ -160,17 +148,18 @@ private fun HistoryContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 4.dp),
+            .padding(top = spacing.xs),
     ) {
         // -- Header -----------------------------------------------------------
         TrackGodHeader()
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(spacing.md))
 
         // -- Search bar -------------------------------------------------------
-        SearchBar(
-            query = state.searchQuery,
-            onQueryChanged = onSearchQueryChanged,
+        TrackGodSearchField(
+            value = state.searchQuery,
+            onValueChange = onSearchQueryChanged,
+            placeholder = "FIND PAST TRANSMISSIONS...",
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 18.dp),
@@ -198,7 +187,7 @@ private fun HistoryContent(
                 .padding(horizontal = 18.dp),
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(spacing.md))
 
         // -- Workout list or empty state --------------------------------------
         if (state.workouts.isEmpty()) {
@@ -214,7 +203,7 @@ private fun HistoryContent(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 24.dp),
+                contentPadding = PaddingValues(bottom = spacing.xl),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 itemsIndexed(
@@ -244,89 +233,6 @@ private fun HistoryContent(
     } // MetalTextureBackground
 }
 
-// -- Search bar ---------------------------------------------------------------
-
-@Composable
-private fun SearchBar(
-    query: String,
-    onQueryChanged: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val focusManager = LocalFocusManager.current
-
-    Row(
-        modifier = modifier
-            .height(IntrinsicSize.Min)
-            .background(VoidDeep, RectangleShape),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        // Red left accent bar
-        Box(
-            modifier = Modifier
-                .width(3.dp)
-                .fillMaxHeight()
-                .background(Blood),
-        )
-
-        BasicTextField(
-            value = query,
-            onValueChange = onQueryChanged,
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 12.dp, vertical = 14.dp),
-            textStyle = TextStyle(
-                color = TextPrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp,
-            ),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Search,
-            ),
-            keyboardActions = KeyboardActions(
-                onSearch = { focusManager.clearFocus() },
-            ),
-            cursorBrush = SolidColor(Blood),
-            decorationBox = { innerTextField ->
-                Box {
-                    if (query.isEmpty()) {
-                        Text(
-                            text = "FIND PAST TRANSMISSIONS...",
-                            color = TextTertiary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp,
-                        )
-                    }
-                    innerTextField()
-                }
-            },
-        )
-
-        if (query.isNotEmpty()) {
-            IconButton(onClick = { onQueryChanged("") }) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Clear search",
-                    tint = TextTertiary,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-        } else {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = null,
-                tint = TextTertiary,
-                modifier = Modifier
-                    .padding(end = 12.dp)
-                    .size(18.dp),
-            )
-        }
-    }
-}
-
 // -- Horizontal date picker ---------------------------------------------------
 
 @Composable
@@ -338,8 +244,9 @@ private fun DatePickerRow(
     onWeekNavigate: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val spacing = TrackGodTheme.spacing
     Row(
-        modifier = modifier.padding(horizontal = 8.dp),
+        modifier = modifier.padding(horizontal = spacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Left arrow
@@ -390,6 +297,7 @@ private fun DateChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val spacing = TrackGodTheme.spacing
     val bgColor by animateColorAsState(
         targetValue = when {
             isSelected -> Blood
@@ -420,22 +328,22 @@ private fun DateChip(
                 indication = null,
                 onClick = onClick,
             )
-            .padding(horizontal = 4.dp, vertical = 8.dp),
+            .padding(horizontal = spacing.xs, vertical = spacing.sm),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = dayOfWeek,
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontSize = 9.sp,
+                letterSpacing = 1.sp,
+            ),
             color = textColor,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp,
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = dayNum,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black),
             color = textColor,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Black,
         )
         // Workout indicator dot
         Spacer(modifier = Modifier.height(3.dp))
@@ -470,6 +378,7 @@ private fun WorkoutCard(
     onEditWorkout: () -> Unit = {},
     maxVolumeInList: Float = 0f,
 ) {
+    val spacing = TrackGodTheme.spacing
     val workout = item.workout
     var showContextMenu by remember { mutableStateOf(false) }
     val accentColor = Blood
@@ -496,7 +405,7 @@ private fun WorkoutCard(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 18.dp, vertical = 12.dp),
+                    .padding(horizontal = 18.dp, vertical = spacing.md),
             ) {
                 WorkoutCardContent(
                     item = item,
@@ -529,13 +438,11 @@ private fun WorkoutCard(
                             tint = TextPrimary,
                             modifier = Modifier.size(18.dp),
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(spacing.sm))
                         Text(
                             text = "RENAME",
+                            style = MaterialTheme.typography.labelLarge,
                             color = TextPrimary,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp,
                         )
                     }
                 },
@@ -553,13 +460,11 @@ private fun WorkoutCard(
                             tint = TextPrimary,
                             modifier = Modifier.size(18.dp),
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(spacing.sm))
                         Text(
                             text = "EDIT SETS",
+                            style = MaterialTheme.typography.labelLarge,
                             color = TextPrimary,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp,
                         )
                     }
                 },
@@ -577,13 +482,11 @@ private fun WorkoutCard(
                             tint = BloodBright,
                             modifier = Modifier.size(18.dp),
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(spacing.sm))
                         Text(
                             text = "DELETE",
+                            style = MaterialTheme.typography.labelLarge,
                             color = BloodBright,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp,
                         )
                     }
                 },
@@ -609,6 +512,7 @@ private fun WorkoutCardContent(
     onCancelEditing: () -> Unit,
     onEditWorkout: () -> Unit = {},
 ) {
+    val spacing = TrackGodTheme.spacing
     val workout = item.workout
     val displayName = workout.name.ifBlank { "UNTITLED WORKOUT" }.uppercase()
     val volumeFormatted = formatVolume(workout.totalVolume ?: 0f)
@@ -632,45 +536,41 @@ private fun WorkoutCardContent(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = displayName,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp,
+                    ),
                     color = TextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 1.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = dateFormatted,
+                    style = MaterialTheme.typography.labelMedium,
                     color = TextTertiary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(spacing.md))
 
             // Volume display
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = volumeFormatted,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Black,
                 )
                 Text(
                     text = "${weightUnit.uppercase()} VOL",
+                    style = MaterialTheme.typography.labelMedium.copy(fontSize = 9.sp),
                     color = TextTertiary,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
                 )
             }
         }
     }
 
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(spacing.sm))
 
     // -- Duration & sets row ---
     Row(
@@ -685,10 +585,8 @@ private fun WorkoutCardContent(
         )
         Text(
             text = "$durationMin MIN",
+            style = MaterialTheme.typography.labelMedium,
             color = TextTertiary,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp,
         )
 
         Box(
@@ -705,10 +603,8 @@ private fun WorkoutCardContent(
         )
         Text(
             text = "${item.totalSets} SETS",
+            style = MaterialTheme.typography.labelMedium,
             color = TextTertiary,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp,
         )
 
         // Volume delta comparison
@@ -718,10 +614,8 @@ private fun WorkoutCardContent(
             val deltaColor = if (item.volumeDelta > 0) BloodBright else TextTertiary
             Text(
                 text = "$arrow ${formatVolume(kotlin.math.abs(item.volumeDelta))}",
+                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp),
                 color = deltaColor,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp,
             )
         }
     }
@@ -729,7 +623,7 @@ private fun WorkoutCardContent(
     // Volume intensity bar
     val currentVolume = workout.totalVolume ?: 0f
     if (maxVolumeInList > 0f && currentVolume > 0f) {
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(spacing.sm))
         val fraction = (currentVolume / maxVolumeInList).coerceIn(0f, 1f)
         Box(
             modifier = Modifier
@@ -741,13 +635,11 @@ private fun WorkoutCardContent(
 
     // Category tags
     if (item.categories.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(spacing.sm))
         Text(
             text = item.categories.joinToString(" · ") { it.uppercase() },
+            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
             color = TextTertiary,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp,
         )
     }
 
@@ -788,6 +680,7 @@ private fun EditNameRow(
     onSave: () -> Unit,
     onCancel: () -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     Column(modifier = Modifier.fillMaxWidth()) {
         TrackGodTextField(
             value = name,
@@ -797,7 +690,7 @@ private fun EditNameRow(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(spacing.sm))
 
         Row(
             modifier = Modifier.fillMaxWidth(),

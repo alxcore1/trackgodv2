@@ -63,6 +63,7 @@ import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.TrackGodTheme
+import com.trackgod.app.ui.theme.screenPadding
 import kotlinx.coroutines.launch
 
 @Composable
@@ -113,6 +114,7 @@ private fun AltarContent(
     onDiscardIncomplete: () -> Unit,
     onWorkoutTap: (Long) -> Unit = {},
 ) {
+    val spacing = TrackGodTheme.spacing
     var showDiscardConfirm by remember { mutableStateOf(false) }
 
     MetalTextureBackground {
@@ -132,19 +134,19 @@ private fun AltarContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 4.dp)
+            .padding(top = spacing.xs)
             .verticalScroll(rememberScrollState()),
     ) {
         // ── Header ──────────────────────────────────────────────────────────
         TrackGodHeader()
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(spacing.md))
 
         // ── Incomplete workout banner ───────────────────────────────────────
         if (state.hasIncompleteWorkout) {
             TrackGodCard(
                 accentBorder = true,
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier.padding(horizontal = spacing.screenPadding),
             ) {
                 Text(
                     text = "UNFINISHED RITUAL",
@@ -152,13 +154,13 @@ private fun AltarContent(
                     color = BloodBright,
                     letterSpacing = 2.sp,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(spacing.xs))
                 Text(
                     text = "You left a workout in progress.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary,
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(spacing.md))
 
                 if (showDiscardConfirm) {
                     Text(
@@ -167,7 +169,7 @@ private fun AltarContent(
                         color = BloodBright,
                         letterSpacing = 2.sp,
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(spacing.sm))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -206,14 +208,14 @@ private fun AltarContent(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
         }
 
         // ── Goal card + Start CTA ───────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = spacing.screenPadding),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             // Weekly ritual card with day dots
@@ -238,13 +240,13 @@ private fun AltarContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(spacing.lg))
 
         // ── 2x2 stat grid ──────────────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = spacing.screenPadding),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             StatCard(
@@ -265,12 +267,12 @@ private fun AltarContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(spacing.md))
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = spacing.screenPadding),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             StatCard(
@@ -293,12 +295,12 @@ private fun AltarContent(
 
         // ── Saved Rituals (Templates) ─────────────────────────────────────
         if (state.routines.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
             SectionDivider(
                 text = "SAVED RITUALS",
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.screenPadding),
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
             var deleteRoutineId by remember { mutableStateOf<Long?>(null) }
 
             // Delete confirmation
@@ -316,7 +318,7 @@ private fun AltarContent(
             state.routines.forEach { routine ->
                 TrackGodCard(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .padding(horizontal = spacing.screenPadding, vertical = spacing.xs)
                         .combinedClickable(
                             enabled = !state.isStarting,
                             onClick = { onStartFromTemplate(routine.id) },
@@ -331,18 +333,18 @@ private fun AltarContent(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = routine.name.uppercase(),
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 1.sp,
+                                ),
                                 color = TextPrimary,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 1.sp,
                                 maxLines = 1,
                             )
                             Text(
                                 text = "${routine.exerciseCount} EXERCISES",
+                                style = MaterialTheme.typography.labelMedium.copy(fontSize = 9.sp),
                                 color = TextTertiary,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 2.sp,
                             )
                         }
                         Icon(
@@ -356,39 +358,38 @@ private fun AltarContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(spacing.xl))
 
         // ── Past transmissions ──────────────────────────────────────────────
         SectionDivider(
             text = "PAST TRANSMISSIONS",
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = spacing.screenPadding),
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(spacing.md))
 
         if (state.recentWorkouts.isEmpty()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 32.dp),
+                    .padding(horizontal = spacing.screenPadding, vertical = spacing.xxl),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = "THE ALTAR AWAITS",
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 3.sp,
+                    ),
                     color = TextPrimary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 3.sp,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(spacing.sm))
                 Text(
                     text = "RAGE. RIP. REPEAT.",
+                    style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 4.sp),
                     color = BloodBright,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 4.sp,
                 )
             }
         } else {
@@ -397,11 +398,11 @@ private fun AltarContent(
                     workout = workout,
                     onClick = { onWorkoutTap(workout.id) },
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(spacing.sm))
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(spacing.lg))
     }
 
     // ── "GOD" watermark (design element) ──────────────────────────────
@@ -414,7 +415,7 @@ private fun AltarContent(
         letterSpacing = 12.sp,
         modifier = Modifier
             .align(Alignment.BottomEnd)
-            .padding(end = 16.dp, bottom = 8.dp),
+            .padding(end = spacing.lg, bottom = spacing.sm),
     )
 
     } // Box
@@ -428,6 +429,7 @@ private fun WeeklyRitualContent(
     weeklyGoal: Int,
     workoutDaysThisWeek: Set<Int>,
 ) {
+    val spacing = TrackGodTheme.spacing
     val daysCompleted = workoutDaysThisWeek.size
     val percent = if (weeklyGoal > 0) {
         ((daysCompleted.toFloat() / weeklyGoal) * 100f).coerceAtMost(100f).toInt()
@@ -441,13 +443,11 @@ private fun WeeklyRitualContent(
     // Header row: "WEEKLY RITUAL"
     Text(
         text = "WEEKLY RITUAL",
+        style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 3.sp),
         color = TextTertiary,
-        fontSize = 10.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 3.sp,
     )
 
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(spacing.sm))
 
     // Goal + percentage row
     Row(
@@ -457,20 +457,17 @@ private fun WeeklyRitualContent(
     ) {
         Text(
             text = "GOAL",
+            style = MaterialTheme.typography.labelMedium,
             color = TextTertiary,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp,
         )
         Text(
             text = "$percent%",
+            style = MaterialTheme.typography.headlineMedium.copy(fontSize = 22.sp),
             color = BloodBright,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Black,
         )
     }
 
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(spacing.sm))
 
     // Day dots row
     Row(
@@ -486,12 +483,10 @@ private fun WeeklyRitualContent(
             ) {
                 Text(
                     text = label,
+                    style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp),
                     color = if (hasWorkout) TextPrimary else TextTertiary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(spacing.xs))
                 Box(
                     modifier = Modifier
                         .size(10.dp)
@@ -512,31 +507,31 @@ private fun RecentWorkoutRow(
     workout: WorkoutEntity,
     onClick: () -> Unit = {},
 ) {
+    val spacing = TrackGodTheme.spacing
     TrackGodCard(
         accentBorder = true,
         onClick = onClick,
-        modifier = Modifier.padding(horizontal = 16.dp),
+        modifier = Modifier.padding(horizontal = spacing.screenPadding),
     ) {
         Text(
             text = workout.name.uppercase().ifBlank { "UNTITLED WORKOUT" },
+            style = MaterialTheme.typography.titleSmall.copy(
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp,
+            ),
             color = TextPrimary,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = 1.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(spacing.xs))
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = workout.date,
+                style = MaterialTheme.typography.labelMedium,
                 color = TextTertiary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
             )
             if (workout.totalVolume != null && workout.totalVolume > 0) {
                 Box(
@@ -546,10 +541,8 @@ private fun RecentWorkoutRow(
                 )
                 Text(
                     text = "${formatVolumeShort(workout.totalVolume)} KG",
+                    style = MaterialTheme.typography.labelMedium,
                     color = TextTertiary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
                 )
             }
             if (workout.durationSeconds != null) {
@@ -560,10 +553,8 @@ private fun RecentWorkoutRow(
                 )
                 Text(
                     text = "${workout.durationSeconds / 60}MIN",
+                    style = MaterialTheme.typography.labelMedium,
                     color = TextTertiary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
                 )
             }
         }

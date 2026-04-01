@@ -49,7 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -120,11 +120,12 @@ private fun ExercisePickerContent(
     onRenameExercise: (id: Long, newName: String) -> Unit = { _, _ -> },
     onHideExercise: (id: Long) -> Unit = {},
 ) {
+    val spacing = TrackGodTheme.spacing
     MetalTextureBackground {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 4.dp),
+            .padding(top = spacing.xs),
     ) {
         // 1. Header bar
         HeaderBar(onDismiss = onDismiss, onScanMachine = onNavigateToOcr)
@@ -166,7 +167,7 @@ private fun ExercisePickerContent(
             onSelected = onCategorySelected,
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(spacing.xs))
 
         // 5. Exercise list (fills remaining space)
         if (state.exercises.isEmpty() && !state.isLoading) {
@@ -212,7 +213,7 @@ private fun ExercisePickerContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Void)
-                .padding(horizontal = 18.dp, vertical = 12.dp),
+                .padding(horizontal = 18.dp, vertical = spacing.md),
         ) {
             TrackGodButton(
                 text = "ADD CUSTOM",
@@ -242,12 +243,13 @@ private fun HeaderBar(
     onDismiss: () -> Unit,
     onScanMachine: () -> Unit = {},
 ) {
+    val spacing = TrackGodTheme.spacing
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(58.dp)
             .background(Void)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = spacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
@@ -257,14 +259,12 @@ private fun HeaderBar(
             modifier = Modifier.size(24.dp),
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(spacing.md))
 
         Text(
             text = "SELECT WEAPON",
             color = TextPrimary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = 2.sp,
+            style = MaterialTheme.typography.headlineMedium.copy(letterSpacing = 2.sp),
             modifier = Modifier.weight(1f),
         )
 
@@ -293,6 +293,7 @@ private fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -309,7 +310,7 @@ private fun SearchBar(
                 .background(Blood),
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(spacing.md))
 
         Icon(
             imageVector = Icons.Default.Search,
@@ -325,11 +326,9 @@ private fun SearchBar(
             onValueChange = onQueryChange,
             modifier = Modifier
                 .weight(1f)
-                .padding(vertical = 8.dp),
-            textStyle = TextStyle(
+                .padding(vertical = spacing.sm),
+            textStyle = MaterialTheme.typography.titleSmall.copy(
                 color = TextPrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp,
             ),
             singleLine = true,
@@ -340,9 +339,7 @@ private fun SearchBar(
                         Text(
                             text = "SEARCH EXERCISES...",
                             color = TextTertiary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp,
+                            style = MaterialTheme.typography.titleSmall.copy(letterSpacing = 1.sp),
                         )
                     }
                     innerTextField()
@@ -392,19 +389,18 @@ private fun CategoryChip(
     isActive: Boolean,
     onClick: () -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     Text(
         text = label.uppercase(),
         color = if (isActive) TextPrimary else TextTertiary,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 2.sp,
+        style = MaterialTheme.typography.labelLarge,
         modifier = Modifier
             .background(
                 color = if (isActive) Blood else SurfaceHighest,
                 shape = RectangleShape,
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 18.dp, vertical = 8.dp),
+            .padding(horizontal = 18.dp, vertical = spacing.sm),
     )
 }
 
@@ -415,10 +411,11 @@ private fun EquipmentFilterChips(
     selected: String?,
     onSelected: (String?) -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 18.dp, vertical = 8.dp),
+            .padding(horizontal = 18.dp, vertical = spacing.sm),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         CategoryChip(
@@ -446,10 +443,11 @@ private fun BrandFilterChips(
     onBrandToggled: (String) -> Unit,
     onClearAll: () -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = spacing.xs),
         contentPadding = PaddingValues(horizontal = 18.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -478,20 +476,19 @@ private fun RecentlyUsedStrip(
     exercises: List<ExerciseEntity>,
     onExerciseSelected: (ExerciseEntity) -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 2.dp),
+            .padding(top = spacing.sm, bottom = 2.dp),
     ) {
         Text(
             text = "RECENT",
             color = TextTertiary,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 3.sp,
+            style = MaterialTheme.typography.labelSmall,
             modifier = Modifier.padding(horizontal = 18.dp),
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(spacing.xs))
         LazyRow(
             contentPadding = PaddingValues(horizontal = 18.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -500,14 +497,12 @@ private fun RecentlyUsedStrip(
                 Text(
                     text = exercise.displayName().uppercase(),
                     color = TextPrimary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
+                    style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp),
                     maxLines = 1,
                     modifier = Modifier
                         .background(SurfaceHighest, RectangleShape)
                         .clickable { onExerciseSelected(exercise) }
-                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                        .padding(horizontal = 10.dp, vertical = spacing.sm),
                 )
             }
         }
@@ -524,6 +519,7 @@ private fun ExerciseRow(
     onRename: (String) -> Unit = {},
     onHide: () -> Unit = {},
 ) {
+    val spacing = TrackGodTheme.spacing
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val hasUsage = exercise.usageCount > 0
@@ -541,7 +537,7 @@ private fun ExerciseRow(
         var renameText by remember { mutableStateOf(exercise.name) }
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { showRenameDialog = false },
-            title = { Text("RENAME", color = TextPrimary, fontWeight = FontWeight.Black, letterSpacing = 2.sp) },
+            title = { Text("RENAME", color = TextPrimary, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black, letterSpacing = 2.sp)) },
             text = {
                 androidx.compose.foundation.text.BasicTextField(
                     value = renameText,
@@ -549,8 +545,8 @@ private fun ExerciseRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(SurfaceHighest, RectangleShape)
-                        .padding(12.dp),
-                    textStyle = TextStyle(color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold),
+                        .padding(spacing.md),
+                    textStyle = MaterialTheme.typography.titleSmall.copy(color = TextPrimary),
                     singleLine = true,
                     cursorBrush = SolidColor(Blood),
                 )
@@ -559,18 +555,18 @@ private fun ExerciseRow(
                 Text(
                     "SAVE",
                     color = Blood,
-                    fontWeight = FontWeight.Black,
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black),
                     modifier = Modifier.clickable {
                         if (renameText.isNotBlank()) { onRename(renameText.trim()); showRenameDialog = false }
-                    }.padding(12.dp),
+                    }.padding(spacing.md),
                 )
             },
             dismissButton = {
                 Text(
                     "CANCEL",
                     color = TextTertiary,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { showRenameDialog = false }.padding(12.dp),
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.clickable { showRenameDialog = false }.padding(spacing.md),
                 )
             },
             containerColor = Void,
@@ -606,7 +602,7 @@ private fun ExerciseRow(
                 ),
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(spacing.md))
 
         // Exercise info (compact)
         Column(
@@ -617,9 +613,7 @@ private fun ExerciseRow(
             Text(
                 text = exercise.displayName().uppercase(),
                 color = TextPrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp,
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black, letterSpacing = 1.sp),
                 maxLines = 1,
             )
             Text(
@@ -634,9 +628,7 @@ private fun ExerciseRow(
                     }
                 },
                 color = TextTertiary,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
+                style = MaterialTheme.typography.labelMedium,
                 maxLines = 1,
             )
         }
@@ -646,8 +638,7 @@ private fun ExerciseRow(
             Text(
                 text = "\u00d7${exercise.usageCount}",
                 color = TextTertiary,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.labelLarge,
             )
         }
     }
@@ -659,11 +650,11 @@ private fun ExerciseRow(
         modifier = Modifier.background(SurfaceHighest),
     ) {
         androidx.compose.material3.DropdownMenuItem(
-            text = { Text("RENAME", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp) },
+            text = { Text("RENAME", color = TextPrimary, style = MaterialTheme.typography.labelLarge) },
             onClick = { showMenu = false; showRenameDialog = true },
         )
         androidx.compose.material3.DropdownMenuItem(
-            text = { Text("HIDE", color = TextTertiary, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp) },
+            text = { Text("HIDE", color = TextTertiary, style = MaterialTheme.typography.labelLarge) },
             onClick = { showMenu = false; onHide() },
         )
     }

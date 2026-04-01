@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.profile
 
+import com.trackgod.app.ui.theme.screenPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,6 +48,7 @@ import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
+import com.trackgod.app.ui.theme.TrackGodTheme
 
 @Composable
 fun ProfileScreen(
@@ -58,19 +60,20 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val spacing = TrackGodTheme.spacing
 
     MetalTextureBackground {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 4.dp)
+            .padding(top = spacing.xs)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = spacing.screenPadding),
     ) {
         // ── Header ────────────────────────────────────────────────────────
         TrackGodHeader()
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(spacing.md))
 
         if (state.isLoading) {
             Box(
@@ -90,38 +93,38 @@ fun ProfileScreen(
                 state = state,
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(spacing.xxl))
 
             // -- ACCOUNT section --
             SectionDivider(text = "ACCOUNT", modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
             ProfileMenuItem(label = "EDIT PROFILE", onClick = onNavigateToEditProfile)
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
             ProfileMenuItem(label = "PRIVACY POLICY", onClick = onNavigateToPrivacyPolicy)
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
 
             // -- GOALS section --
             SectionDivider(text = "GOALS", modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
             ProfileMenuItem(label = "WEIGHT LOSS JOURNEY", onClick = onNavigateToWeightLoss)
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
 
             // -- DATA section --
             SectionDivider(text = "DATA", modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
             ProfileMenuItem(label = "BACKUP & RESTORE", onClick = onNavigateToBackup)
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
 
             // -- APP section --
             SectionDivider(text = "APP", modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(spacing.lg))
             ProfileMenuItem(label = "SETTINGS", onClick = onNavigateToSettings)
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(spacing.xxl))
     }
     } // MetalTextureBackground
 }
@@ -132,6 +135,7 @@ fun ProfileScreen(
 private fun ProfileHeader(
     state: ProfileState,
 ) {
+    val spacing = TrackGodTheme.spacing
     val profile = state.profile ?: return
 
     Column(
@@ -177,7 +181,7 @@ private fun ProfileHeader(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(spacing.lg))
 
         // User name
         Text(
@@ -191,7 +195,7 @@ private fun ProfileHeader(
 
         // Primary objective
         if (!profile.primaryObjective.isNullOrBlank()) {
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(spacing.xs))
             Text(
                 text = profile.primaryObjective.uppercase(),
                 style = MaterialTheme.typography.labelLarge,
@@ -200,7 +204,7 @@ private fun ProfileHeader(
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(spacing.sm))
 
         // Member since
         if (state.memberSince.isNotBlank()) {
@@ -212,7 +216,7 @@ private fun ProfileHeader(
             )
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(spacing.xs))
 
         // Workout count
         Text(
@@ -228,6 +232,7 @@ private fun ProfileHeader(
 
 @Composable
 private fun NoProfileSection(onSetUp: () -> Unit) {
+    val spacing = TrackGodTheme.spacing
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -241,7 +246,7 @@ private fun NoProfileSection(onSetUp: () -> Unit) {
             textAlign = TextAlign.Center,
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(spacing.sm))
 
         Text(
             text = "CREATE YOUR PROFILE TO TRACK YOUR PROGRESS",
@@ -250,7 +255,7 @@ private fun NoProfileSection(onSetUp: () -> Unit) {
             textAlign = TextAlign.Center,
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(spacing.xl))
 
         TrackGodButton(
             text = "SET UP PROFILE",

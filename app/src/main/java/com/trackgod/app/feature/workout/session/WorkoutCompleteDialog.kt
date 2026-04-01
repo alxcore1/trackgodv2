@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +31,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodTextField
+import com.trackgod.app.ui.theme.TrackGodTheme
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.SurfaceLow
@@ -57,6 +57,7 @@ fun WorkoutCompleteDialog(
     onDiscard: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     var workoutName by remember { mutableStateOf(defaultName) }
     var saveAsTemplate by remember { mutableStateOf(false) }
     var showDiscardConfirm by remember { mutableStateOf(false) }
@@ -67,10 +68,10 @@ fun WorkoutCompleteDialog(
     ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = spacing.xl)
                 .fillMaxWidth()
                 .background(color = SurfaceLow, shape = RectangleShape)
-                .padding(24.dp),
+                .padding(spacing.xl),
         ) {
             // Title
             Text(
@@ -80,18 +81,18 @@ fun WorkoutCompleteDialog(
                 letterSpacing = 4.sp,
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
 
             // Stats rows
             StatRow(label = "EXERCISES", value = exerciseCount.toString())
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
             StatRow(label = "TOTAL SETS", value = totalSets.toString())
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
             StatRow(label = "VOLUME", value = formatVolume(totalVolume))
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
             StatRow(label = "DURATION", value = formatDuration(durationSeconds))
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
 
             // Editable name field
             TrackGodTextField(
@@ -102,23 +103,21 @@ fun WorkoutCompleteDialog(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
 
             if (showDiscardConfirm) {
                 // Discard confirmation
                 Text(
                     text = "DISCARD THIS WORKOUT?",
+                    style = MaterialTheme.typography.labelLarge,
                     color = BloodBright,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(spacing.md))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.md),
                 ) {
                     TrackGodButton(
                         text = "KEEP",
@@ -137,14 +136,12 @@ fun WorkoutCompleteDialog(
                 if (totalSets <= 0) {
                     Text(
                         text = "LOG AT LEAST ONE SET",
+                        style = MaterialTheme.typography.labelMedium,
                         color = BloodBright,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 8.dp),
+                            .padding(bottom = spacing.sm),
                     )
 
                     // Back to workout — primary action when no sets
@@ -154,7 +151,7 @@ fun WorkoutCompleteDialog(
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(spacing.sm))
 
                     // Discard as secondary option
                     TrackGodButton(
@@ -172,12 +169,12 @@ fun WorkoutCompleteDialog(
                         variant = ButtonVariant.Ghost,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 8.dp),
+                            .padding(bottom = spacing.sm),
                     )
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(spacing.md),
                     ) {
                         TrackGodButton(
                             text = "DISCARD",
@@ -195,14 +192,14 @@ fun WorkoutCompleteDialog(
                 }
 
                 // Save as template toggle
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(spacing.sm))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { saveAsTemplate = !saveAsTemplate }
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = spacing.xs),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.sm),
                 ) {
                     Box(
                         modifier = Modifier
@@ -217,28 +214,24 @@ fun WorkoutCompleteDialog(
                         if (saveAsTemplate) {
                             Text(
                                 text = "✓",
+                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Black),
                                 color = com.trackgod.app.ui.theme.TextPrimary,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Black,
                             )
                         }
                     }
                     Text(
                         text = "SAVE AS RITUAL",
+                        style = MaterialTheme.typography.labelLarge,
                         color = com.trackgod.app.ui.theme.TextTertiary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp,
                     )
                 }
 
                 if (finishError != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(spacing.sm))
                     Text(
                         text = finishError,
+                        style = MaterialTheme.typography.labelLarge,
                         color = com.trackgod.app.ui.theme.BloodBright,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
                     )
                 }
             }
@@ -260,10 +253,8 @@ private fun StatRow(
     ) {
         Text(
             text = label,
+            style = MaterialTheme.typography.labelLarge,
             color = TextTertiary,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp,
         )
         Text(
             text = value,

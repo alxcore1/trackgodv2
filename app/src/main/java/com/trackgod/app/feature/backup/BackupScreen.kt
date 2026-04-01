@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.backup
 
+import com.trackgod.app.ui.theme.screenPadding
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -54,6 +55,7 @@ import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
+import com.trackgod.app.ui.theme.TrackGodTheme
 import com.trackgod.app.ui.theme.Void
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -68,6 +70,7 @@ fun BackupScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backups by viewModel.backups.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val spacing = TrackGodTheme.spacing
 
     // -- File picker for import -----------------------------------------------
     val importLauncher = rememberLauncherForActivityResult(
@@ -192,13 +195,13 @@ fun BackupScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 4.dp),
+            .padding(top = spacing.xs),
     ) {
         // Top bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp),
+                .padding(horizontal = spacing.xs, vertical = spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onNavigateBack) {
@@ -233,31 +236,31 @@ fun BackupScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(SurfaceLow)
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = spacing.screenPadding, vertical = spacing.sm),
             )
         }
 
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = spacing.screenPadding),
         ) {
             // ── STATUS ──────────────────────────────────────────────────────
             item {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(spacing.sm))
                 SectionDivider(text = "STATUS", modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(spacing.md))
             }
 
             item {
                 StatusDashboard(stats = uiState.stats)
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(spacing.xl))
             }
 
             // ── ACTIONS ─────────────────────────────────────────────────────
             item {
                 SectionDivider(text = "ACTIONS", modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(spacing.md))
             }
 
             item {
@@ -267,7 +270,7 @@ fun BackupScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !uiState.isLoading,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(spacing.sm))
             }
 
             item {
@@ -278,7 +281,7 @@ fun BackupScreen(
                     variant = ButtonVariant.Secondary,
                     enabled = !uiState.isLoading,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(spacing.sm))
             }
 
             item {
@@ -289,7 +292,7 @@ fun BackupScreen(
                     variant = ButtonVariant.Secondary,
                     enabled = !uiState.isLoading,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(spacing.sm))
             }
 
             item {
@@ -300,7 +303,7 @@ fun BackupScreen(
                     variant = ButtonVariant.Secondary,
                     enabled = !uiState.isLoading,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(spacing.sm))
             }
 
             item {
@@ -312,13 +315,13 @@ fun BackupScreen(
                     enabled = !uiState.isLoading,
                     textColorOverride = Blood,
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(spacing.xl))
             }
 
             // ── BACKUP HISTORY ──────────────────────────────────────────────
             item {
                 SectionDivider(text = "BACKUP HISTORY", modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(spacing.md))
             }
 
             if (backups.isEmpty()) {
@@ -327,7 +330,7 @@ fun BackupScreen(
                         text = "NO BACKUPS YET",
                         style = MaterialTheme.typography.labelMedium,
                         color = TextTertiary,
-                        modifier = Modifier.padding(vertical = 16.dp),
+                        modifier = Modifier.padding(vertical = spacing.lg),
                     )
                 }
             }
@@ -339,10 +342,10 @@ fun BackupScreen(
                     onRestore = { confirmRestore = backup },
                     onDelete = { confirmDelete = backup },
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(spacing.sm))
             }
 
-            item { Spacer(modifier = Modifier.height(32.dp)) }
+            item { Spacer(modifier = Modifier.height(spacing.xxl)) }
         }
     }
     } // MetalTextureBackground
@@ -369,6 +372,7 @@ private fun StatusDashboard(stats: com.trackgod.app.core.repository.BackupStats)
 
 @Composable
 private fun StatColumn(label: String, value: String) {
+    val spacing = TrackGodTheme.spacing
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = label,
@@ -376,7 +380,7 @@ private fun StatColumn(label: String, value: String) {
             color = TextTertiary,
             letterSpacing = 2.sp,
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(spacing.xs))
         Text(
             text = value,
             style = MaterialTheme.typography.titleLarge,
@@ -395,6 +399,7 @@ private fun BackupHistoryItem(
     onRestore: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     TrackGodCard(accentBorder = isFirst) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -408,7 +413,7 @@ private fun BackupHistoryItem(
                     style = MaterialTheme.typography.titleMedium,
                     color = TextPrimary,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(spacing.xs))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // File size
@@ -417,14 +422,14 @@ private fun BackupHistoryItem(
                         style = MaterialTheme.typography.labelMedium,
                         color = TextTertiary,
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(spacing.sm))
                     // Type badge
                     TypeBadge(type = backup.backupType)
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(spacing.sm))
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TrackGodButton(

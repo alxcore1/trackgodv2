@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.trackgod.app.ui.theme.TrackGodTheme
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.SurfaceHigh
 import com.trackgod.app.ui.theme.SurfaceLow
@@ -44,6 +45,7 @@ fun TrackGodCard(
     accentBorder: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -82,13 +84,13 @@ fun TrackGodCard(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = spacing.lg, vertical = spacing.md),
                 content = content,
             )
         }
     } else {
         Column(
-            modifier = rootModifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = rootModifier.padding(horizontal = spacing.lg, vertical = spacing.md),
             content = content,
         )
     }

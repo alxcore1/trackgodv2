@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.trackgod.app.ui.theme.TrackGodTheme
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
 
@@ -43,10 +44,11 @@ fun EmptyState(
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
 ) {
+    val spacing = TrackGodTheme.spacing
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 48.dp),
+            .padding(horizontal = spacing.xxl, vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -57,7 +59,7 @@ fun EmptyState(
             modifier = Modifier.size(48.dp),
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(spacing.lg))
 
         Text(
             text = title.uppercase(),
@@ -68,7 +70,7 @@ fun EmptyState(
         )
 
         if (subtitle.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
             Text(
                 text = subtitle,
                 color = TextTertiary,
@@ -79,7 +81,7 @@ fun EmptyState(
         }
 
         if (actionLabel != null && onAction != null) {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
             TrackGodButton(
                 text = actionLabel,
                 onClick = onAction,

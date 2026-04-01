@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.profile
 
+import com.trackgod.app.ui.theme.screenPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +45,7 @@ import com.trackgod.app.ui.theme.SurfaceHigh
 import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
+import com.trackgod.app.ui.theme.TrackGodTheme
 
 @Composable
 fun SettingsScreen(
@@ -51,6 +53,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val spacing = TrackGodTheme.spacing
 
     // Dialog state for number-input dialogs
     var showRestDurationDialog by remember { mutableStateOf(false) }
@@ -63,13 +66,13 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 4.dp),
+            .padding(top = spacing.xs),
     ) {
         // Top bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp),
+                .padding(horizontal = spacing.xs, vertical = spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onNavigateBack) {
@@ -90,13 +93,13 @@ fun SettingsScreen(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = spacing.screenPadding),
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
 
             // ── WORKOUT ─────────────────────────────────────────────────────
             SectionDivider(text = "WORKOUT", modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(spacing.md))
 
             SettingToggleRow(
                 label = "REST TIMER",
@@ -119,11 +122,11 @@ fun SettingsScreen(
                 onClick = { showIncrementDialog = true },
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
 
             // ── ADVANCED TRACKING ──────────────────────────────────────────
             SectionDivider(text = "ADVANCED TRACKING", modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(spacing.md))
 
             SettingToggleRowWithSubtitle(
                 label = "SHOW RPE",
@@ -138,11 +141,11 @@ fun SettingsScreen(
                 onCheckedChange = viewModel::setShowRir,
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
 
             // ── DISPLAY ─────────────────────────────────────────────────────
             SectionDivider(text = "DISPLAY", modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(spacing.md))
 
             SettingChipRow(
                 label = "WEIGHT UNIT",
@@ -157,11 +160,11 @@ fun SettingsScreen(
                 onSelect = { viewModel.setHeightUnit(it.lowercase()) },
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
 
             // ── NOTIFICATIONS ───────────────────────────────────────────────
             SectionDivider(text = "NOTIFICATIONS", modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(spacing.md))
 
             SettingToggleRow(
                 label = "REST TIMER SOUND",
@@ -184,11 +187,11 @@ fun SettingsScreen(
                 onClick = { showTimePickerDialog = true },
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(spacing.xl))
 
             // ── DATA ────────────────────────────────────────────────────────
             SectionDivider(text = "DATA", modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(spacing.md))
 
             SettingToggleRow(
                 label = "AUTO-BACKUP",
@@ -201,7 +204,7 @@ fun SettingsScreen(
                 onClick = { showMaxBackupsDialog = true },
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(spacing.xxl))
         }
     }
     } // MetalTextureBackground
@@ -281,12 +284,13 @@ private fun SettingToggleRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
             .background(SurfaceLow)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = spacing.lg),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -307,7 +311,7 @@ private fun SettingToggleRow(
             ),
         )
     }
-    Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(spacing.xs))
 }
 
 @Composable
@@ -317,11 +321,12 @@ private fun SettingToggleRowWithSubtitle(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(SurfaceLow)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = spacing.lg, vertical = spacing.md),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -349,7 +354,7 @@ private fun SettingToggleRowWithSubtitle(
             ),
         )
     }
-    Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(spacing.xs))
 }
 
 @Composable
@@ -358,13 +363,14 @@ private fun SettingValueRow(
     value: String,
     onClick: () -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
             .background(SurfaceLow)
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = spacing.lg),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -379,7 +385,7 @@ private fun SettingValueRow(
             color = TextTertiary,
         )
     }
-    Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(spacing.xs))
 }
 
 @Composable
@@ -389,12 +395,13 @@ private fun SettingChipRow(
     selected: String,
     onSelect: (String) -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
             .background(SurfaceLow)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = spacing.lg),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -413,7 +420,7 @@ private fun SettingChipRow(
             }
         }
     }
-    Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(spacing.xs))
 }
 
 // -- Dialogs ------------------------------------------------------------------
@@ -467,6 +474,7 @@ private fun ListPickerDialog(
     onSelect: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val spacing = TrackGodTheme.spacing
     AlertDialog(
         onDismissRequest = onDismiss,
         shape = RectangleShape,
@@ -485,7 +493,7 @@ private fun ListPickerDialog(
                             .fillMaxWidth()
                             .background(if (option == selected) Blood else SurfaceLow)
                             .clickable { onSelect(option) }
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                            .padding(horizontal = spacing.lg, vertical = spacing.md),
                     ) {
                         Text(
                             text = option.uppercase(),
@@ -493,7 +501,7 @@ private fun ListPickerDialog(
                             color = if (option == selected) TextPrimary else TextTertiary,
                         )
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(spacing.xs))
                 }
             }
         },

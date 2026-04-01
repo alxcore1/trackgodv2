@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,7 +40,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.BloodGlow
@@ -186,9 +186,11 @@ private fun NavTabItem(
         Text(
             text = tab.label,
             color = labelColor,
-            fontSize = 9.sp,
-            fontWeight = if (isActive) FontWeight.Black else FontWeight.Bold,
-            letterSpacing = 2.sp,
+            style = if (isActive) {
+                MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Black)
+            } else {
+                MaterialTheme.typography.labelMedium
+            },
         )
 
         Spacer(modifier = Modifier.weight(1f))

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.trackgod.app.ui.theme.TrackGodTheme
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.SurfaceHighest
@@ -74,6 +76,7 @@ fun TrackGodButton(
     textColorOverride: Color? = null,
     confirmationTrigger: Int = 0,
 ) {
+    val spacing = TrackGodTheme.spacing
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -130,7 +133,7 @@ fun TrackGodButton(
             )
             .defaultMinSize(minHeight = 48.dp)
             .alpha(if (enabled) 1f else 0.5f)
-            .padding(horizontal = 24.dp, vertical = 14.dp),
+            .padding(horizontal = spacing.xl, vertical = 14.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -157,13 +160,14 @@ fun TrackGodButton(
                     Text(
                         text = text.uppercase(),
                         color = textColor,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 3.sp,
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 3.sp,
+                        ),
                         textAlign = TextAlign.Center,
                     )
                     if (icon != null) {
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(spacing.sm))
                         Icon(
                             imageVector = icon,
                             contentDescription = null,

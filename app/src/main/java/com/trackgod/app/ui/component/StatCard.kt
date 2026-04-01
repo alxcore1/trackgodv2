@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,11 +28,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trackgod.app.R
+import com.trackgod.app.ui.theme.TrackGodTheme
 import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
@@ -61,6 +62,7 @@ fun StatCard(
     modifier: Modifier = Modifier,
     backgroundAlignment: Alignment = Alignment.Center,
 ) {
+    val spacing = TrackGodTheme.spacing
     val density = LocalDensity.current
 
     BoxWithConstraints(
@@ -125,7 +127,7 @@ fun StatCard(
         // Card content
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(spacing.lg)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -133,12 +135,10 @@ fun StatCard(
             Text(
                 text = label.uppercase(),
                 color = TextTertiary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp,
+                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 3.sp),
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
 
             // Icon
             Icon(
@@ -148,14 +148,13 @@ fun StatCard(
                 modifier = Modifier.size(18.dp),
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(spacing.sm))
 
             // Value
             Text(
                 text = value,
                 color = TextPrimary,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Black,
+                style = MaterialTheme.typography.displaySmall,
             )
 
             Spacer(modifier = Modifier.height(2.dp))
@@ -164,9 +163,7 @@ fun StatCard(
             Text(
                 text = unit.uppercase(),
                 color = TextTertiary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp,
+                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 3.sp),
             )
         }
     }
