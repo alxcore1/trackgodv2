@@ -25,4 +25,4 @@ val TextTertiary = Color(0xFFAA8984)  // Labels, metadata
 val GhostBorder = Color(0xFF5A403C)   // 15% opacity outlines
 
 // === Semantic ===
-val ErrorColor = Color(0xFFFFB4AB)
+val ErrorColor = Color(0xFFFF6B6B)

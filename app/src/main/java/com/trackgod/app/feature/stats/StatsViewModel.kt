@@ -54,6 +54,7 @@ data class StatsState(
 
     val weightUnit: String = "kg",
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val hasData: Boolean = false,
 )
 
@@ -99,7 +100,7 @@ class StatsViewModel @Inject constructor(
     // -- Public actions -------------------------------------------------------
 
     fun onTimeRangeChanged(range: TimeRange) {
-        _state.update { it.copy(selectedTimeRange = range, isLoading = true) }
+        _state.update { it.copy(selectedTimeRange = range, isRefreshing = true) }
         loadAnalytics()
     }
 
@@ -204,13 +205,14 @@ class StatsViewModel @Inject constructor(
                         workoutsPerWeek = weeklyConsistency,
                         totalWorkouts = totalWorkoutsInRange,
                         isLoading = false,
+                        isRefreshing = false,
                         exerciseProgressions = progressions,
                         hasData = allCompletedWorkouts.isNotEmpty(),
                     )
                 }
             } catch (e: Exception) {
                 android.util.Log.e("StatsViewModel", "Failed to load analytics", e)
-                _state.update { it.copy(isLoading = false, hasData = false) }
+                _state.update { it.copy(isLoading = false, isRefreshing = false, hasData = false) }
             }
         }
     }

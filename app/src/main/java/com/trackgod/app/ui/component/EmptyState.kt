@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -60,9 +61,8 @@ fun EmptyState(
 
         Text(
             text = title.uppercase(),
+            style = MaterialTheme.typography.headlineMedium,
             color = TextPrimary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Black,
             letterSpacing = 2.sp,
             textAlign = TextAlign.Center,
         )

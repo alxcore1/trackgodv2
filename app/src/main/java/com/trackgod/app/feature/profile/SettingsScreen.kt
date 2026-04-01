@@ -26,6 +26,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,7 +44,6 @@ import com.trackgod.app.ui.theme.SurfaceHigh
 import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
-import com.trackgod.app.ui.theme.Void
 
 @Composable
 fun SettingsScreen(
@@ -113,20 +113,29 @@ fun SettingsScreen(
                 checked = state.restTimerAutoStart,
                 onCheckedChange = viewModel::setRestTimerAutoStart,
             )
-            SettingToggleRow(
-                label = "SHOW RPE",
-                checked = state.showRpe,
-                onCheckedChange = viewModel::setShowRpe,
-            )
-            SettingToggleRow(
-                label = "SHOW RIR",
-                checked = state.showRir,
-                onCheckedChange = viewModel::setShowRir,
-            )
             SettingValueRow(
                 label = "DEFAULT WEIGHT INCREMENT",
                 value = "${state.defaultWeightIncrement}",
                 onClick = { showIncrementDialog = true },
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ── ADVANCED TRACKING ──────────────────────────────────────────
+            SectionDivider(text = "ADVANCED TRACKING", modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(12.dp))
+
+            SettingToggleRowWithSubtitle(
+                label = "SHOW RPE",
+                subtitle = "Rate of Perceived Exertion \u2014 how hard was the set? (1-10)",
+                checked = state.showRpe,
+                onCheckedChange = viewModel::setShowRpe,
+            )
+            SettingToggleRowWithSubtitle(
+                label = "SHOW RIR",
+                subtitle = "Reps In Reserve \u2014 how many reps could you still do? (0-5)",
+                checked = state.showRir,
+                onCheckedChange = viewModel::setShowRir,
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -302,6 +311,48 @@ private fun SettingToggleRow(
 }
 
 @Composable
+private fun SettingToggleRowWithSubtitle(
+    label: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(SurfaceLow)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleMedium,
+                color = TextPrimary,
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = TextTertiary,
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = TextPrimary,
+                checkedTrackColor = Blood,
+                uncheckedThumbColor = TextTertiary,
+                uncheckedTrackColor = SurfaceHigh,
+                uncheckedBorderColor = SurfaceHigh,
+            ),
+        )
+    }
+    Spacer(modifier = Modifier.height(2.dp))
+}
+
+@Composable
 private fun SettingValueRow(
     label: String,
     value: String,
@@ -378,6 +429,7 @@ private fun NumberInputDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RectangleShape,
         title = {
             Text(
                 text = title,
@@ -403,7 +455,7 @@ private fun NumberInputDialog(
                 Text("CANCEL", color = TextTertiary)
             }
         },
-        containerColor = Void,
+        containerColor = SurfaceLow,
     )
 }
 
@@ -417,6 +469,7 @@ private fun ListPickerDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RectangleShape,
         title = {
             Text(
                 text = title,
@@ -445,6 +498,6 @@ private fun ListPickerDialog(
             }
         },
         confirmButton = {},
-        containerColor = Void,
+        containerColor = SurfaceLow,
     )
 }

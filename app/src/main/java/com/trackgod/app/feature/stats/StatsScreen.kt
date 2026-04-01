@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.stats
 
+import com.trackgod.app.util.formatVolumeShort
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -28,6 +29,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -141,10 +143,22 @@ private fun StatsContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 4.dp)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp),
+            .padding(top = 4.dp),
     ) {
+        // Inline progress bar for time-range switches
+        if (state.isRefreshing) {
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+                color = Blood,
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
+        ) {
         TrackGodHeader()
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -263,7 +277,8 @@ private fun StatsContent(
 
         // Bottom padding for nav bar clearance
         Spacer(modifier = Modifier.height(32.dp))
-    }
+        } // inner scrollable Column
+    } // outer Column with progress bar
     } // MetalTextureBackground
 }
 
@@ -308,7 +323,7 @@ private fun HeroSection(
                 horizontalAlignment = Alignment.End,
             ) {
                 Text(
-                    text = formatVolume(totalVolume),
+                    text = formatVolumeShort(totalVolume),
                     style = MaterialTheme.typography.displayMedium,
                     color = TextPrimary,
                     textAlign = TextAlign.End,
@@ -385,14 +400,6 @@ private fun TimeRangeChip(
             overflow = TextOverflow.Ellipsis,
         )
     }
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-private fun formatVolume(volume: Float): String = when {
-    volume >= 1_000_000f -> String.format(java.util.Locale.US, "%.1fM", volume / 1_000_000f)
-    volume >= 1_000f -> String.format(java.util.Locale.US, "%.1fK", volume / 1_000f)
-    else -> volume.toInt().toString()
 }
 
 // ── Previews ─────────────────────────────────────────────────────────────────

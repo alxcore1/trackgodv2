@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.history
 
+import com.trackgod.app.util.formatVolume
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Color
@@ -41,7 +42,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material3.AlertDialog
+import com.trackgod.app.feature.workout.session.ConfirmationDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -49,7 +50,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -503,6 +503,7 @@ private fun WorkoutCard(
                     onEditingNameChanged = onEditingNameChanged,
                     onSaveEditingName = onSaveEditingName,
                     onCancelEditing = onCancelEditing,
+                    onEditWorkout = onEditWorkout,
                 )
             }
         }
@@ -601,6 +602,7 @@ private fun WorkoutCardContent(
     onEditingNameChanged: (String) -> Unit,
     onSaveEditingName: () -> Unit,
     onCancelEditing: () -> Unit,
+    onEditWorkout: () -> Unit = {},
 ) {
     val workout = item.workout
     val displayName = workout.name.ifBlank { "UNTITLED WORKOUT" }.uppercase()
@@ -744,6 +746,26 @@ private fun WorkoutCardContent(
         )
     }
 
+    // -- Edit button (visible when expanded) ---
+    if (isExpanded) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            IconButton(
+                onClick = onEditWorkout,
+                modifier = Modifier.size(48.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit workout",
+                    tint = BloodBright,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+    }
+
     // -- Expanded exercise detail ---
     WorkoutDetailInline(
         exercises = item.exercises,
@@ -808,68 +830,17 @@ private fun DeleteConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = SurfaceLow,
-        shape = RectangleShape,
-        title = {
-            Text(
-                text = "DELETE THIS WORKOUT?",
-                color = TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 2.sp,
-            )
-        },
-        text = {
-            Text(
-                text = "This cannot be undone. All sets and data for this workout will be permanently removed.",
-                color = TextSecondary,
-                fontSize = 14.sp,
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(
-                    text = "DELETE",
-                    color = BloodBright,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(
-                    text = "CANCEL",
-                    color = TextTertiary,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
-                )
-            }
-        },
+    ConfirmationDialog(
+        title = "DELETE THIS WORKOUT?",
+        message = "This cannot be undone. All sets and data for this workout will be permanently removed.",
+        confirmText = "DELETE",
+        dismissText = "CANCEL",
+        onConfirm = onConfirm,
+        onDismiss = onDismiss,
     )
 }
 
 // -- Formatting helpers -------------------------------------------------------
-
-private fun formatVolume(volume: Float): String {
-    return when {
-        volume >= 1_000_000 -> "%.1fM".format(volume / 1_000_000f)
-        else -> {
-            val whole = volume.toLong()
-            val str = whole.toString()
-            val result = StringBuilder()
-            var count = 0
-            for (i in str.length - 1 downTo 0) {
-                if (count > 0 && count % 3 == 0) result.insert(0, ' ')
-                result.insert(0, str[i])
-                count++
-            }
-            result.toString()
-        }
-    }
-}
 
 private fun formatDate(dateStr: String): String {
     return try {

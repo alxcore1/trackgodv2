@@ -63,6 +63,7 @@ data class WorkoutSessionState(
     val weightIncrement: Float = 2.5f,
     val isLoading: Boolean = true,
     val restTimerCompleted: Boolean = false,
+    val isSaving: Boolean = false,
     val finishError: String? = null,
     val inputError: String? = null,
     val prMessage: String? = null,
@@ -92,6 +93,9 @@ class WorkoutSessionViewModel @Inject constructor(
 
     private val restTimerManager = RestTimerManager()
 
+    private var isLoggingSet = false
+    private var isSavingWorkout = false
+    private var isSavingEdit = false
     private var sessionTimerJob: Job? = null
     private var setsCollectionJob: Job? = null
     private var workoutId: Long = -1L
@@ -322,13 +326,13 @@ class WorkoutSessionViewModel @Inject constructor(
 
     fun updateWeight(value: String) {
         if (value.isEmpty() || value.matches(Regex("""^\d*[.,]?\d*$"""))) {
-            _state.update { it.copy(weightInput = value) }
+            _state.update { it.copy(weightInput = value, inputError = null) }
         }
     }
 
     fun updateReps(value: String) {
         if (value.isEmpty() || value.matches(Regex("""^\d*$"""))) {
-            _state.update { it.copy(repsInput = value) }
+            _state.update { it.copy(repsInput = value, inputError = null) }
         }
     }
 
@@ -423,62 +427,69 @@ class WorkoutSessionViewModel @Inject constructor(
     // ── Set Logging ──────────────────────────────────────────────────────────
 
     fun logSet() {
+        if (isLoggingSet) return
+        isLoggingSet = true
         val s = _state.value
-        val exercise = s.currentExercise ?: return
+        val exercise = s.currentExercise ?: run { isLoggingSet = false; return }
         val weight = s.weightInput.replace(",", ".").toFloatOrNull()?.coerceAtMost(MAX_WEIGHT)
         val reps = s.repsInput.toIntOrNull()?.coerceAtMost(MAX_REPS)
         if (weight == null || reps == null || weight < 0f || reps <= 0) {
             _state.update { it.copy(inputError = "ENTER VALID WEIGHT AND REPS") }
+            isLoggingSet = false
             return
         }
 
         val isWarmup = s.setTypeInput == "warmup"
 
         viewModelScope.launch {
-            // Check previous best BEFORE logging the new set (skip for warmups)
-            val previousBest1RM = if (!isWarmup) {
-                workoutRepository.getBest1RMForExercise(exercise.id) ?: 0f
-            } else 0f
+            try {
+                // Check previous best BEFORE logging the new set (skip for warmups)
+                val previousBest1RM = if (!isWarmup) {
+                    workoutRepository.getBest1RMForExercise(exercise.id) ?: 0f
+                } else 0f
 
-            val setId = workoutRepository.addSet(
-                workoutId = workoutId,
-                exerciseId = exercise.id,
-                weight = weight,
-                reps = reps,
-                note = s.noteInput.ifBlank { null },
-                rpe = s.rpeInput,
-                rir = s.rirInput,
-                setType = s.setTypeInput,
-            )
-
-            // PR detection (skip for warmups)
-            val new1RM = weight * (1 + 0.0333f * reps)
-            if (!isWarmup && new1RM > previousBest1RM && weight > 0f) {
-                _state.update { it.copy(
-                    prMessage = "NEW PR!",
-                    prSetIds = it.prSetIds + setId,
-                ) }
-                // Auto-dismiss after 3 seconds
-                launch {
-                    delay(3000L)
-                    _state.update { it.copy(prMessage = null) }
-                }
-            }
-
-            // Clear note/error/setType after logging (weight/reps stay for easy repeat)
-            _state.update { it.copy(noteInput = "", rpeInput = null, rirInput = null, inputError = null, setTypeInput = "working") }
-
-            // Auto-start rest timer (skip for warmups)
-            if (s.restTimerEnabled && s.restTimerAutoStart && !isWarmup) {
-                restTimerManager.start(
-                    durationSeconds = s.restTimerDuration,
-                    scope = viewModelScope,
-                    onComplete = {
-                        _state.update { it.copy(restTimerCompleted = true) }
-                    },
+                val setId = workoutRepository.addSet(
+                    workoutId = workoutId,
+                    exerciseId = exercise.id,
+                    weight = weight,
+                    reps = reps,
+                    note = s.noteInput.ifBlank { null },
+                    rpe = s.rpeInput,
+                    rir = s.rirInput,
+                    setType = s.setTypeInput,
                 )
-                // Schedule alarm for screen-off notification
-                RestTimerAlarmScheduler.schedule(appContext, s.restTimerDuration)
+
+                // PR detection (skip for warmups)
+                val new1RM = weight * (1 + 0.0333f * reps)
+                if (!isWarmup && new1RM > previousBest1RM && weight > 0f) {
+                    _state.update { it.copy(
+                        prMessage = "NEW PR!",
+                        prSetIds = it.prSetIds + setId,
+                    ) }
+                    // Auto-dismiss after 3 seconds
+                    launch {
+                        delay(3000L)
+                        _state.update { it.copy(prMessage = null) }
+                    }
+                }
+
+                // Clear note/error/setType after logging (weight/reps stay for easy repeat)
+                _state.update { it.copy(noteInput = "", rpeInput = null, rirInput = null, inputError = null, setTypeInput = "working") }
+
+                // Auto-start rest timer (skip for warmups)
+                if (s.restTimerEnabled && s.restTimerAutoStart && !isWarmup) {
+                    restTimerManager.start(
+                        durationSeconds = s.restTimerDuration,
+                        scope = viewModelScope,
+                        onComplete = {
+                            _state.update { it.copy(restTimerCompleted = true) }
+                        },
+                    )
+                    // Schedule alarm for screen-off notification
+                    RestTimerAlarmScheduler.schedule(appContext, s.restTimerDuration)
+                }
+            } finally {
+                isLoggingSet = false
             }
         }
     }
@@ -500,24 +511,39 @@ class WorkoutSessionViewModel @Inject constructor(
     }
 
     fun saveEdit() {
+        if (isSavingEdit) return
+        isSavingEdit = true
         val s = _state.value
-        val setId = s.editingSetId ?: return
-        val set = s.completedSets.find { it.id == setId } ?: return
-        val weight = (s.weightInput.replace(",", ".").toFloatOrNull() ?: return).coerceAtMost(MAX_WEIGHT)
-        val reps = (s.repsInput.toIntOrNull() ?: return).coerceAtMost(MAX_REPS)
-        if (weight < 0f || reps <= 0) return
+        val setId = s.editingSetId ?: run { isSavingEdit = false; return }
+        val set = s.completedSets.find { it.id == setId } ?: run { isSavingEdit = false; return }
+        val parsedWeight = s.weightInput.replace(",", ".").toFloatOrNull()
+        val parsedReps = s.repsInput.toIntOrNull()
+        if (parsedWeight == null || parsedReps == null) {
+            _state.update { it.copy(inputError = "ENTER VALID WEIGHT AND REPS") }
+            isSavingEdit = false; return
+        }
+        val weight = parsedWeight.coerceAtMost(MAX_WEIGHT)
+        val reps = parsedReps.coerceAtMost(MAX_REPS)
+        if (weight < 0f || reps <= 0) {
+            _state.update { it.copy(inputError = "ENTER VALID WEIGHT AND REPS") }
+            isSavingEdit = false; return
+        }
 
         viewModelScope.launch {
-            workoutRepository.updateSet(
-                set.copy(
-                    weight = weight,
-                    reps = reps,
-                    note = s.noteInput.ifBlank { null },
-                    rpe = s.rpeInput,
-                    rir = s.rirInput,
+            try {
+                workoutRepository.updateSet(
+                    set.copy(
+                        weight = weight,
+                        reps = reps,
+                        note = s.noteInput.ifBlank { null },
+                        rpe = s.rpeInput,
+                        rir = s.rirInput,
+                    )
                 )
-            )
-            cancelEdit()
+                cancelEdit()
+            } finally {
+                isSavingEdit = false
+            }
         }
     }
 
@@ -627,6 +653,9 @@ class WorkoutSessionViewModel @Inject constructor(
     }
 
     fun confirmFinish(name: String, saveAsTemplate: Boolean = false, onSuccess: () -> Unit) {
+        if (isSavingWorkout) return
+        isSavingWorkout = true
+        _state.update { it.copy(isSaving = true) }
         viewModelScope.launch {
             try {
                 workoutRepository.completeWorkout(workoutId, name)
@@ -638,10 +667,12 @@ class WorkoutSessionViewModel @Inject constructor(
                 restTimerManager.stop()
                 RestTimerAlarmScheduler.cancel(appContext)
                 WorkoutForegroundService.stop(appContext)
-                _state.update { it.copy(finishError = null) }
+                _state.update { it.copy(finishError = null, isSaving = false) }
                 onSuccess()
             } catch (e: Exception) {
-                _state.update { it.copy(finishError = "Failed to save workout. Please retry.") }
+                _state.update { it.copy(finishError = "WORKOUT COULD NOT BE SAVED. TAP SAVE TO RETRY.", isSaving = false) }
+            } finally {
+                isSavingWorkout = false
             }
         }
     }

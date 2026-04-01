@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.workout.session
 
+import com.trackgod.app.util.formatVolume
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -57,6 +58,7 @@ fun WorkoutCompleteDialog(
     totalVolume: Float,
     durationSeconds: Long,
     defaultName: String,
+    isSaving: Boolean = false,
     finishError: String? = null,
     onSave: (name: String, saveAsTemplate: Boolean) -> Unit,
     onDiscard: () -> Unit,
@@ -158,7 +160,7 @@ fun WorkoutCompleteDialog(
                     )
                 }
             } else {
-                // Zero-sets warning
+                // Zero-sets warning + back option
                 if (totalSets <= 0) {
                     Text(
                         text = "LOG AT LEAST ONE SET",
@@ -171,25 +173,52 @@ fun WorkoutCompleteDialog(
                             .fillMaxWidth()
                             .padding(bottom = 8.dp),
                     )
-                }
 
-                // Normal action buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
+                    // Back to workout — primary action when no sets
+                    TrackGodButton(
+                        text = "BACK TO WORKOUT",
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Discard as secondary option
                     TrackGodButton(
                         text = "DISCARD",
                         onClick = { showDiscardConfirm = true },
                         variant = ButtonVariant.Ghost,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                     )
+                } else {
+                    // Normal action buttons when sets exist
+                    // Back to workout option
                     TrackGodButton(
-                        text = "SAVE WORKOUT",
-                        onClick = { onSave(workoutName, saveAsTemplate) },
-                        enabled = workoutName.isNotBlank() && totalSets > 0,
-                        modifier = Modifier.weight(1f),
+                        text = "BACK TO WORKOUT",
+                        onClick = onDismiss,
+                        variant = ButtonVariant.Ghost,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
                     )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        TrackGodButton(
+                            text = "DISCARD",
+                            onClick = { showDiscardConfirm = true },
+                            variant = ButtonVariant.Ghost,
+                            modifier = Modifier.weight(1f),
+                        )
+                        TrackGodButton(
+                            text = "SAVE",
+                            onClick = { onSave(workoutName, saveAsTemplate) },
+                            enabled = workoutName.isNotBlank() && !isSaving,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
 
                 // Save as template toggle
@@ -234,7 +263,7 @@ fun WorkoutCompleteDialog(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = finishError,
-                        color = com.trackgod.app.ui.theme.Blood,
+                        color = com.trackgod.app.ui.theme.BloodBright,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                     )
@@ -272,14 +301,6 @@ private fun StatRow(
 }
 
 // ── Formatting helpers ───────────────────────────────────────────────────────
-
-private fun formatVolume(volume: Float): String {
-    return when {
-        volume >= 1_000_000 -> String.format(java.util.Locale.US, "%.1fM", volume / 1_000_000f)
-        volume >= 1_000 -> String.format(java.util.Locale.US, "%,.0f", volume)
-        else -> String.format(java.util.Locale.US, "%.0f", volume)
-    }
-}
 
 private fun formatDuration(seconds: Long): String {
     val h = seconds / 3600

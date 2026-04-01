@@ -64,7 +64,7 @@ class BackupViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     isLoading = false,
-                    message = if (result.success) "BACKUP CREATED" else "Backup fehlgeschlagen. Bitte versuche es erneut.",
+                    message = if (result.success) "BACKUP CREATED" else "BACKUP FAILED. CHECK AVAILABLE STORAGE AND TRY AGAIN.",
                 )
             }
             if (result.success) loadStats()
@@ -91,7 +91,7 @@ class BackupViewModel @Inject constructor(
                 it.copy(
                     isLoading = false,
                     showRestartDialog = success,
-                    message = if (!success) "RESTORE FAILED" else null,
+                    message = if (!success) "RESTORE FAILED. THE BACKUP FILE MAY BE CORRUPTED OR INCOMPATIBLE." else null,
                 )
             }
         }
@@ -105,7 +105,7 @@ class BackupViewModel @Inject constructor(
                 it.copy(
                     isLoading = false,
                     exportUri = uri,
-                    message = if (uri == null) "EXPORT FAILED" else null,
+                    message = if (uri == null) "EXPORT FAILED. CHECK AVAILABLE STORAGE AND TRY AGAIN." else null,
                 )
             }
         }
@@ -119,7 +119,7 @@ class BackupViewModel @Inject constructor(
                 it.copy(
                     isLoading = false,
                     showRestartDialog = success,
-                    message = if (!success) "IMPORT FAILED: INVALID DATABASE FILE" else null,
+                    message = if (!success) "IMPORT FAILED. MAKE SURE THE FILE IS A VALID TRACKGOD BACKUP." else null,
                 )
             }
         }
@@ -165,7 +165,7 @@ class BackupViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        message = "CSV EXPORT FAILED",
+                        message = "CSV EXPORT FAILED. CHECK AVAILABLE STORAGE AND TRY AGAIN.",
                     )
                 }
             }
@@ -180,7 +180,7 @@ class BackupViewModel @Inject constructor(
                 it.copy(
                     isLoading = false,
                     showRestartDialog = success,
-                    message = if (!success) "DELETE FAILED" else null,
+                    message = if (!success) "DELETE FAILED. PLEASE RESTART THE APP AND TRY AGAIN." else null,
                 )
             }
         }

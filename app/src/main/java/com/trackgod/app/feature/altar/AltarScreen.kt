@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.altar
 
+import com.trackgod.app.util.formatVolumeShort
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -229,6 +230,7 @@ private fun AltarContent(
             TrackGodButton(
                 text = "START\nNEW",
                 onClick = onStartNewWorkout,
+                enabled = !state.isStarting,
                 icon = Icons.Default.Add,
                 modifier = Modifier
                     .weight(0.6f)
@@ -256,8 +258,8 @@ private fun AltarContent(
             StatCard(
                 icon = Icons.Default.FitnessCenter,
                 label = "VOLUME",
-                value = formatVolume(state.todayVolume),
-                unit = if (state.todayVolume >= 1_000_000) "M KG" else if (state.todayVolume >= 1_000) "K KG" else "KG",
+                value = formatVolumeShort(state.todayVolume),
+                unit = "KG",
                 modifier = Modifier.weight(1f),
                 backgroundAlignment = Alignment.TopEnd,
             )
@@ -303,7 +305,7 @@ private fun AltarContent(
             deleteRoutineId?.let { id ->
                 com.trackgod.app.feature.workout.session.ConfirmationDialog(
                     title = "DELETE RITUAL?",
-                    message = "This template will be permanently removed.",
+                    message = "This ritual will be permanently removed.",
                     confirmText = "DELETE",
                     dismissText = "CANCEL",
                     onConfirm = { onDeleteRoutine(id); deleteRoutineId = null },
@@ -316,6 +318,7 @@ private fun AltarContent(
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 3.dp)
                         .combinedClickable(
+                            enabled = !state.isStarting,
                             onClick = { onStartFromTemplate(routine.id) },
                             onLongClick = { deleteRoutineId = routine.id },
                         ),
@@ -542,7 +545,7 @@ private fun RecentWorkoutRow(
                         .background(Blood),
                 )
                 Text(
-                    text = "${formatVolume(workout.totalVolume)}KG",
+                    text = "${formatVolumeShort(workout.totalVolume)} KG",
                     color = TextTertiary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -564,16 +567,6 @@ private fun RecentWorkoutRow(
                 )
             }
         }
-    }
-}
-
-// ── Formatting helpers ──────────────────────────────────────────────────────
-
-private fun formatVolume(volume: Float): String {
-    return when {
-        volume >= 1_000_000 -> String.format(java.util.Locale.US, "%.1f", volume / 1_000_000f)
-        volume >= 1_000 -> String.format(java.util.Locale.US, "%.1f", volume / 1_000f)
-        else -> String.format(java.util.Locale.US, "%.0f", volume)
     }
 }
 

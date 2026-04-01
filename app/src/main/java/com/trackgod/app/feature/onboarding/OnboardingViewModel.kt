@@ -149,7 +149,7 @@ class OnboardingViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isSaving = false,
-                        error = "Profil konnte nicht gespeichert werden.",
+                        error = "PROFILE COULD NOT BE SAVED. PLEASE TRY AGAIN.",
                     )
                 }
             }

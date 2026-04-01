@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.workout.session
 
+import com.trackgod.app.util.formatVolumeShort
 import java.util.Locale
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.RepeatMode
@@ -21,15 +22,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.ui.window.Dialog
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -38,11 +40,14 @@ import androidx.compose.material.icons.filled.ChevronRight
 import com.trackgod.app.core.database.entity.ExerciseEntity
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import android.content.Context
@@ -51,6 +56,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -60,6 +66,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontFamily
@@ -82,7 +89,6 @@ import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.Void
-import com.trackgod.app.ui.theme.VoidDeep
 
 // ── Screen (ViewModel-wired entry point) ────────────────────────────────────
 
@@ -95,6 +101,12 @@ fun WorkoutSessionScreen(
     onWorkoutDiscarded: () -> Unit,
     viewModel: WorkoutSessionViewModel = hiltViewModel(),
 ) {
+    val view = LocalView.current
+    DisposableEffect(Unit) {
+        view.keepScreenOn = true
+        onDispose { view.keepScreenOn = false }
+    }
+
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
@@ -126,11 +138,11 @@ fun WorkoutSessionScreen(
             if (vibrator?.hasVibrator() == true) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     vibrator.vibrate(
-                        VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
+                        VibrationEffect.createWaveform(longArrayOf(0, 300, 200, 300, 200, 500), -1)
                     )
                 } else {
                     @Suppress("DEPRECATION")
-                    vibrator.vibrate(500)
+                    vibrator.vibrate(longArrayOf(0, 300, 200, 300, 200, 500), -1)
                 }
             }
             viewModel.consumeRestTimerCompleted()
@@ -234,6 +246,8 @@ private fun WorkoutSessionContent(
 ) {
     var showBackConfirm by remember { mutableStateOf(false) }
     var deleteSetId by remember { mutableStateOf<Long?>(null) }
+    var restTimerMinimized by remember { mutableStateOf(false) }
+    val isRestTimerActive = state.isRestTimerRunning || state.isRestTimerPaused
 
     // Intercept system back button during active workout
     BackHandler {
@@ -247,7 +261,12 @@ private fun WorkoutSessionContent(
             .padding(top = 4.dp),
     ) {
         // Header
-        SessionHeader()
+        SessionHeader(
+            onAddExercise = onNavigateToExercisePicker,
+            restTimerMinimized = restTimerMinimized && isRestTimerActive,
+            restTimeRemaining = state.restTimeRemaining,
+            onExpandRestTimer = { restTimerMinimized = false },
+        )
 
         // Stats panel
         StatsPanel(
@@ -258,20 +277,21 @@ private fun WorkoutSessionContent(
             weightUnit = state.weightUnit,
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Control buttons
-        ControlButtons(
-            onEnd = onFinishWorkout,
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Main content area (scrollable)
-        LazyColumn(
+        // END workout button
+        TrackGodButton(
+            text = "END",
+            onClick = onFinishWorkout,
+            variant = ButtonVariant.Secondary,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+
+        // Main content area (scrollable) with rest timer overlay
+        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize(),
         ) {
             if (state.currentExercise == null) {
                 // No exercise selected -- show session log + choose tile
@@ -414,7 +434,27 @@ private fun WorkoutSessionContent(
                     Spacer(modifier = Modifier.height(24.dp))
                 }
             }
+
+            // Bottom spacer so content can scroll past the rest timer overlay
+            item { Spacer(Modifier.height(200.dp)) }
         }
+
+        // Non-blocking rest timer overlay (anchored to bottom)
+        if (isRestTimerActive && !restTimerMinimized) {
+            Box(modifier = Modifier.align(Alignment.BottomCenter).heightIn(max = 280.dp)) {
+                RestTimerOverlay(
+                    timeRemaining = state.restTimeRemaining,
+                    isPaused = state.isRestTimerPaused,
+                    onSkip = onSkipRest,
+                    onPause = onPauseRest,
+                    onResume = onResumeRest,
+                    onAdjust = onAdjustRest,
+                    onMinimize = { restTimerMinimized = true },
+                    onDisableForSession = onToggleRestTimerForSession,
+                )
+            }
+        }
+        } // Box
     }
     } // MetalTextureBackground
 
@@ -426,6 +466,7 @@ private fun WorkoutSessionContent(
             totalVolume = state.totalVolume,
             durationSeconds = state.sessionDurationSeconds,
             defaultName = generateWorkoutName(),
+            isSaving = state.isSaving,
             finishError = state.finishError,
             onSave = onConfirmFinish,
             onDiscard = onDiscardWorkout,
@@ -478,24 +519,17 @@ private fun WorkoutSessionContent(
         )
     }
 
-    // Rest timer popup dialog
-    if (state.isRestTimerRunning || state.isRestTimerPaused) {
-        RestTimerDialog(
-            timeRemaining = state.restTimeRemaining,
-            isPaused = state.isRestTimerPaused,
-            onSkip = onSkipRest,
-            onPause = onPauseRest,
-            onResume = onResumeRest,
-            onAdjust = onAdjustRest,
-            onDisableForSession = onToggleRestTimerForSession,
-        )
-    }
 }
 
 // ── Header ──────────────────────────────────────────────────────────────────
 
 @Composable
-private fun SessionHeader() {
+private fun SessionHeader(
+    onAddExercise: () -> Unit = {},
+    restTimerMinimized: Boolean = false,
+    restTimeRemaining: Int = 0,
+    onExpandRestTimer: () -> Unit = {},
+) {
     val infiniteTransition = rememberInfiniteTransition(label = "livePulse")
     val liveDotAlpha by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -530,8 +564,28 @@ private fun SessionHeader() {
             fontSize = 20.sp,
             fontWeight = FontWeight.Black,
             letterSpacing = 2.sp,
-            modifier = Modifier.weight(1f),
         )
+
+        // Minimized rest timer badge
+        if (restTimerMinimized) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .background(Blood.copy(alpha = 0.3f), RectangleShape)
+                    .clickable { onExpandRestTimer() }
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = formatRestTime(restTimeRemaining),
+                    color = BloodBright,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Black,
+                    fontFamily = FontFamily.Monospace,
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
 
         // LIVE indicator with pulsing red dot
         Row(
@@ -550,6 +604,18 @@ private fun SessionHeader() {
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 3.sp,
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Add exercise shortcut
+        IconButton(onClick = onAddExercise, modifier = Modifier.size(40.dp)) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add Exercise",
+                tint = TextPrimary,
+                modifier = Modifier.size(22.dp),
             )
         }
     }
@@ -604,26 +670,7 @@ private fun StatColumn(
     }
 }
 
-// ── Control Buttons ─────────────────────────────────────────────────────────
-
-@Composable
-private fun ControlButtons(
-    onEnd: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-    ) {
-        TrackGodButton(
-            text = "END",
-            onClick = onEnd,
-            variant = ButtonVariant.Secondary,
-            icon = Icons.Default.Stop,
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
-}
+// ── (Control Buttons moved into SessionHeader) ────────────────────────────
 
 // ── Choose Exercise Tile ────────────────────────────────────────────────────
 
@@ -891,16 +938,32 @@ private fun ExerciseInputSection(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Optional note
-        TrackGodTextField(
-            value = state.noteInput,
-            onValueChange = onNoteChanged,
-            label = "NOTE",
-            placeholder = "OPTIONAL NOTE...",
-            modifier = Modifier.fillMaxWidth(),
-        )
+        // Optional note — collapsible to save space
+        var noteExpanded by remember(state.currentExercise?.id) { mutableStateOf(state.noteInput.isNotBlank()) }
+        if (!noteExpanded) {
+            Text(
+                text = "+ NOTE",
+                color = TextTertiary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.sp,
+                modifier = Modifier.clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                ) { noteExpanded = true },
+            )
+        }
+        AnimatedVisibility(visible = noteExpanded) {
+            TrackGodTextField(
+                value = state.noteInput,
+                onValueChange = onNoteChanged,
+                label = "NOTE",
+                placeholder = "OPTIONAL NOTE...",
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -940,26 +1003,37 @@ private fun ExerciseInputSection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // Set type cycle button
+                // Set type cycle button with label
                 val typeLabel = when (state.setTypeInput) {
-                    "warmup" -> "WU"
-                    "drop" -> "D"
-                    "failure" -> "F"
-                    else -> "W"
+                    "warmup" -> "WARM"
+                    "drop" -> "DROP"
+                    "failure" -> "FAIL"
+                    else -> "WORK"
                 }
                 val typeBg = if (state.setTypeInput == "working") SurfaceLow else Blood.copy(alpha = 0.3f)
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(typeBg, RectangleShape)
-                        .clickable { onCycleSetType() },
-                    contentAlignment = Alignment.Center,
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(typeBg, RectangleShape)
+                            .clickable { onCycleSetType() },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = typeLabel,
+                            color = if (state.setTypeInput == "working") TextTertiary else BloodBright,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp,
+                        )
+                    }
                     Text(
-                        text = typeLabel,
-                        color = if (state.setTypeInput == "working") TextTertiary else BloodBright,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Black,
+                        text = "SET TYPE",
+                        color = TextTertiary,
+                        fontSize = 7.sp,
+                        fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp,
                     )
                 }
@@ -977,110 +1051,124 @@ private fun ExerciseInputSection(
     }
 }
 
-// ── Rest Timer Dialog ───────────────────────────────────────────────────────
+// ── Rest Timer Overlay (non-blocking) ──────────────────────────────────────
 
 @Composable
-private fun RestTimerDialog(
+private fun RestTimerOverlay(
     timeRemaining: Int,
     isPaused: Boolean,
     onSkip: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
     onAdjust: (Int) -> Unit,
+    onMinimize: () -> Unit,
     onDisableForSession: () -> Unit,
 ) {
-    Dialog(onDismissRequest = { /* user must skip or wait */ }) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = VoidDeep, shape = RectangleShape)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color = SurfaceLow.copy(alpha = 0.95f), shape = RectangleShape)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        // Title row with minimize button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Title
             Text(
                 text = "REST TIMER",
                 color = TextTertiary,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 4.sp,
+                modifier = Modifier.weight(1f),
             )
+            IconButton(onClick = onMinimize, modifier = Modifier.size(32.dp)) {
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Minimize",
+                    tint = TextTertiary,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
 
-            Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-            // Large countdown
+        // Large countdown
+        Text(
+            text = formatRestTime(timeRemaining),
+            style = MaterialTheme.typography.displayLarge,
+            color = if (isPaused) TextTertiary else BloodBright,
+            fontWeight = FontWeight.Black,
+            fontFamily = FontFamily.Monospace,
+            textAlign = TextAlign.Center,
+        )
+
+        if (isPaused) {
             Text(
-                text = formatRestTime(timeRemaining),
-                style = MaterialTheme.typography.displayLarge,
-                color = if (isPaused) TextTertiary else BloodBright,
-                fontWeight = FontWeight.Black,
-                fontFamily = FontFamily.Monospace,
-                textAlign = TextAlign.Center,
+                text = "PAUSED",
+                color = TextTertiary,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 3.sp,
             )
+        }
 
-            if (isPaused) {
-                Text(
-                    text = "PAUSED",
-                    color = TextTertiary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 3.sp,
-                )
-            }
+        Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+        // +/- 15s adjust buttons
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TrackGodButton(
+                text = "-15s",
+                onClick = { onAdjust(-15) },
+                variant = ButtonVariant.Ghost,
+                modifier = Modifier.weight(1f),
+            )
+            TrackGodButton(
+                text = "+15s",
+                onClick = { onAdjust(15) },
+                variant = ButtonVariant.Ghost,
+                modifier = Modifier.weight(1f),
+            )
+        }
 
-            // +/- 15s adjust buttons
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TrackGodButton(
-                    text = "-15s",
-                    onClick = { onAdjust(-15) },
-                    variant = ButtonVariant.Ghost,
-                    modifier = Modifier.weight(1f),
-                )
-                TrackGodButton(
-                    text = "+15s",
-                    onClick = { onAdjust(15) },
-                    variant = ButtonVariant.Ghost,
-                    modifier = Modifier.weight(1f),
-                )
-            }
+        Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Pause / Resume button
+        // Pause/Resume + Skip in a row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             TrackGodButton(
                 text = if (isPaused) "RESUME" else "PAUSE",
                 onClick = if (isPaused) onResume else onPause,
                 variant = ButtonVariant.Ghost,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(1f),
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Skip button
             TrackGodButton(
                 text = "SKIP",
                 onClick = onSkip,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Disable for session toggle
-            Text(
-                text = "DISABLE REST TIMER",
-                color = TextTertiary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.clickable { onDisableForSession() },
+                modifier = Modifier.weight(1f),
             )
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Disable for session toggle
+        Text(
+            text = "DISABLE FOR SESSION",
+            color = TextTertiary,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.clickable { onDisableForSession() },
+        )
     }
 }
 
@@ -1198,7 +1286,7 @@ private fun LastSessionSets(
     weightIncrement: Float,
     onSetTapped: (com.trackgod.app.core.database.entity.SetEntity) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(sets.size < 5) }
     val unit = weightUnit.uppercase()
 
     Column {
@@ -1277,14 +1365,6 @@ private fun formatWeightForInput(value: Float, increment: Float): String {
         value.toInt().toString()
     } else {
         String.format(java.util.Locale.US, "%.1f", value)
-    }
-}
-
-private fun formatVolumeShort(volume: Float): String {
-    return when {
-        volume >= 1_000_000 -> String.format(java.util.Locale.US, "%.1fM", volume / 1_000_000f)
-        volume >= 1_000 -> String.format(java.util.Locale.US, "%.1fK", volume / 1_000f)
-        else -> String.format(java.util.Locale.US, "%.0f", volume)
     }
 }
 

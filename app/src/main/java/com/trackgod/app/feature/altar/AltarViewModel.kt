@@ -34,6 +34,7 @@ data class AltarState(
     val recentWorkouts: List<WorkoutEntity> = emptyList(),
     val weeklyGoal: Int = 4,
     val workoutDaysThisWeek: Set<Int> = emptySet(),
+    val isStarting: Boolean = false,
     val isLoading: Boolean = true,
     val routines: List<com.trackgod.app.core.database.dao.RoutineWithCount> = emptyList(),
 )
@@ -206,6 +207,7 @@ class AltarViewModel @Inject constructor(
     suspend fun startNewWorkout(): Long? {
         if (isStarting) return null
         isStarting = true
+        _state.update { it.copy(isStarting = true) }
         return try {
             // Discard any existing incomplete workout to prevent orphans
             _state.value.incompleteWorkoutId?.let { oldId ->
@@ -222,6 +224,7 @@ class AltarViewModel @Inject constructor(
             workoutId
         } finally {
             isStarting = false
+            _state.update { it.copy(isStarting = false) }
         }
     }
 
@@ -233,6 +236,7 @@ class AltarViewModel @Inject constructor(
     suspend fun startFromTemplate(routineId: Long): Pair<Long, Long>? {
         if (isStarting) return null
         isStarting = true
+        _state.update { it.copy(isStarting = true) }
         return try {
             _state.value.incompleteWorkoutId?.let { oldId ->
                 workoutRepository.deleteWorkout(oldId)
@@ -245,6 +249,7 @@ class AltarViewModel @Inject constructor(
             Pair(workoutId, routineId)
         } finally {
             isStarting = false
+            _state.update { it.copy(isStarting = false) }
         }
     }
 
