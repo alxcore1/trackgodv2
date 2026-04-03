@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,7 +22,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -91,25 +91,35 @@ fun BrandPicker(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 if (allSelected && onDeselectAll != null) {
-                    TextButton(onClick = onDeselectAll) {
-                        Text(
-                            text = "DESELECT ALL",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                letterSpacing = 1.sp,
-                            ),
-                            color = BloodBright,
-                        )
-                    }
+                    Text(
+                        text = "DESELECT ALL",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            letterSpacing = 1.sp,
+                        ),
+                        color = BloodBright,
+                        modifier = Modifier
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = onDeselectAll,
+                            )
+                            .padding(vertical = spacing.sm, horizontal = spacing.xs),
+                    )
                 } else if (!allSelected && onSelectAll != null) {
-                    TextButton(onClick = onSelectAll) {
-                        Text(
-                            text = "SELECT ALL",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                letterSpacing = 1.sp,
-                            ),
-                            color = BloodBright,
-                        )
-                    }
+                    Text(
+                        text = "SELECT ALL",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            letterSpacing = 1.sp,
+                        ),
+                        color = BloodBright,
+                        modifier = Modifier
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = onSelectAll,
+                            )
+                            .padding(vertical = spacing.sm, horizontal = spacing.xs),
+                    )
                 }
             }
         }
@@ -189,8 +199,9 @@ private fun BrandChip(
                     onToggle()
                 },
             )
-            .defaultMinSize(minHeight = 48.dp)
+            .defaultMinSize(minHeight = 72.dp)
             .padding(horizontal = spacing.lg, vertical = spacing.md),
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(
             text = brand.name.uppercase(),
@@ -225,12 +236,13 @@ private fun BrandPickerPreview() {
     )
 
     TrackGodTheme {
+        val spacing = TrackGodTheme.spacing
         BrandPicker(
             brands = sampleBrands,
             onToggleBrand = {},
             modifier = Modifier
                 .background(Void)
-                .padding(16.dp),
+                .padding(spacing.lg),
         )
     }
 }

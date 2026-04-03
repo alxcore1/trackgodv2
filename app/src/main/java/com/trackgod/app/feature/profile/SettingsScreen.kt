@@ -205,6 +205,17 @@ fun SettingsScreen(
             )
 
             Spacer(modifier = Modifier.height(spacing.xxl))
+
+            // ── APP INFO ────────────────────────────────────────────────────
+            Text(
+                text = "TRACKGOD V${com.trackgod.app.BuildConfig.VERSION_NAME}",
+                style = MaterialTheme.typography.bodySmall,
+                color = TextTertiary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = spacing.lg),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            )
         }
     }
     } // MetalTextureBackground

@@ -45,6 +45,7 @@ import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -286,6 +287,7 @@ private fun WorkoutSessionContent(
             text = "END",
             onClick = onFinishWorkout,
             variant = ButtonVariant.Secondary,
+            icon = Icons.Default.Stop,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = spacing.lg, vertical = spacing.sm),

@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,9 +40,8 @@ import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.MetalTextureBackground
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.component.TrackGodCard
-import com.trackgod.app.ui.theme.Blood
+import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.theme.BloodBright
-import com.trackgod.app.ui.theme.SurfaceHighest
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
@@ -111,7 +109,7 @@ fun SeedingChoiceScreen(
                     Text(
                         text = buildAnnotatedString {
                             append("SELECT YOUR\n")
-                            withStyle(SpanStyle(color = Blood)) {
+                            withStyle(SpanStyle(color = BloodBright)) {
                                 append("GYM'S BRANDS")
                             }
                         },
@@ -210,7 +208,7 @@ fun SeedingChoiceScreen(
                     Text(
                         text = buildAnnotatedString {
                             append("LOAD\n")
-                            withStyle(SpanStyle(color = Blood)) {
+                            withStyle(SpanStyle(color = BloodBright)) {
                                 append("ARSENAL")
                             }
                         },
@@ -237,10 +235,11 @@ fun SeedingChoiceScreen(
                     ) {
                         Text(
                             text = "FULL ARSENAL",
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 2.sp,
+                            ),
                             color = TextPrimary,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 2.sp,
                         )
                         Spacer(modifier = Modifier.height(spacing.xs))
                         Text(
@@ -263,10 +262,11 @@ fun SeedingChoiceScreen(
                     TrackGodCard {
                         Text(
                             text = "BASICS ONLY",
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 2.sp,
+                            ),
                             color = TextPrimary,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 2.sp,
                         )
                         Spacer(modifier = Modifier.height(spacing.xs))
                         Text(
@@ -290,10 +290,11 @@ fun SeedingChoiceScreen(
                     TrackGodCard {
                         Text(
                             text = "EMPTY SLATE",
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 2.sp,
+                            ),
                             color = TextPrimary,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 2.sp,
                         )
                         Spacer(modifier = Modifier.height(spacing.xs))
                         Text(
@@ -327,28 +328,10 @@ fun SeedingChoiceScreen(
                     }
 
                     // ── Divider ─────────────────────────────────────────────
-                    Row(
+                    SectionDivider(
+                        text = "OR",
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(1.dp)
-                                .background(SurfaceHighest),
-                        )
-                        Text(
-                            text = "  OR  ",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = TextTertiary,
-                        )
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(1.dp)
-                                .background(SurfaceHighest),
-                        )
-                    }
+                    )
 
                     Spacer(modifier = Modifier.height(spacing.lg))
 
