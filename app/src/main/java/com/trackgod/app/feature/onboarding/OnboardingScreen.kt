@@ -36,7 +36,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,6 +75,8 @@ import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
 import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
+import com.trackgod.app.core.util.ImageCropOverlay
+import com.trackgod.app.core.util.rememberAvatarPickerLauncher
 
 @Composable
 fun OnboardingScreen(
@@ -83,6 +84,23 @@ fun OnboardingScreen(
     viewModel: OnboardingViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    var pendingCropUri by remember { mutableStateOf<Uri?>(null) }
+    val launchPicker = rememberAvatarPickerLauncher { uri ->
+        pendingCropUri = uri
+    }
+
+    pendingCropUri?.let { uri ->
+        ImageCropOverlay(
+            sourceUri = uri,
+            onConfirm = { croppedUri ->
+                viewModel.updateAvatarUri(croppedUri.toString())
+                pendingCropUri = null
+            },
+            onCancel = { pendingCropUri = null },
+        )
+        return
+    }
 
     Box(
         modifier = Modifier
@@ -199,7 +217,7 @@ fun OnboardingScreen(
                     .padding(horizontal = 24.dp),
             ) {
                 when (step) {
-                    0 -> StepNameAvatar(state, viewModel)
+                    0 -> StepNameAvatar(state, viewModel, onPickAvatar = { launchPicker() })
                     1 -> StepGender(state, viewModel)
                     2 -> StepHeightWeight(state, viewModel)
                     3 -> StepUnits(state, viewModel)
@@ -258,27 +276,8 @@ fun OnboardingScreen(
 private fun StepNameAvatar(
     state: OnboardingState,
     viewModel: OnboardingViewModel,
+    onPickAvatar: () -> Unit,
 ) {
-    val context = LocalContext.current
-
-    var pendingCropUri by remember { mutableStateOf<android.net.Uri?>(null) }
-    val launchPicker = com.trackgod.app.core.util.rememberAvatarPickerLauncher { uri ->
-        pendingCropUri = uri
-    }
-
-    // Interactive crop overlay (shown above the onboarding content)
-    pendingCropUri?.let { uri ->
-        com.trackgod.app.core.util.ImageCropOverlay(
-            sourceUri = uri,
-            onConfirm = { croppedUri ->
-                viewModel.updateAvatarUri(croppedUri.toString())
-                pendingCropUri = null
-            },
-            onCancel = { pendingCropUri = null },
-        )
-        return  // don't render step content while cropping
-    }
-
     Spacer(modifier = Modifier.height(16.dp))
 
     // Avatar picker
@@ -287,7 +286,7 @@ private fun StepNameAvatar(
             .size(80.dp)
             .background(SurfaceLow, RectangleShape)
             .clip(RectangleShape)
-            .clickable { launchPicker() },
+            .clickable { onPickAvatar() },
         contentAlignment = Alignment.Center,
     ) {
         if (!state.avatarUri.isNullOrBlank()) {
