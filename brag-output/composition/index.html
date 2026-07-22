@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Work+Sans:wght@400;500;600&display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      :root {
+        --void: #131313;
+        --void-deep: #0e0e0e;
+        --card: #1c1b1b;
+        --card-mid: #201f1f;
+        --surface-high: #2a2a2a;
+        --blood: #8b0000;
+        --blood-bright: #ffb4a8;
+        --blood-glow: #ff907f;
+        --text: #e5e2e1;
+        --text-2: #c8c6c6;
+        --text-3: #bf9d97;
+        --ghost: #5a403c;
+      }
+      html, body {
+        width: 1080px; height: 1920px; overflow: hidden;
+        background: var(--void); font-family: "Work Sans", system-ui, sans-serif; color: var(--text);
+      }
+      .scene {
+        position: absolute; inset: 0; width: 1080px; height: 1920px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+      }
+      .label {
+        font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 4px; color: var(--text-3);
+      }
+      /* ===== Background ===== */
+      #bg {
+        background:
+          radial-gradient(120% 70% at 50% 0%, rgba(139,0,0,0.22), rgba(19,19,19,0) 60%),
+          radial-gradient(90% 60% at 50% 100%, rgba(139,0,0,0.10), rgba(19,19,19,0) 55%),
+          var(--void);
+      }
+      #bgGrain { position: absolute; inset: 0; opacity: 0.04;
+        background-image: radial-gradient(rgba(255,255,255,0.7) 1px, transparent 1px);
+        background-size: 4px 4px; }
+
+      /* ===== Scene 1 — ignite ===== */
+      #s1glow { position: absolute; width: 1100px; height: 1100px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,144,127,0.30), rgba(19,19,19,0) 62%); }
+      #s1line { width: 760px; height: 5px; border-radius: 3px;
+        background: linear-gradient(90deg, rgba(139,0,0,0) 0%, var(--blood-glow) 50%, rgba(139,0,0,0) 100%);
+        box-shadow: 0 0 28px rgba(255,144,127,0.85); margin-bottom: 54px; }
+      #s1text { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 86px;
+        letter-spacing: 10px; color: var(--blood-bright); text-align: center;
+        text-shadow: 0 0 38px rgba(255,144,127,0.45); }
+      #s1sub { margin-top: 40px; font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 500;
+        letter-spacing: 8px; font-size: 26px; color: var(--text-3); text-transform: uppercase; }
+
+      /* ===== Scene 2 — wordmark ===== */
+      #s2glow { position: absolute; width: 1200px; height: 700px;
+        background: radial-gradient(closest-side, rgba(255,144,127,0.20), rgba(19,19,19,0)); }
+      .wordmark { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 168px;
+        letter-spacing: 2px; line-height: 0.9; }
+      .wordmark .god { color: var(--blood-bright); text-shadow: 0 0 44px rgba(255,144,127,0.40); }
+      .underline { width: 520px; height: 8px; margin-top: 28px; border-radius: 4px;
+        background: var(--blood); box-shadow: 0 0 26px rgba(139,0,0,0.9); }
+      #subtitle { margin-top: 46px; font-family: "Work Sans", system-ui, sans-serif; font-weight: 500;
+        font-size: 40px; color: var(--text-2); letter-spacing: 0.5px; }
+
+      /* ===== Cards ===== */
+      .card { background: var(--card); border: 1px solid var(--ghost);
+        border-radius: 22px; box-shadow: 0 24px 70px rgba(0,0,0,0.55); }
+
+      /* ===== Scene 3 — Altar ===== */
+      #altarLabel { font-size: 30px; letter-spacing: 6px; margin-bottom: 48px; }
+      #ritualCard { width: 760px; padding: 48px; }
+      #ritualCard .tag { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 22px;
+        letter-spacing: 5px; color: var(--blood-bright); text-transform: uppercase; }
+      #ritualCard .name { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 64px;
+        margin-top: 18px; color: var(--text); }
+      #ritualCard .meta { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 500; font-size: 28px;
+        letter-spacing: 3px; color: var(--text-3); margin-top: 16px; text-transform: uppercase; }
+      #streakWrap { display: flex; align-items: baseline; gap: 22px; margin-top: 64px; }
+      #streakNum { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 200px;
+        line-height: 0.8; color: var(--blood-bright); text-shadow: 0 0 50px rgba(255,144,127,0.35); }
+      #streakUnit { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 44px;
+        letter-spacing: 8px; color: var(--text-3); text-transform: uppercase; }
+      #streakCap { margin-top: 14px; font-size: 26px; letter-spacing: 6px; color: var(--text-3); }
+
+      /* ===== Scene 4 — live session ===== */
+      #sessionCard { width: 800px; padding: 46px 48px; }
+      .sessHead { display: flex; justify-content: space-between; align-items: center; }
+      .exName { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 52px; color: var(--text); }
+      .liveTag { display: flex; align-items: center; gap: 12px; font-family: "Space Grotesk", system-ui, sans-serif;
+        font-weight: 700; font-size: 26px; letter-spacing: 4px; color: var(--blood-bright); }
+      #liveDot { width: 18px; height: 18px; border-radius: 50%; background: var(--blood-glow);
+        box-shadow: 0 0 16px var(--blood-glow); }
+      .timer { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 40px; color: var(--text-2);
+        letter-spacing: 3px; margin-top: 6px; }
+      .setRow { display: flex; align-items: center; gap: 22px; margin-top: 34px;
+        background: var(--card-mid); border: 1px solid var(--ghost); border-radius: 16px; padding: 26px 30px; }
+      .setNo { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 26px; letter-spacing: 3px;
+        color: var(--text-3); white-space: nowrap; }
+      .setWeight { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 48px; color: var(--text); white-space: nowrap; }
+      .chip { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 24px; letter-spacing: 2px;
+        color: var(--blood-bright); border: 1px solid var(--blood); border-radius: 999px;
+        padding: 8px 18px; }
+      .check { margin-left: auto; font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 34px; color: var(--blood-glow); }
+      #prBadge { position: absolute; top: 1120px; padding: 30px 60px; border-radius: 18px;
+        background: var(--blood); border: 1px solid var(--blood-glow);
+        box-shadow: 0 0 60px rgba(139,0,0,0.85); display: flex; align-items: center; gap: 22px; }
+      #prBadge .pr { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 64px; letter-spacing: 6px; color: #fff; }
+      #prBadge .prSub { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 26px; letter-spacing: 3px; color: var(--blood-bright); white-space: nowrap; }
+      #prGlow { position: absolute; top: 1080px; width: 720px; height: 240px; border-radius: 50%;
+        background: radial-gradient(closest-side, rgba(255,144,127,0.40), rgba(19,19,19,0)); }
+
+      /* ===== Scene 5 — feature cards ===== */
+      #featStack { display: flex; flex-direction: column; gap: 40px; width: 800px; }
+      .feat { display: flex; gap: 30px; align-items: flex-start; padding: 40px 42px; }
+      .feat .ic { width: 76px; height: 76px; flex: 0 0 76px; border-radius: 16px;
+        background: rgba(139,0,0,0.18); border: 1px solid var(--blood);
+        display: flex; align-items: center; justify-content: center; }
+      .feat .ic svg { width: 40px; height: 40px; }
+      .feat .ft { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 44px; color: var(--text); }
+      .feat .fd { font-family: "Work Sans", system-ui, sans-serif; font-weight: 400; font-size: 28px; color: var(--text-2); margin-top: 8px; }
+      .heatmap { display: grid; grid-template-columns: repeat(14, 1fr); gap: 7px; margin-top: 18px; }
+      .heatmap span { width: 100%; aspect-ratio: 1; border-radius: 4px; background: rgba(255,180,168,0.06); }
+
+      /* ===== Scene 6 — outro ===== */
+      #privacyLine { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; font-size: 78px;
+        letter-spacing: 6px; color: var(--blood-bright); text-align: center;
+        text-shadow: 0 0 40px rgba(255,144,127,0.40); }
+      #outroTag { margin-top: 40px; font-family: "Work Sans", system-ui, sans-serif; font-weight: 500; font-size: 44px; color: var(--text-2); }
+      #s6glow { position: absolute; width: 1200px; height: 800px;
+        background: radial-gradient(closest-side, rgba(255,144,127,0.18), rgba(19,19,19,0)); }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="20"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Background -->
+      <div id="bg" class="scene clip" data-start="0" data-duration="20" data-track-index="0">
+        <div id="bgGrain"></div>
+      </div>
+
+      <!-- Scene 1 — Ignite -->
+      <div id="s1" class="scene clip" data-start="0" data-duration="3.3" data-track-index="1">
+        <div id="s1glow"></div>
+        <div id="s1line"></div>
+        <div id="s1text">RAGE. RIP. REPEAT.</div>
+        <div id="s1sub">The iron remembers</div>
+      </div>
+
+      <!-- Scene 2 — Wordmark -->
+      <div id="s2" class="scene clip" data-start="3.0" data-duration="3.3" data-track-index="2">
+        <div id="s2glow"></div>
+        <div id="wordmark" class="wordmark">TRACK<span class="god">GOD</span></div>
+        <div id="underline" class="underline"></div>
+        <div id="subtitle">Hardcore gym tracker. 100% offline.</div>
+      </div>
+
+      <!-- Scene 3 — The Altar -->
+      <div id="s3" class="scene clip" data-start="6.0" data-duration="3.9" data-track-index="3">
+        <div id="altarLabel" class="label">THE ALTAR AWAITS</div>
+        <div id="ritualCard" class="card">
+          <div class="tag">WEEKLY RITUAL</div>
+          <div class="name">Heavy Back &amp; Traps</div>
+          <div class="meta">6 EXERCISES</div>
+        </div>
+        <div id="streakWrap">
+          <div id="streakNum">0</div>
+          <div>
+            <div id="streakUnit">DAY STREAK</div>
+            <div id="streakCap" class="label">RAGE UNBROKEN</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scene 4 — Live session -->
+      <div id="s4" class="scene clip" data-start="9.6" data-duration="4.4" data-track-index="4">
+        <div id="prGlow"></div>
+        <div id="sessionCard" class="card">
+          <div class="sessHead">
+            <div class="exName">Barbell Squat</div>
+            <div class="liveTag"><span id="liveDot"></span>LIVE</div>
+          </div>
+          <div class="timer">42:18</div>
+          <div id="setRow1" class="setRow">
+            <div class="setNo">SET 4</div>
+            <div class="setWeight">100kg &times; 5</div>
+            <div class="chip">RPE 8</div>
+            <div class="chip">RIR 2</div>
+            <div class="check">&#10003;</div>
+          </div>
+          <div id="setRow2" class="setRow">
+            <div class="setNo">SET 5</div>
+            <div class="setWeight">110kg &times; 3</div>
+            <div class="chip">RPE 9</div>
+            <div class="chip">RIR 1</div>
+            <div class="check">&#10003;</div>
+          </div>
+        </div>
+        <div id="prBadge">
+          <div class="pr">NEW PR</div>
+          <div class="prSub">110KG &times; 3</div>
+        </div>
+      </div>
+
+      <!-- Scene 5 — Feature cards -->
+      <div id="s5" class="scene clip" data-start="13.9" data-duration="4.1" data-track-index="5">
+        <div id="featStack">
+          <div id="card1" class="feat card">
+            <div class="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FFB4A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+                <line x1="7" y1="12" x2="17" y2="12"/>
+              </svg>
+            </div>
+            <div>
+              <div class="ft">OCR Machine Scan</div>
+              <div class="fd">Scan a gym machine label, auto-pick the exercise.</div>
+            </div>
+          </div>
+          <div id="card2" class="feat card">
+            <div class="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FFB4A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 17 9 11 13 15 21 7"/>
+                <polyline points="15 7 21 7 21 13"/>
+              </svg>
+            </div>
+            <div>
+              <div class="ft">Live PR Detection</div>
+              <div class="fd">Know the moment you beat your best.</div>
+            </div>
+          </div>
+          <div id="card3" class="feat card">
+            <div class="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FFB4A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+            </div>
+            <div style="flex:1">
+              <div class="ft">Workout Heatmap</div>
+              <div class="fd">Every session, mapped in blood.</div>
+              <div id="heatmap" class="heatmap"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scene 6 — Outro -->
+      <div id="s6" class="scene clip" data-start="17.7" data-duration="2.3" data-track-index="6">
+        <div id="s6glow"></div>
+        <div id="privacyLine">NO INTERNET<br />PERMISSION</div>
+        <div id="outroWord" class="wordmark" style="display:none">TRACK<span class="god">GOD</span></div>
+        <div id="outroUnderline" class="underline" style="display:none"></div>
+        <div id="outroTag" style="display:none">Just iron.</div>
+      </div>
+
+      <!-- ===== Audio ===== -->
+      <audio id="music" data-start="0" data-duration="20" data-track-index="10" data-volume="0.30"
+             src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3"></audio>
+      <audio id="sfxIgnite" data-start="0.1" data-duration="1.4" data-track-index="11" data-volume="0.70"
+             src="assets/sfx/impact/impactMetal_heavy_000.ogg"></audio>
+      <audio id="sfxWord" data-start="3.25" data-duration="2.0" data-track-index="12" data-volume="0.70"
+             src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
+      <audio id="sfxCard" data-start="6.5" data-duration="1.2" data-track-index="13" data-volume="0.58"
+             src="assets/sfx/interface/drop_002.ogg"></audio>
+      <audio id="sfxSet1" data-start="10.3" data-duration="0.6" data-track-index="14" data-volume="0.60"
+             src="assets/sfx/interface/click_001.ogg"></audio>
+      <audio id="sfxSet2" data-start="11.2" data-duration="0.6" data-track-index="15" data-volume="0.55"
+             src="assets/sfx/interface/click_001.ogg"></audio>
+      <!-- beat-locked: 13.11s (strongCue 0.98) -->
+      <audio id="sfxPR" data-start="13.11" data-duration="1.6" data-track-index="16" data-volume="0.78"
+             src="assets/sfx/impact/impactPlate_heavy_000.ogg"></audio>
+      <!-- beat-grid: card 1 14.20s, card 2 15.29s, card 3 16.38s -->
+      <audio id="sfxF1" data-start="14.20" data-duration="0.8" data-track-index="17" data-volume="0.58"
+             src="assets/sfx/interface/drop_001.ogg"></audio>
+      <audio id="sfxF2" data-start="15.29" data-duration="0.8" data-track-index="18" data-volume="0.58"
+             src="assets/sfx/interface/drop_001.ogg"></audio>
+      <audio id="sfxF3" data-start="16.38" data-duration="0.8" data-track-index="19" data-volume="0.58"
+             src="assets/sfx/interface/drop_001.ogg"></audio>
+      <!-- beat-locked: 18.56s (strongCue 0.99) -->
+      <audio id="sfxOutro" data-start="18.56" data-duration="2.0" data-track-index="20" data-volume="0.75"
+             src="assets/sfx/impact/impactBell_heavy_003.ogg"></audio>
+    </div>
+
+    <script>
+      // Build deterministic blood-red heatmap (no Math.random — fixed intensity pattern)
+      (function () {
+        var grid = document.getElementById("heatmap");
+        if (!grid) return;
+        var pat = [
+          0,1,0,2,3,1,0,1,2,0,1,3,2,1,
+          1,2,3,1,0,2,1,3,2,1,0,1,2,3,
+          0,1,2,3,2,1,0,2,3,1,2,0,1,2,
+          2,3,1,0,1,2,3,1,0,2,1,3,2,1,
+        ];
+        var alpha = [0.06, 0.28, 0.55, 0.9];
+        for (var i = 0; i < pat.length; i++) {
+          var s = document.createElement("span");
+          var lvl = pat[i];
+          s.style.background = "rgba(255,144,127," + alpha[lvl] + ")";
+          if (lvl >= 2) s.style.boxShadow = "0 0 8px rgba(255,144,127,0.5)";
+          grid.appendChild(s);
+        }
+      })();
+
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      // Initial scene states
+      gsap.set(["#s1", "#s2", "#s3", "#s4", "#s5", "#s6"], { opacity: 0 });
+
+      /* ===== Scene 1 — Ignite (0–3.3) ===== */
+      gsap.set("#s1glow", { opacity: 0, scale: 0.6 });
+      gsap.set("#s1line", { scaleX: 0, transformOrigin: "50% 50%" });
+      gsap.set("#s1text", { opacity: 0, y: 14, letterSpacing: "26px" });
+      gsap.set("#s1sub", { opacity: 0, y: 10 });
+      tl.to("#s1", { opacity: 1, duration: 0.35 }, 0);
+      tl.to("#s1glow", { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" }, 0.1);
+      tl.to("#s1line", { scaleX: 1, duration: 0.5, ease: "power3.out" }, 0.15);
+      tl.to("#s1text", { opacity: 1, y: 0, letterSpacing: "10px", duration: 0.5, ease: "power3.out" }, 0.5);
+      tl.to("#s1sub", { opacity: 1, y: 0, duration: 0.45 }, 0.95);
+      tl.to("#s1glow", { opacity: 0.7, scale: 1.05, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0.8);
+      tl.to("#s1", { opacity: 0, duration: 0.3 }, 3.0);
+
+      /* ===== Scene 2 — Wordmark (3.0–6.3) ===== */
+      gsap.set("#s2glow", { opacity: 0, scale: 0.8 });
+      gsap.set("#wordmark", { opacity: 0, y: -55, scale: 1.06 });
+      gsap.set("#underline", { scaleX: 0, transformOrigin: "50% 50%" });
+      gsap.set("#subtitle", { opacity: 0, y: 14 });
+      tl.to("#s2", { opacity: 1, duration: 0.3 }, 3.0);
+      tl.to("#s2glow", { opacity: 1, scale: 1, duration: 0.7, ease: "power2.out" }, 3.1);
+      // beat ~3.27 — wordmark drop
+      tl.to("#wordmark", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" }, 3.25);
+      tl.to("#underline", { scaleX: 1, duration: 0.4, ease: "power3.out" }, 3.7);
+      tl.to("#subtitle", { opacity: 1, y: 0, duration: 0.45 }, 4.0);
+      tl.to("#s2glow", { opacity: 0.6, scale: 1.04, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.2);
+      tl.to("#s2", { opacity: 0, duration: 0.3 }, 6.0);
+
+      /* ===== Scene 3 — The Altar (6.0–9.9) ===== */
+      gsap.set("#altarLabel", { opacity: 0, y: -12 });
+      gsap.set("#ritualCard", { opacity: 0, x: 70 });
+      gsap.set("#streakWrap", { opacity: 0, y: 24 });
+      var streak = { v: 0 };
+      tl.to("#s3", { opacity: 1, duration: 0.3 }, 6.0);
+      tl.to("#altarLabel", { opacity: 1, y: 0, duration: 0.4 }, 6.25);
+      tl.to("#ritualCard", { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 6.55);
+      tl.to("#streakWrap", { opacity: 1, y: 0, duration: 0.4 }, 6.95);
+      tl.to(streak, {
+        v: 12, duration: 1.5, ease: "power1.out",
+        onUpdate: function () {
+          document.getElementById("streakNum").textContent = Math.round(streak.v);
+        },
+      }, 7.0);
+      tl.to("#s3", { opacity: 0, duration: 0.35 }, 9.5);
+
+      /* ===== Scene 4 — Live session (9.6–14.0) ===== */
+      gsap.set("#sessionCard", { opacity: 0, y: 34 });
+      gsap.set("#setRow1", { opacity: 0, x: -34 });
+      gsap.set("#setRow2", { opacity: 0, x: -34 });
+      gsap.set("#prBadge", { opacity: 0, scale: 1.5 });
+      gsap.set("#prGlow", { opacity: 0, scale: 0.7 });
+      tl.to("#s4", { opacity: 1, duration: 0.35 }, 9.6);
+      tl.to("#sessionCard", { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 9.7);
+      // LIVE dot pulse
+      tl.to("#liveDot", { opacity: 0.2, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 7 }, 9.9);
+      tl.to("#setRow1", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 10.3);
+      tl.to("#setRow2", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 11.2);
+      // beat-locked: 13.11s — NEW PR slam
+      tl.to("#prGlow", { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }, 13.0);
+      tl.to("#prBadge", { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, 13.11);
+      tl.to("#prGlow", { opacity: 0.6, scale: 1.06, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 13.5);
+      tl.to("#s4", { opacity: 0, duration: 0.3 }, 13.7);
+
+      /* ===== Scene 5 — Feature cards (13.9–18.0) ===== */
+      gsap.set("#card1", { opacity: 0, y: 44 });
+      gsap.set("#card2", { opacity: 0, y: 44 });
+      gsap.set("#card3", { opacity: 0, y: 44 });
+      tl.to("#s5", { opacity: 1, duration: 0.35 }, 13.9);
+      // beat-grid: 14.20 / 15.29 / 16.38
+      tl.to("#card1", { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 14.2);
+      tl.to("#card2", { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 15.29);
+      tl.to("#card3", { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 16.38);
+      tl.to("#s5", { opacity: 0, duration: 0.3 }, 17.7);
+
+      /* ===== Scene 6 — Outro (17.7–20.0) ===== */
+      gsap.set("#s6glow", { opacity: 0, scale: 0.85 });
+      gsap.set("#privacyLine", { opacity: 0, scale: 0.96 });
+      tl.to("#s6", { opacity: 1, duration: 0.3 }, 17.7);
+      tl.to("#s6glow", { opacity: 1, scale: 1, duration: 0.8, ease: "power2.out" }, 17.75);
+      tl.to("#privacyLine", { opacity: 1, scale: 1, duration: 0.4, ease: "power3.out" }, 17.85);
+      tl.to("#privacyLine", { opacity: 0, duration: 0.25 }, 18.4);
+      // swap to wordmark outro
+      tl.set("#privacyLine", { display: "none" }, 18.5);
+      tl.set(["#outroWord", "#outroUnderline", "#outroTag"], { display: "block" }, 18.5);
+      gsap.set("#outroWord", { opacity: 0, y: -34 });
+      gsap.set("#outroUnderline", { scaleX: 0, transformOrigin: "50% 50%" });
+      gsap.set("#outroTag", { opacity: 0, y: 12 });
+      // beat-locked: 18.56s — final wordmark
+      tl.to("#outroWord", { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 18.56);
+      tl.to("#outroUnderline", { scaleX: 1, duration: 0.4, ease: "power3.out" }, 18.95);
+      tl.to("#outroTag", { opacity: 1, y: 0, duration: 0.4 }, 19.15);
+      tl.to("#s6glow", { opacity: 0.65, scale: 1.05, duration: 0.7, ease: "sine.inOut" }, 19.2);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

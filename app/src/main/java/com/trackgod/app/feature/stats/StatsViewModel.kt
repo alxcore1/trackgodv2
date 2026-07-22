@@ -2,7 +2,9 @@ package com.trackgod.app.feature.stats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.trackgod.app.core.repository.BodyMetricRepository
 import com.trackgod.app.core.repository.SettingsRepository
+import com.trackgod.app.core.repository.UserRepository
 import com.trackgod.app.core.repository.WorkoutRepository
 import com.trackgod.app.core.util.calculateStreak
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,42 +23,59 @@ import javax.inject.Inject
 // -- State & data models ------------------------------------------------------
 
 data class StatsState(
+    val selectedStatsMode: StatsMode = StatsMode.Performance,
+
     // Time range
     val selectedTimeRange: TimeRange = TimeRange.MONTH,
 
     // Volume Progression (bar chart data)
     val volumeByPeriod: List<VolumeDataPoint> = emptyList(),
     val totalVolume: Float = 0f,
+    val volumeInsight: VolumeInsight = VolumeInsight(),
 
     // Muscle Group Distribution (donut chart)
     val muscleGroupVolumes: List<MuscleGroupData> = emptyList(),
+    val muscleGroupInsight: CategoryInsight = CategoryInsight(),
 
     // Personal Records
     val personalRecords: List<PersonalRecordData> = emptyList(),
+    val personalRecordInsight: PersonalRecordInsight = PersonalRecordInsight(),
 
     // Training Heatmap (90 days calendar grid)
     val heatmapData: List<HeatmapDay> = emptyList(),
+    val heatmapInsight: HeatmapInsight = HeatmapInsight(),
 
     // Strength Balance
     val strengthBalance: List<StrengthBalanceData> = emptyList(),
+    val strengthBalanceInsight: CategoryInsight = CategoryInsight(),
 
     // Exercise Frequency (top exercises by usage count)
     val exerciseFrequency: List<ExerciseFrequencyData> = emptyList(),
+    val exerciseFrequencyInsight: ExerciseFrequencyInsight = ExerciseFrequencyInsight(),
 
     // Workout Consistency
     val currentStreak: Int = 0,
     val longestStreak: Int = 0,
     val workoutsPerWeek: List<WeeklyConsistencyData> = emptyList(),
     val totalWorkouts: Int = 0,
+    val hasWorkoutsInSelectedRange: Boolean = false,
+    val rangeEmptyMessage: String = "",
 
     // Exercise Progression (top exercises with chart data)
     val exerciseProgressions: List<ExerciseProgressionData> = emptyList(),
+    val exerciseProgressionInsight: ExerciseProgressionInsight = ExerciseProgressionInsight(),
 
     val weightUnit: String = "kg",
+    val personalDashboard: PersonalDashboardData = PersonalDashboardData(),
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val hasData: Boolean = false,
 )
+
+enum class StatsMode(val label: String) {
+    Performance("PERFORMANCE"),
+    Personal("PERSONAL"),
+}
 
 enum class TimeRange(val label: String, val days: Int) {
     WEEK("WK", 7),
@@ -71,8 +90,19 @@ data class MuscleGroupData(val category: String, val volume: Float, val percenta
 data class PersonalRecordData(val exerciseName: String, val estimated1rm: Float, val weight: Float, val reps: Int)
 data class HeatmapDay(val date: LocalDate, val volume: Float, val intensity: Int)
 data class StrengthBalanceData(val category: String, val volume: Float, val percentage: Float)
-data class ExerciseFrequencyData(val exerciseName: String, val count: Int, val maxCount: Int)
+data class ExerciseFrequencyData(
+    val exerciseName: String,
+    val count: Int,
+    val maxCount: Int,
+    val fullExerciseName: String = exerciseName,
+)
 data class WeeklyConsistencyData(val weekLabel: String, val workoutCount: Int)
+data class VolumeInsight(val total: Float = 0f, val bestLabel: String = "", val bestVolume: Float = 0f, val average: Float = 0f, val deltaPercent: Float? = null)
+data class HeatmapInsight(val activeDays: Int = 0, val bestDayLabel: String = "", val currentWeekActivity: Int = 0)
+data class PersonalRecordInsight(val topExercise: String = "", val topEstimated1rm: Float = 0f, val sourceSet: String = "")
+data class ExerciseProgressionInsight(val current1rm: Float = 0f, val progressionRate: Float = 0f, val bestImprover: String = "", val state: String = "STABLE")
+data class CategoryInsight(val dominantCategory: String = "", val lowestCategory: String = "")
+data class ExerciseFrequencyInsight(val exerciseName: String = "", val count: Int = 0)
 data class ExerciseProgressionData(
     val exerciseName: String,
     val category: String,
@@ -87,6 +117,8 @@ data class ExerciseProgressionData(
 class StatsViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
     private val settingsRepository: SettingsRepository,
+    private val userRepository: UserRepository,
+    private val bodyMetricRepository: BodyMetricRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(StatsState())
@@ -102,6 +134,10 @@ class StatsViewModel @Inject constructor(
     fun onTimeRangeChanged(range: TimeRange) {
         _state.update { it.copy(selectedTimeRange = range, isRefreshing = true) }
         loadAnalytics()
+    }
+
+    fun onStatsModeChanged(mode: StatsMode) {
+        _state.update { it.copy(selectedStatsMode = mode) }
     }
 
     // -- Data loading ---------------------------------------------------------
@@ -127,6 +163,14 @@ class StatsViewModel @Inject constructor(
                 val personalRecords = workoutRepository.getPersonalRecords()
                 val allCompletedWorkouts = workoutRepository.getAllCompletedWorkoutsOnce()
                 val exerciseFrequency = workoutRepository.getExerciseFrequency(startStr, endStr)
+                val profile = userRepository.getProfileOnce()
+                val latestBodyMetric = bodyMetricRepository.getLatest()
+                val personalDashboard = PersonalDashboardCalculator.build(
+                    profile = profile,
+                    latestBodyMetric = latestBodyMetric,
+                    completedWorkouts = allCompletedWorkouts,
+                    today = today,
+                )
 
                 // 1. Volume Progression
                 val volumeDataPoints = buildVolumeProgression(volumeByDate, range, today, startDate)
@@ -159,7 +203,12 @@ class StatsViewModel @Inject constructor(
                 // 6. Exercise Frequency
                 val maxCount = exerciseFrequency.maxOfOrNull { it.count } ?: 1
                 val freqData = exerciseFrequency.map { ef ->
-                    ExerciseFrequencyData(ef.name, ef.count, maxCount)
+                    ExerciseFrequencyData(
+                        exerciseName = shortenExerciseName(ef.name),
+                        count = ef.count,
+                        maxCount = maxCount,
+                        fullExerciseName = ef.name,
+                    )
                 }
 
                 // 7. Exercise Progressions (top 5 by estimated 1RM)
@@ -190,23 +239,34 @@ class StatsViewModel @Inject constructor(
                     val d = runCatching { LocalDate.parse(w.date, DateTimeFormatter.ISO_LOCAL_DATE) }.getOrNull()
                     d != null && !d.isBefore(startDate) && !d.isAfter(today)
                 }
+                val hasWorkoutsInSelectedRange = totalWorkoutsInRange > 0
 
                 _state.update {
                     it.copy(
                         volumeByPeriod = volumeDataPoints,
                         totalVolume = totalVolume,
+                        volumeInsight = buildVolumeInsight(volumeDataPoints),
                         muscleGroupVolumes = muscleGroupData,
+                        muscleGroupInsight = buildCategoryInsight(muscleGroupData.map { it.category to it.percentage }),
                         personalRecords = prData,
+                        personalRecordInsight = buildPersonalRecordInsight(prData),
                         heatmapData = heatmap,
+                        heatmapInsight = buildHeatmapInsight(heatmap, today),
                         strengthBalance = strengthBalance,
+                        strengthBalanceInsight = buildCategoryInsight(strengthBalance.map { it.category to it.percentage }),
                         exerciseFrequency = freqData,
+                        exerciseFrequencyInsight = buildExerciseFrequencyInsight(freqData),
                         currentStreak = currentStreak,
                         longestStreak = longestStreak,
                         workoutsPerWeek = weeklyConsistency,
                         totalWorkouts = totalWorkoutsInRange,
+                        hasWorkoutsInSelectedRange = hasWorkoutsInSelectedRange,
+                        rangeEmptyMessage = buildRangeEmptyMessage(range),
                         isLoading = false,
                         isRefreshing = false,
                         exerciseProgressions = progressions,
+                        exerciseProgressionInsight = buildExerciseProgressionInsight(progressions),
+                        personalDashboard = personalDashboard,
                         hasData = allCompletedWorkouts.isNotEmpty(),
                     )
                 }
@@ -301,6 +361,26 @@ class StatsViewModel @Inject constructor(
         }
     }
 
+    private fun buildVolumeInsight(data: List<VolumeDataPoint>): VolumeInsight {
+        if (data.isEmpty()) return VolumeInsight()
+        val best = data.maxBy { it.volume }
+        val average = data.map { it.volume }.average().toFloat()
+        val last = data.lastOrNull()
+        val previous = data.dropLast(1).lastOrNull()
+        val delta = if (last != null && previous != null && previous.volume > 0f) {
+            ((last.volume - previous.volume) / previous.volume) * 100f
+        } else {
+            null
+        }
+        return VolumeInsight(
+            total = data.sumOf { it.volume.toDouble() }.toFloat(),
+            bestLabel = best.label,
+            bestVolume = best.volume,
+            average = average,
+            deltaPercent = delta,
+        )
+    }
+
     // -- Heatmap --------------------------------------------------------------
 
     private fun buildHeatmap(
@@ -333,6 +413,18 @@ class StatsViewModel @Inject constructor(
             }
             HeatmapDay(day, volume, intensity)
         }
+    }
+
+    private fun buildHeatmapInsight(data: List<HeatmapDay>, today: LocalDate): HeatmapInsight {
+        if (data.isEmpty()) return HeatmapInsight()
+        val best = data.maxBy { it.volume }
+        val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val currentWeekActivity = data.count { !it.date.isBefore(weekStart) && !it.date.isAfter(today) && it.volume > 0f }
+        return HeatmapInsight(
+            activeDays = data.count { it.volume > 0f },
+            bestDayLabel = best.date.format(DateTimeFormatter.ISO_LOCAL_DATE),
+            currentWeekActivity = currentWeekActivity,
+        )
     }
 
     // -- Strength Balance -----------------------------------------------------
@@ -373,6 +465,54 @@ class StatsViewModel @Inject constructor(
             StrengthBalanceData("Core", coreVol, coreVol / total * 100f),
             StrengthBalanceData("Other", otherVol, otherVol / total * 100f),
         ).filter { it.volume > 0f }
+    }
+
+    private fun buildPersonalRecordInsight(data: List<PersonalRecordData>): PersonalRecordInsight {
+        val top = data.maxByOrNull { it.estimated1rm } ?: return PersonalRecordInsight()
+        return PersonalRecordInsight(
+            topExercise = top.exerciseName,
+            topEstimated1rm = top.estimated1rm,
+            sourceSet = "${top.weight} x ${top.reps}",
+        )
+    }
+
+    private fun buildExerciseProgressionInsight(data: List<ExerciseProgressionData>): ExerciseProgressionInsight {
+        val top = data.maxByOrNull { it.progressionRate } ?: return ExerciseProgressionInsight()
+        val state = when {
+            top.progressionRate > 2f -> "UP"
+            top.progressionRate < -2f -> "DOWN"
+            else -> "STABLE"
+        }
+        return ExerciseProgressionInsight(
+            current1rm = top.current1rm,
+            progressionRate = top.progressionRate,
+            bestImprover = top.exerciseName,
+            state = state,
+        )
+    }
+
+    private fun buildCategoryInsight(data: List<Pair<String, Float>>): CategoryInsight {
+        val nonZero = data.filter { it.second > 0f }
+        if (nonZero.isEmpty()) return CategoryInsight()
+        return CategoryInsight(
+            dominantCategory = nonZero.maxBy { it.second }.first,
+            lowestCategory = nonZero.minBy { it.second }.first,
+        )
+    }
+
+    private fun buildExerciseFrequencyInsight(data: List<ExerciseFrequencyData>): ExerciseFrequencyInsight {
+        val top = data.maxByOrNull { it.count } ?: return ExerciseFrequencyInsight()
+        return ExerciseFrequencyInsight(top.exerciseName, top.count)
+    }
+
+    private fun buildRangeEmptyMessage(range: TimeRange): String {
+        return when (range) {
+            TimeRange.WEEK -> "NO WORKOUTS IN LAST 7 DAYS"
+            TimeRange.MONTH -> "NO WORKOUTS IN LAST 30 DAYS"
+            TimeRange.QUARTER -> "NO WORKOUTS IN LAST 90 DAYS"
+            TimeRange.YEAR -> "NO WORKOUTS IN LAST 365 DAYS"
+            TimeRange.ALL -> ""
+        }
     }
 
     // -- Streak calculations --------------------------------------------------

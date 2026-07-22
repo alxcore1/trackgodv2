@@ -101,14 +101,15 @@ fun MyGymScreen(
                 ) {
                     CircularProgressIndicator(color = Blood)
                 }
-            } else
-            BrandPicker(
-                brands = state.brands,
-                onToggleBrand = viewModel::toggleBrand,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = spacing.screenPadding),
-            )
+            } else {
+                BrandPicker(
+                    brands = state.brands,
+                    onToggleBrand = viewModel::toggleBrand,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = spacing.screenPadding),
+                )
+            }
 
             Spacer(modifier = Modifier.height(spacing.md))
         }

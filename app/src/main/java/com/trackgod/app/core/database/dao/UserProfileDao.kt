@@ -21,10 +21,10 @@ interface UserProfileDao {
     @Delete
     suspend fun delete(profile: UserProfileEntity)
 
-    @Query("SELECT * FROM user_profile LIMIT 1")
+    @Query("SELECT * FROM user_profile ORDER BY updated_at DESC, id DESC LIMIT 1")
     fun getProfile(): Flow<UserProfileEntity?>
 
-    @Query("SELECT * FROM user_profile LIMIT 1")
+    @Query("SELECT * FROM user_profile ORDER BY updated_at DESC, id DESC LIMIT 1")
     suspend fun getProfileOnce(): UserProfileEntity?
 
     @Query("SELECT EXISTS(SELECT 1 FROM user_profile LIMIT 1)")

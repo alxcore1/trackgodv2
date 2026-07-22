@@ -1,6 +1,5 @@
 package com.trackgod.app.feature.stats.chart
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -48,6 +45,7 @@ fun ExerciseProgressSection(
 ) {
     if (progressions.isEmpty()) return
 
+    val top = progressions.maxByOrNull { it.progressionRate }
     Column(modifier = modifier.fillMaxWidth()) {
         // Section header
         Row(
@@ -73,6 +71,16 @@ fun ExerciseProgressSection(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "BEST IMPROVER ${top?.exerciseName?.uppercase().orEmpty()} · ${top?.let { rateLabel(it.progressionRate) }.orEmpty()}",
+            color = BloodBright,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 2.sp,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         progressions.forEach { progression ->
             ExerciseProgressCard(
@@ -89,19 +97,19 @@ private fun ExerciseProgressCard(
     data: ExerciseProgressionData,
     weightUnit: String,
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    val rateText = if (data.progressionRate >= 0) "+%.0f%%".format(data.progressionRate)
-    else "%.0f%%".format(data.progressionRate)
+    var selected by remember { mutableStateOf(false) }
+    val rateText = rateLabel(data.progressionRate)
     val rateColor = if (data.progressionRate >= 0) BloodBright else TextTertiary
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
+            .statsTag("stats-progression-card-${statsSlug(data.exerciseName)}")
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-            ) { expanded = !expanded },
+            ) { selected = !selected },
     ) {
         // Header row
         Row(
@@ -142,34 +150,38 @@ private fun ExerciseProgressCard(
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                 )
-                Icon(
-                    imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = null,
-                    tint = TextTertiary,
-                    modifier = Modifier.height(16.dp),
-                )
             }
         }
 
-        // Expandable chart
-        AnimatedVisibility(visible = expanded) {
-            Column {
-                Spacer(modifier = Modifier.height(8.dp))
-                MiniProgressChart(
-                    history = data.history,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp),
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "EST. 1RM OVER TIME",
-                    color = TextTertiary,
-                    fontSize = 8.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
-                )
-            }
+        Spacer(modifier = Modifier.height(8.dp))
+        MiniProgressChart(
+            history = data.history,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(86.dp),
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "EST. 1RM OVER TIME",
+            color = TextTertiary,
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp,
+        )
+        if (selected) {
+            Spacer(modifier = Modifier.height(8.dp))
+            val first = data.history.firstOrNull()
+            val latest = data.history.lastOrNull()
+            DetailPanel(
+                title = "${data.exerciseName.uppercase()} DETAIL",
+                lines = listOf(
+                    "FIRST 1RM ${first?.estimated1rm?.let { "%.0f ${weightUnit.uppercase()}".format(it) } ?: "-"}",
+                    "CURRENT 1RM %.0f ${weightUnit.uppercase()}".format(data.current1rm),
+                    "DELTA $rateText",
+                    "SESSIONS ${data.history.size}",
+                    "LATEST ${latest?.date.orEmpty()}",
+                ),
+            )
         }
     }
 }
@@ -228,4 +240,8 @@ private fun MiniProgressChart(
         val lastY = h - ((values.last() - minVal) / range * h)
         drawCircle(color = BloodBright, radius = 4.dp.toPx(), center = Offset(lastX, lastY))
     }
+}
+
+private fun rateLabel(rate: Float): String {
+    return if (rate >= 0) "+%.0f%%".format(rate) else "%.0f%%".format(rate)
 }

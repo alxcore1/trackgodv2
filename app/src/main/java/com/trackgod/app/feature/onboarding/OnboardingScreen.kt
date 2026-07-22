@@ -1,5 +1,6 @@
 package com.trackgod.app.feature.onboarding
 
+import android.app.DatePickerDialog
 import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.slideInHorizontally
@@ -77,6 +78,7 @@ import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.core.util.ImageCropOverlay
 import com.trackgod.app.core.util.rememberAvatarPickerLauncher
+import java.util.Calendar
 
 @Composable
 fun OnboardingScreen(
@@ -219,10 +221,11 @@ fun OnboardingScreen(
                 when (step) {
                     0 -> StepNameAvatar(state, viewModel, onPickAvatar = { launchPicker() })
                     1 -> StepGender(state, viewModel)
-                    2 -> StepHeightWeight(state, viewModel)
-                    3 -> StepUnits(state, viewModel)
-                    4 -> StepObjective(state, viewModel)
-                    5 -> StepExperience(state, viewModel)
+                    2 -> StepBirthday(state, viewModel)
+                    3 -> StepHeightWeight(state, viewModel)
+                    4 -> StepUnits(state, viewModel)
+                    5 -> StepObjective(state, viewModel)
+                    6 -> StepExperience(state, viewModel)
                 }
             }
         }
@@ -427,7 +430,86 @@ private fun GenderCard(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Step 2: Height + Weight
+// Step 2: Birthday
+// ═══════════════════════════════════════════════════════════════════════════════
+
+@Composable
+private fun StepBirthday(
+    state: OnboardingState,
+    viewModel: OnboardingViewModel,
+) {
+    val context = LocalContext.current
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Text(
+        text = "PERSONAL BASELINE",
+        style = MaterialTheme.typography.labelLarge,
+        color = TextTertiary,
+        letterSpacing = 3.sp,
+    )
+
+    Spacer(modifier = Modifier.height(24.dp))
+
+    Text(
+        text = "BIRTHDAY",
+        style = MaterialTheme.typography.labelMedium,
+        color = TextTertiary,
+        letterSpacing = 3.sp,
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .background(SurfaceLow, RectangleShape)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+            ) {
+                val cal = Calendar.getInstance()
+                if (!state.birthday.isNullOrBlank()) {
+                    runCatching {
+                        val parts = state.birthday.split("-")
+                        cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
+                    }
+                } else {
+                    cal.add(Calendar.YEAR, -25)
+                }
+                DatePickerDialog(
+                    context,
+                    { _, year, month, day ->
+                        viewModel.updateBirthday("%04d-%02d-%02d".format(year, month + 1, day))
+                    },
+                    cal.get(Calendar.YEAR),
+                    cal.get(Calendar.MONTH),
+                    cal.get(Calendar.DAY_OF_MONTH),
+                ).show()
+            }
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        Text(
+            text = state.birthday ?: "TAP TO SELECT",
+            style = MaterialTheme.typography.titleMedium,
+            color = if (state.birthday.isNullOrBlank()) TextTertiary else TextPrimary,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 2.sp,
+        )
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Text(
+        text = "Used only for age-based personal estimates.",
+        style = MaterialTheme.typography.bodyMedium,
+        color = TextTertiary,
+    )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Step 3: Height + Weight
 // ═══════════════════════════════════════════════════════════════════════════════
 
 @Composable

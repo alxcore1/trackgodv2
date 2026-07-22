@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 data class OnboardingState(
     val currentStep: Int = 0,
-    val totalSteps: Int = 6,
+    val totalSteps: Int = 7,
     // Form data
     val name: String = "",
     val avatarUri: String? = null,
@@ -60,6 +60,11 @@ class OnboardingViewModel @Inject constructor(
 
     fun updateGender(gender: String) {
         _state.update { it.copy(gender = gender) }
+        updateCanProceed()
+    }
+
+    fun updateBirthday(birthday: String) {
+        _state.update { it.copy(birthday = birthday) }
         updateCanProceed()
     }
 
@@ -163,14 +168,15 @@ class OnboardingViewModel @Inject constructor(
         val canProceed = when (s.currentStep) {
             0 -> s.name.isNotBlank()
             1 -> s.gender != null
-            2 -> {
+            2 -> !s.birthday.isNullOrBlank()
+            3 -> {
                 val h = s.height.replace(",", ".").toFloatOrNull()
                 val w = s.weight.replace(",", ".").toFloatOrNull()
                 h != null && h > 0 && w != null && w > 0
             }
-            3 -> true // Units step -- always valid (has defaults)
-            4 -> s.primaryObjective != null
-            5 -> s.experienceLevel.isNotBlank() && s.weeklyTarget in 1..7
+            4 -> true // Units step -- always valid (has defaults)
+            5 -> s.primaryObjective != null
+            6 -> s.experienceLevel.isNotBlank() && s.weeklyTarget in 1..7
             else -> false
         }
         _state.update { it.copy(canProceed = canProceed) }
