@@ -1,141 +1,155 @@
 package com.trackgod.app.feature.stats.chart
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.trackgod.app.feature.stats.VolumeDataPoint
-import com.trackgod.app.ui.theme.Blood
-import com.trackgod.app.ui.theme.SurfaceHighest
-import com.trackgod.app.ui.theme.TextPrimary
+import com.trackgod.app.feature.stats.VolumeInsight
 import com.trackgod.app.ui.theme.TextTertiary
 
-/**
- * Custom Canvas bar chart for volume progression.
- *
- * Draws red vertical bars proportional to volume, with x-axis labels below.
- * No grid lines, no decorations -- minimal industrial style.
- */
 @Composable
 fun VolumeChart(
     data: List<VolumeDataPoint>,
+    insight: VolumeInsight = VolumeInsight(),
     modifier: Modifier = Modifier,
 ) {
     if (data.isEmpty()) return
 
-    // Limit data to last 12 points to prevent overbleed on ALL/YEAR
     val displayData = if (data.size > 12) data.takeLast(12) else data
+    val average = insight.average.takeIf { it > 0f } ?: displayData.map { it.volume }.average().toFloat()
+    val bestVolume = insight.bestVolume.takeIf { it > 0f } ?: displayData.maxOf { it.volume }
+    val bestLabel = insight.bestLabel.ifBlank { displayData.maxBy { it.volume }.label }
+    var selected by remember(data) { mutableStateOf<VolumeDataPoint?>(null) }
 
-    Column(modifier = modifier) {
-        // Section title
-        Text(
-            text = "VOLUME PROGRESSION",
-            style = MaterialTheme.typography.labelLarge,
-            color = TextPrimary,
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        val textMeasurer = rememberTextMeasurer()
-        val labelStyle = MaterialTheme.typography.labelSmall.copy(color = TextTertiary)
-
-        Canvas(
+    ChartShell(
+        title = "VOLUME PROGRESSION",
+        summary = "BEST WEEK $bestLabel · AVG ${formatCompact(average)} · ${deltaLabel(insight.deltaPercent)}",
+        modifier = modifier,
+        legend = {
+            LegendRow(
+                listOf(
+                    "VOLUME" to normalChartColor(),
+                    "BEST" to bestChartColor(),
+                    "AVG" to baselineColor(),
+                ),
+            )
+        },
+        detail = selected?.let { point ->
+            {
+                val index = displayData.indexOf(point)
+                val previous = displayData.getOrNull(index - 1)
+                val delta = if (previous != null && previous.volume > 0f) {
+                    ((point.volume - previous.volume) / previous.volume) * 100f
+                } else {
+                    null
+                }
+                DetailPanel(
+                    title = "${point.label} DETAIL",
+                    lines = listOf(
+                        "VOLUME ${formatCompact(point.volume)}",
+                        "PREVIOUS ${deltaLabel(delta)}",
+                        if (point.volume >= average) "ABOVE AVERAGE" else "BELOW AVERAGE",
+                    ),
+                )
+            }
+        },
+    ) {
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(160.dp),
+                .height(172.dp),
         ) {
-            val maxVolume = displayData.maxOf { it.volume }.coerceAtLeast(1f)
-            val barCount = displayData.size
-            val totalWidth = size.width
-            val chartHeight = size.height - 24.dp.toPx()
-            val barSpacing = if (barCount > 20) 1.dp.toPx() else 4.dp.toPx()
-            val barWidth = ((totalWidth - barSpacing * (barCount + 1)) / barCount)
-                .coerceAtLeast(2.dp.toPx())
-
-            // Show labels only every Nth bar to prevent overlap
-            val labelEvery = when {
-                barCount <= 8 -> 1
-                barCount <= 16 -> 2
-                barCount <= 30 -> 4
-                else -> (barCount / 8).coerceAtLeast(3)
-            }
-
-            displayData.forEachIndexed { index, point ->
-                val barHeight = if (maxVolume > 0f) {
-                    (point.volume / maxVolume) * chartHeight
-                } else {
-                    0f
-                }
-
-                val x = barSpacing + index * (barWidth + barSpacing)
-                val y = chartHeight - barHeight
-
-                // Bar
-                if (barHeight > 0f) {
-                    drawRect(
-                        color = Blood,
-                        topLeft = Offset(x, y),
-                        size = Size(barWidth, barHeight),
-                    )
-                } else {
-                    drawRect(
-                        color = SurfaceHighest,
-                        topLeft = Offset(x, chartHeight - 2.dp.toPx()),
-                        size = Size(barWidth, 2.dp.toPx()),
-                    )
-                }
-
-                // X-axis label (skip some to prevent overlap)
-                if (index % labelEvery == 0 || index == barCount - 1) {
-                    drawLabel(
-                        textMeasurer = textMeasurer,
-                        text = point.label,
-                        style = labelStyle,
-                        x = x + barWidth / 2,
-                        y = chartHeight + 6.dp.toPx(),
-                        maxWidth = (barWidth + barSpacing) * labelEvery,
-                    )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(baselineColor(), RectangleShape),
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                val maxVolume = displayData.maxOf { it.volume }.coerceAtLeast(1f)
+                displayData.forEach { point ->
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(140.dp)
+                                .semantics {
+                                    contentDescription = "${point.label} volume ${formatCompact(point.volume)}"
+                                }
+                                .statsTag("stats-volume-bar-${point.label}")
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                ) { selected = point },
+                            contentAlignment = Alignment.BottomCenter,
+                        ) {
+                            val fraction = (point.volume / maxVolume).coerceIn(0f, 1f)
+                            val barColor = if (point.volume == bestVolume) bestChartColor() else normalChartColor()
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight(fraction.coerceAtLeast(0.02f))
+                                    .background(if (point.volume > 0f) barColor else baselineColor(), RectangleShape),
+                            )
+                            val avgFraction = (average / maxVolume).coerceIn(0f, 1f)
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .fillMaxWidth()
+                                    .fillMaxHeight(avgFraction)
+                                    .padding(top = 139.dp)
+                                    .background(baselineColor(), RectangleShape),
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = point.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = TextTertiary,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-private fun DrawScope.drawLabel(
-    textMeasurer: TextMeasurer,
-    text: String,
-    style: androidx.compose.ui.text.TextStyle,
-    x: Float,
-    y: Float,
-    maxWidth: Float,
-) {
-    val layoutResult = textMeasurer.measure(
-        text = text,
-        style = style,
-        overflow = TextOverflow.Clip,
-        maxLines = 1,
-        constraints = Constraints(maxWidth = maxWidth.toInt().coerceAtLeast(1)),
-    )
-    val labelX = (x - layoutResult.size.width / 2f).coerceIn(0f, size.width - layoutResult.size.width)
-    drawText(
-        textLayoutResult = layoutResult,
-        topLeft = Offset(
-            x = labelX,
-            y = y,
-        ),
-    )
+private fun deltaLabel(delta: Float?): String {
+    return if (delta == null) "VOLUME BASELINE" else {
+        val direction = if (delta >= 0f) "UP" else "DOWN"
+        "$direction %.0f%%".format(kotlin.math.abs(delta))
+    }
 }

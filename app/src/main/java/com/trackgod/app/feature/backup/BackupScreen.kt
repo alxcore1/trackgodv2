@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trackgod.app.core.database.entity.BackupMetadataEntity
+import com.trackgod.app.core.util.restartAppProcess
 import com.trackgod.app.feature.workout.session.ConfirmationDialog
 import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.MetalTextureBackground
@@ -60,7 +61,6 @@ import com.trackgod.app.ui.theme.Void
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import android.app.Activity
 
 @Composable
 fun BackupScreen(
@@ -131,12 +131,7 @@ fun BackupScreen(
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.dismissRestartDialog()
-                    // Restart the app properly via activity recreation + process kill
-                    val activity = context as? Activity
-                    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-                    intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    context.startActivity(intent)
-                    activity?.finish()
+                    restartAppProcess(context)
                 }) {
                     Text("RESTART", color = Blood)
                 }

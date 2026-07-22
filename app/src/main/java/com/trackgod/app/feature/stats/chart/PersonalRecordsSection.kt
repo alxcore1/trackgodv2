@@ -1,6 +1,8 @@
 package com.trackgod.app.feature.stats.chart
 
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.trackgod.app.feature.stats.PersonalRecordData
@@ -28,11 +34,20 @@ fun PersonalRecordsSection(
 ) {
     if (records.isEmpty()) return
 
+    val top = records.maxBy { it.estimated1rm }
+    var selected by remember(records) { mutableStateOf<PersonalRecordData?>(null) }
     Column(modifier = modifier) {
         Text(
             text = "PERSONAL RECORDS",
             style = MaterialTheme.typography.labelLarge,
             color = TextPrimary,
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = "TOP PR ${top.exerciseName.uppercase()} · EST. 1RM ${formatWeight(top.estimated1rm)} ${weightUnit.uppercase()}",
+            style = MaterialTheme.typography.labelMedium,
+            color = TextTertiary,
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -44,7 +59,13 @@ fun PersonalRecordsSection(
             // Show top 3
             records.take(3).forEach { pr ->
                 TrackGodCard(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .statsTag("stats-pr-card-${statsSlug(pr.exerciseName)}")
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) { selected = pr },
                 ) {
                     // Exercise name (marquee if too long)
                     Text(
@@ -90,6 +111,18 @@ fun PersonalRecordsSection(
             repeat(remaining) {
                 Spacer(modifier = Modifier.weight(1f))
             }
+        }
+
+        selected?.let { pr ->
+            Spacer(modifier = Modifier.height(10.dp))
+            DetailPanel(
+                title = "${pr.exerciseName.uppercase()} DETAIL",
+                lines = listOf(
+                    "EST. 1RM ${formatWeight(pr.estimated1rm)} ${weightUnit.uppercase()}",
+                    "SOURCE SET ${formatWeight(pr.weight)} x ${pr.reps}",
+                    "EXERCISE ${pr.exerciseName.uppercase()}",
+                ),
+            )
         }
     }
 }

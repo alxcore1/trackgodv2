@@ -15,6 +15,7 @@ sealed class Screen(val route: String) {
 
     data object Splash : Screen("splash")
     data object Onboarding : Screen("onboarding")
+    data object OnboardingRestore : Screen("onboarding_restore")
     data object SeedingChoice : Screen("seeding_choice")
     data object V1Import : Screen("v1_import")
 

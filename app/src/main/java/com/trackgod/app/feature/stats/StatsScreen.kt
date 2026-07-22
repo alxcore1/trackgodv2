@@ -10,6 +10,7 @@ import com.trackgod.app.ui.component.TrackGodButton
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -19,10 +20,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -57,12 +60,16 @@ import com.trackgod.app.ui.component.SectionDivider
 import com.trackgod.app.ui.component.TrackGodCard
 import com.trackgod.app.ui.component.TrackGodHeader
 import com.trackgod.app.ui.theme.Blood
-import com.trackgod.app.ui.theme.BloodBright
 import com.trackgod.app.ui.theme.SurfaceHighest
+import com.trackgod.app.ui.theme.SurfaceLow
 import com.trackgod.app.ui.theme.TextPrimary
+import com.trackgod.app.ui.theme.TextSecondary
 import com.trackgod.app.ui.theme.TextTertiary
 import com.trackgod.app.ui.theme.TrackGodTheme
 import com.trackgod.app.ui.theme.screenPadding
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun StatsScreen(
@@ -72,13 +79,15 @@ fun StatsScreen(
 
     StatsContent(
         state = state,
+        onStatsModeChanged = viewModel::onStatsModeChanged,
         onTimeRangeChanged = viewModel::onTimeRangeChanged,
     )
 }
 
 @Composable
-private fun StatsContent(
+internal fun StatsContent(
     state: StatsState,
+    onStatsModeChanged: (StatsMode) -> Unit = {},
     onTimeRangeChanged: (TimeRange) -> Unit = {},
 ) {
     val spacing = TrackGodTheme.spacing
@@ -95,7 +104,7 @@ private fun StatsContent(
         return@MetalTextureBackground
     }
 
-    if (!state.hasData) {
+    if (!state.hasData && state.selectedStatsMode == StatsMode.Performance) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -105,6 +114,13 @@ private fun StatsContent(
             TrackGodHeader()
 
             Spacer(modifier = Modifier.height(spacing.md))
+
+            StatsModeSelector(
+                selected = state.selectedStatsMode,
+                onSelect = onStatsModeChanged,
+            )
+
+            Spacer(modifier = Modifier.height(spacing.lg))
 
             // Hero heading even in empty state
             Text(
@@ -118,7 +134,7 @@ private fun StatsContent(
                 text = "ANALYTICS",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Black,
-                color = BloodBright,
+                color = Blood,
                 maxLines = 1,
             )
 
@@ -164,6 +180,21 @@ private fun StatsContent(
 
         Spacer(modifier = Modifier.height(spacing.md))
 
+        StatsModeSelector(
+            selected = state.selectedStatsMode,
+            onSelect = onStatsModeChanged,
+        )
+
+        Spacer(modifier = Modifier.height(spacing.lg))
+
+        if (state.selectedStatsMode == StatsMode.Personal) {
+            PersonalDashboard(
+                data = state.personalDashboard,
+            )
+            Spacer(modifier = Modifier.height(spacing.xxl))
+            return@Column
+        }
+
         // ── Hero Section ─────────────────────────────────────────────────────
         HeroSection(
             totalVolume = state.totalVolume,
@@ -180,7 +211,44 @@ private fun StatsContent(
 
         Spacer(modifier = Modifier.height(spacing.lg))
 
-        // ── Tools ───────────────────────────────────────────────────────────
+        if (!state.hasWorkoutsInSelectedRange && state.rangeEmptyMessage.isNotBlank()) {
+            RangeEmptyNotice(message = state.rangeEmptyMessage)
+            Spacer(modifier = Modifier.height(spacing.lg))
+        }
+
+        Text(
+            text = "PROGRESS",
+            style = MaterialTheme.typography.labelLarge,
+            color = Blood,
+        )
+        Spacer(modifier = Modifier.height(spacing.md))
+
+        if (state.volumeByPeriod.isNotEmpty()) {
+            TrackGodCard {
+                VolumeChart(
+                    data = state.volumeByPeriod,
+                    insight = state.volumeInsight,
+                )
+            }
+            Spacer(modifier = Modifier.height(spacing.lg))
+        }
+
+        if (state.exerciseProgressions.isNotEmpty()) {
+            ExerciseProgressSection(
+                progressions = state.exerciseProgressions,
+                weightUnit = state.weightUnit,
+            )
+            Spacer(modifier = Modifier.height(spacing.lg))
+        }
+
+        if (state.personalRecords.isNotEmpty()) {
+            PersonalRecordsSection(
+                records = state.personalRecords,
+                weightUnit = state.weightUnit,
+            )
+            Spacer(modifier = Modifier.height(spacing.lg))
+        }
+
         var showOneRepMaxSheet by remember { mutableStateOf(false) }
         TrackGodButton(
             text = "1RM CALCULATOR",
@@ -198,45 +266,40 @@ private fun StatsContent(
 
         Spacer(modifier = Modifier.height(spacing.xl))
 
-        // ── 1. Volume Progression ────────────────────────────────────────────
-        if (state.volumeByPeriod.isNotEmpty()) {
-            TrackGodCard {
-                VolumeChart(
-                    data = state.volumeByPeriod,
-                )
-            }
-            Spacer(modifier = Modifier.height(spacing.lg))
-        }
+        Text(
+            text = "CONSISTENCY",
+            style = MaterialTheme.typography.labelLarge,
+            color = Blood,
+        )
+        Spacer(modifier = Modifier.height(spacing.md))
 
-        // ── 2. Consistency Heatmap ───────────────────────────────────────────
         if (state.heatmapData.isNotEmpty()) {
             TrackGodCard {
                 HeatmapChart(
                     data = state.heatmapData,
+                    insight = state.heatmapInsight,
                 )
             }
             Spacer(modifier = Modifier.height(spacing.lg))
         }
 
-        // ── 3. Personal Records ──────────────────────────────────────────────
-        if (state.personalRecords.isNotEmpty()) {
-            PersonalRecordsSection(
-                records = state.personalRecords,
-                weightUnit = state.weightUnit,
+        TrackGodCard {
+            ConsistencySection(
+                currentStreak = state.currentStreak,
+                longestStreak = state.longestStreak,
+                workoutsPerWeek = state.workoutsPerWeek,
             )
-            Spacer(modifier = Modifier.height(spacing.lg))
         }
 
-        // ── 3b. Exercise Progression Charts ─────────────────────────────────
-        if (state.exerciseProgressions.isNotEmpty()) {
-            ExerciseProgressSection(
-                progressions = state.exerciseProgressions,
-                weightUnit = state.weightUnit,
-            )
-            Spacer(modifier = Modifier.height(spacing.lg))
-        }
+        Spacer(modifier = Modifier.height(spacing.xl))
 
-        // ── 4. Strength Balance ──────────────────────────────────────────────
+        Text(
+            text = "BALANCE",
+            style = MaterialTheme.typography.labelLarge,
+            color = Blood,
+        )
+        Spacer(modifier = Modifier.height(spacing.md))
+
         if (state.strengthBalance.isNotEmpty()) {
             TrackGodCard {
                 StrengthBalanceSection(
@@ -246,7 +309,6 @@ private fun StatsContent(
             Spacer(modifier = Modifier.height(spacing.lg))
         }
 
-        // ── 5. Muscle Load Distribution ──────────────────────────────────────
         if (state.muscleGroupVolumes.isNotEmpty()) {
             TrackGodCard {
                 MuscleGroupChart(
@@ -256,7 +318,6 @@ private fun StatsContent(
             Spacer(modifier = Modifier.height(spacing.lg))
         }
 
-        // ── 6. Exercise Frequency ────────────────────────────────────────────
         if (state.exerciseFrequency.isNotEmpty()) {
             TrackGodCard {
                 ExerciseFrequencySection(
@@ -266,21 +327,335 @@ private fun StatsContent(
             Spacer(modifier = Modifier.height(spacing.lg))
         }
 
-        // ── 7. Consistency ───────────────────────────────────────────────────
-        TrackGodCard {
-            ConsistencySection(
-                currentStreak = state.currentStreak,
-                longestStreak = state.longestStreak,
-                workoutsPerWeek = state.workoutsPerWeek,
-            )
-        }
-
         // Bottom padding for nav bar clearance
         Spacer(modifier = Modifier.height(spacing.xxl))
         } // inner scrollable Column
     } // outer Column with progress bar
     } // MetalTextureBackground
 }
+
+@Composable
+private fun RangeEmptyNotice(message: String) {
+    TrackGodCard {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Black,
+                color = Blood,
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = "SWITCH TO ALL TO REVIEW HISTORICAL TRAINING",
+            style = MaterialTheme.typography.labelMedium,
+            color = TextTertiary,
+        )
+    }
+}
+
+@Composable
+private fun StatsModeSelector(
+    selected: StatsMode,
+    onSelect: (StatsMode) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        StatsMode.entries.forEach { mode ->
+            TimeRangeChip(
+                label = mode.label,
+                isActive = mode == selected,
+                onClick = { onSelect(mode) },
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PersonalDashboard(data: PersonalDashboardData) {
+    val spacing = TrackGodTheme.spacing
+
+    Text(
+        text = "PERSONAL DASHBOARD",
+        style = MaterialTheme.typography.titleLarge,
+        color = TextPrimary,
+        fontWeight = FontWeight.Black,
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Text(
+        text = "PROFILE SIGNALS :: 90 DAY HABITS",
+        style = MaterialTheme.typography.labelSmall,
+        color = TextTertiary,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+    Spacer(modifier = Modifier.height(spacing.lg))
+
+    PersonalSnapshot(
+        recommendedKcal = data.recommendedKcal,
+        currentWeight = data.currentWeight,
+        targetAdherence = data.targetAdherence,
+    )
+
+    Spacer(modifier = Modifier.height(spacing.md))
+
+    PersonalMetricSection(
+        title = "BODY",
+        metrics = listOf(
+            data.currentWeight,
+            data.lastWeighIn,
+            data.age,
+            data.objective,
+            data.appTenure,
+        ),
+    )
+
+    Spacer(modifier = Modifier.height(spacing.md))
+
+    PersonalMetricSection(
+        title = "NUTRITION",
+        metrics = listOf(
+            data.recommendedKcal,
+            data.maintenanceKcal,
+            data.targetAdherence,
+        ),
+    )
+
+    Spacer(modifier = Modifier.height(spacing.md))
+
+    PersonalMetricSection(
+        title = "TRAINING RHYTHM",
+        metrics = listOf(
+            data.averageWorkoutsPerWeek,
+            data.favoriteWeekday,
+            data.favoriteTimeWindow,
+            data.averageSessionDuration.copy(
+                title = "SESSION / REST",
+                detail = "REST GAP: ${data.longestRestGap.value}",
+            ),
+        ),
+    )
+}
+
+@Composable
+private fun PersonalSnapshot(
+    recommendedKcal: PersonalMetricCardData,
+    currentWeight: PersonalMetricCardData,
+    targetAdherence: PersonalMetricCardData,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(SurfaceLow, RectangleShape)
+            .border(1.dp, Blood.copy(alpha = 0.42f), RectangleShape)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top,
+        ) {
+            SnapshotMetric(
+                data = recommendedKcal,
+                modifier = Modifier.weight(1f),
+                isPrimary = true,
+            )
+            Box(
+                modifier = Modifier
+                    .padding(start = 12.dp, top = 3.dp)
+                    .height(42.dp)
+                    .width(2.dp)
+                    .background(Blood, RectangleShape),
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SnapshotMetric(
+                data = currentWeight,
+                modifier = Modifier.weight(1f),
+            )
+            SnapshotMetric(
+                data = targetAdherence,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun SnapshotMetric(
+    data: PersonalMetricCardData,
+    modifier: Modifier = Modifier,
+    isPrimary: Boolean = false,
+) {
+    val display = data.toPersonalDisplay()
+    Column(modifier = modifier) {
+        Text(
+            text = display.title,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isPrimary) Blood else TextTertiary,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Spacer(modifier = Modifier.height(if (isPrimary) 6.dp else 4.dp))
+        Text(
+            text = display.value,
+            style = when {
+                data.isLocked -> MaterialTheme.typography.labelMedium
+                isPrimary -> MaterialTheme.typography.headlineMedium
+                else -> MaterialTheme.typography.titleLarge
+            },
+            fontWeight = FontWeight.Black,
+            color = if (data.isLocked) TextSecondary else TextPrimary,
+            maxLines = if (data.isLocked) 2 else 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (display.detail.isNotBlank()) {
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = display.detail,
+                style = MaterialTheme.typography.labelSmall,
+                color = TextTertiary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun PersonalMetricSection(
+    title: String,
+    metrics: List<PersonalMetricCardData>,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(SurfaceLow.copy(alpha = 0.58f), RectangleShape)
+            .border(1.dp, TextTertiary.copy(alpha = 0.12f), RectangleShape)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelMedium,
+            color = Blood,
+            fontWeight = FontWeight.Black,
+            maxLines = 1,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        metrics.forEachIndexed { index, metric ->
+            PersonalMetricRow(data = metric)
+            if (index != metrics.lastIndex) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(TextTertiary.copy(alpha = 0.1f), RectangleShape),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PersonalMetricRow(data: PersonalMetricCardData) {
+    val display = data.toPersonalDisplay()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(58.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(modifier = Modifier.weight(0.44f)) {
+            Text(
+                text = display.title,
+                style = MaterialTheme.typography.labelSmall,
+                color = TextTertiary,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (display.detail.isNotBlank()) {
+                Text(
+                    text = display.detail,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextTertiary.copy(alpha = 0.74f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        Text(
+            text = display.value,
+            modifier = Modifier.weight(0.56f),
+            style = if (data.isLocked) MaterialTheme.typography.labelMedium else MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Black,
+            color = if (data.isLocked) TextSecondary else TextPrimary,
+            textAlign = TextAlign.End,
+            maxLines = if (data.isLocked) 2 else 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+private data class PersonalMetricDisplay(
+    val title: String,
+    val value: String,
+    val detail: String,
+)
+
+private fun PersonalMetricCardData.toPersonalDisplay(): PersonalMetricDisplay {
+    if (isLocked) {
+        return PersonalMetricDisplay(
+            title = title,
+            value = unlockPrompt(),
+            detail = "",
+        )
+    }
+
+    return when (title) {
+        "AGE" -> PersonalMetricDisplay(title, value.withSuffix("YRS"), detail)
+        "RECOMMENDED KCAL" -> PersonalMetricDisplay(title, value.withSuffix("KCAL"), detail.ifBlank { "DAILY TARGET" })
+        "MAINTENANCE KCAL" -> PersonalMetricDisplay(title, value.withSuffix("KCAL"), "TDEE")
+        "LAST WEIGH-IN" -> PersonalMetricDisplay(title, detail.ifBlank { value }, value.asDisplayDate())
+        else -> PersonalMetricDisplay(title, value, detail.ifBlank { defaultMetricDetail() })
+    }
+}
+
+private fun PersonalMetricCardData.unlockPrompt(): String =
+    when (title) {
+        "AGE" -> "ADD BIRTHDAY TO UNLOCK AGE"
+        "RECOMMENDED KCAL" -> value
+        "MAINTENANCE KCAL" -> value
+        else -> value
+    }
+
+private fun PersonalMetricCardData.defaultMetricDetail(): String =
+    when (title) {
+        "CURRENT WEIGHT" -> "LATEST LOG"
+        "TARGET ADHERENCE" -> "LAST 90 DAYS"
+        "APP TENURE" -> "SINCE JOIN"
+        "OBJECTIVE" -> "ACTIVE GOAL"
+        "AVG WORKOUTS / WEEK" -> "LAST 90 DAYS"
+        "FAVORITE WEEKDAY" -> "LAST 90 DAYS"
+        "FAVORITE TIME" -> "START TIME"
+        else -> ""
+    }
+
+private fun String.withSuffix(suffix: String): String =
+    if (contains(suffix, ignoreCase = true)) this else "$this $suffix"
+
+private fun String.asDisplayDate(): String =
+    runCatching {
+        LocalDate.parse(this).format(DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.US)).uppercase(Locale.US)
+    }.getOrDefault(this)
 
 // ── Hero Section ─────────────────────────────────────────────────────────────
 
@@ -308,7 +683,7 @@ private fun HeroSection(
                     text = "ANALYTICS",
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Black,
-                    color = BloodBright,
+                    color = Blood,
                     maxLines = 1,
                 )
                 Spacer(modifier = Modifier.height(spacing.xs))
@@ -423,6 +798,7 @@ private fun StatsScreenWithDataPreview() {
             state = StatsState(
                 isLoading = false,
                 hasData = true,
+                hasWorkoutsInSelectedRange = true,
                 totalVolume = 142_800f,
                 selectedTimeRange = TimeRange.MONTH,
                 volumeByPeriod = listOf(

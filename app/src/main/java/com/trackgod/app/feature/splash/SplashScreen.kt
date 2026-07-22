@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.trackgod.app.R
+import com.trackgod.app.ui.component.ButtonVariant
 import com.trackgod.app.ui.component.TrackGodButton
 import com.trackgod.app.ui.theme.Blood
 import com.trackgod.app.ui.theme.BloodBright
@@ -65,28 +66,48 @@ import kotlinx.coroutines.launch
 fun SplashScreen(
     onEnter: () -> Unit = {},
     onEnterOnboarding: () -> Unit = {},
+    onRestoreFromBackup: () -> Unit = {},
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
     val isReady by viewModel.isReady.collectAsState()
     val hasProfile by viewModel.hasProfile.collectAsState()
 
+    SplashScreenContent(
+        isReady = isReady,
+        hasProfile = hasProfile,
+        onEnter = onEnter,
+        onEnterOnboarding = onEnterOnboarding,
+        onRestoreFromBackup = onRestoreFromBackup,
+    )
+}
+
+@Composable
+fun SplashScreenContent(
+    isReady: Boolean,
+    hasProfile: Boolean,
+    onEnter: () -> Unit,
+    onEnterOnboarding: () -> Unit,
+    onRestoreFromBackup: () -> Unit,
+    animationsEnabled: Boolean = true,
+) {
     // ── Animation states ─────────────────────────────────────────────────────
 
     // Blockbuster word-by-word (v1 timings: 600ms gap, 500ms fade each)
-    val word1Alpha = remember { Animatable(0f) }
-    val word2Alpha = remember { Animatable(0f) }
-    val word3Alpha = remember { Animatable(0f) }
+    val visibleAlpha = if (animationsEnabled) 0f else 1f
+    val word1Alpha = remember { Animatable(visibleAlpha) }
+    val word2Alpha = remember { Animatable(visibleAlpha) }
+    val word3Alpha = remember { Animatable(visibleAlpha) }
 
     // Cyberpunk init sequence
-    val initAlpha = remember { Animatable(0f) }
-    var initPhase by remember { mutableIntStateOf(0) }
+    val initAlpha = remember { Animatable(visibleAlpha) }
+    var initPhase by remember { mutableIntStateOf(if (animationsEnabled) 0 else 8) }
     var hexLine1 by remember { mutableStateOf("") }
     var hexLine2 by remember { mutableStateOf("") }
-    var initStatus by remember { mutableStateOf("") }
+    var initStatus by remember { mutableStateOf(if (animationsEnabled) "" else "READY") }
 
-    val ctaAlpha = remember { Animatable(0f) }
-    val ctaOffsetY = remember { Animatable(60f) }
-    val footerAlpha = remember { Animatable(0f) }
+    val ctaAlpha = remember { Animatable(visibleAlpha) }
+    val ctaOffsetY = remember { Animatable(if (animationsEnabled) 60f else 0f) }
+    val footerAlpha = remember { Animatable(visibleAlpha) }
 
     // Glitch state
     var glitchActive by remember { mutableStateOf(false) }
@@ -100,6 +121,8 @@ fun SplashScreen(
     }
 
     LaunchedEffect(Unit) {
+        if (!animationsEnabled) return@LaunchedEffect
+
         // v1 timings: words at 1200ms, 1800ms, 2400ms with 500ms fade
         launch {
             delay(1200)
@@ -399,6 +422,30 @@ fun SplashScreen(
                         .fillMaxWidth()
                         .alpha(ctaAlpha.value)
                         .offset { IntOffset(0, ctaOffsetY.value.dp.roundToPx()) },
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                TrackGodButton(
+                    text = "RESTORE FROM BACKUP",
+                    onClick = onRestoreFromBackup,
+                    enabled = isReady && initStatus == "READY",
+                    variant = ButtonVariant.Ghost,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(ctaAlpha.value)
+                        .offset { IntOffset(0, ctaOffsetY.value.dp.roundToPx()) },
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "FULL DATABASE RESTORE :: .DB FILE",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        letterSpacing = 1.sp,
+                    ),
+                    color = TextTertiary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(ctaAlpha.value),
                 )
             }
 

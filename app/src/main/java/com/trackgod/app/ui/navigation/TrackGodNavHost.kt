@@ -31,6 +31,7 @@ import com.trackgod.app.feature.backup.BackupScreen
 import com.trackgod.app.feature.history.EditWorkoutScreen
 import com.trackgod.app.feature.history.HistoryScreen
 import com.trackgod.app.feature.onboarding.OnboardingScreen
+import com.trackgod.app.feature.onboarding.OnboardingRestoreScreen
 import com.trackgod.app.feature.onboarding.SeedingChoiceScreen
 import com.trackgod.app.feature.onboarding.SeedingChoiceViewModel
 import com.trackgod.app.feature.onboarding.V1ImportScreen
@@ -133,10 +134,19 @@ fun TrackGodNavHost() {
                             popUpTo(Screen.Splash.route) { inclusive = true }
                         }
                     },
+                    onRestoreFromBackup = {
+                        navController.navigate(Screen.OnboardingRestore.route)
+                    },
                 )
             }
 
             // ── Onboarding flow ──────────────────────────────────────────────
+            composable(Screen.OnboardingRestore.route) {
+                OnboardingRestoreScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                )
+            }
+
             composable(Screen.Onboarding.route) {
                 OnboardingScreen(
                     onOnboardingComplete = {

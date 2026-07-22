@@ -20,8 +20,20 @@ class UserRepository @Inject constructor(
     suspend fun hasProfile(): Boolean =
         userProfileDao.hasProfile()
 
-    suspend fun createProfile(entity: UserProfileEntity): Long =
-        userProfileDao.insert(entity)
+    suspend fun createProfile(entity: UserProfileEntity): Long {
+        val existing = userProfileDao.getProfileOnce()
+        return if (existing == null) {
+            userProfileDao.insert(entity)
+        } else {
+            userProfileDao.update(
+                entity.copy(
+                    id = existing.id,
+                    createdAt = existing.createdAt,
+                ),
+            )
+            existing.id
+        }
+    }
 
     suspend fun updateProfile(entity: UserProfileEntity) =
         userProfileDao.update(entity)

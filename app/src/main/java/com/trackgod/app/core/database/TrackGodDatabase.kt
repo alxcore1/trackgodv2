@@ -40,6 +40,8 @@ import com.trackgod.app.core.database.entity.WorkoutEntity
 abstract class TrackGodDatabase : RoomDatabase() {
 
     companion object {
+        const val VERSION = 4
+
         val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE exercises ADD COLUMN series TEXT DEFAULT NULL")

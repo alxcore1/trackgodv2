@@ -16,14 +16,14 @@ val releaseProps = Properties().apply {
 
 android {
     namespace = "com.trackgod.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.trackgod.v2"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 6
-        versionName = "2.0.5"
+        targetSdk = 36
+        versionCode = 7
+        versionName = "2.0.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -80,6 +80,11 @@ dependencies {
     implementation(libs.compose.material.icons.extended)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
+    testImplementation(libs.junit)
+    androidTestImplementation(composeBom)
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.rules)
 
     // Room
     implementation(libs.room.runtime)
@@ -90,6 +95,8 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.android.compiler)
 
     // Navigation
     implementation(libs.navigation.compose)

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrackGod · Premium Evolution Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <!--
+    Annahmen:
+    - Evolution statt Rebranding; TrackGod bleibt roh, dunkel und kompromisslos.
+    - Der tägliche Kernweg ist Altar → Session → Satz loggen → Fortschritt prüfen.
+    - Rot trägt Bedeutung: Primäraktion, aktive Navigation, Live-Status.
+    - Mockdaten stammen aus den vorhandenen Projekt-Screenshots.
+
+    Designziel:
+    - weniger visuelle Dauerlautstärke, klarere Hierarchie und ruhigere Flächen
+    - mindestens 44px große Touch-Ziele
+    - wiederverwendbare Typografie- und Spacing-Tokens statt Screen-Sonderwerte
+  -->
+  <style>
+    :root {
+      --void: #131313;
+      --void-deep: #0e0e0e;
+      --surface-low: #1c1b1b;
+      --surface-mid: #201f1f;
+      --surface-high: #2a2a2a;
+      --surface-highest: #353534;
+      --blood: #8b0000;
+      --blood-bright: #ffb4a8;
+      --text-primary: #e5e2e1;
+      --text-secondary: #c8c6c6;
+      --text-tertiary: #bf9d97;
+      --ghost: #5a403c;
+      --screen-gap: 16px;
+      --section-gap: 20px;
+      --label-track: 0.16em;
+      --texture-opacity: 0.035;
+    }
+    * { box-sizing: border-box; }
+    html, body, #root { min-height: 100%; margin: 0; }
+    body {
+      background: #d9d6d2;
+      color: #191817;
+      font-family: "Work Sans", sans-serif;
+      overflow-x: hidden;
+    }
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .prototype-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(300px, 390px) minmax(500px, 1fr);
+      gap: 48px;
+      padding: 36px clamp(24px, 5vw, 80px);
+      align-items: center;
+      background:
+        linear-gradient(90deg, rgba(19,19,19,.045) 1px, transparent 1px),
+        #d9d6d2;
+      background-size: 48px 100%;
+    }
+    .brief-panel { max-width: 390px; }
+    .eyebrow {
+      font: 700 11px/1 "Space Grotesk", sans-serif;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: #6b1b18;
+      margin-bottom: 18px;
+    }
+    .brief-panel h1 {
+      font: 700 clamp(38px, 4vw, 62px)/.93 "Space Grotesk", sans-serif;
+      letter-spacing: -.055em;
+      text-transform: uppercase;
+      margin: 0 0 18px;
+      text-wrap: balance;
+    }
+    .brief-panel > p {
+      max-width: 36ch;
+      font-size: 16px;
+      line-height: 1.55;
+      color: #4f4b47;
+      margin: 0 0 28px;
+      text-wrap: pretty;
+    }
+    .control-block { border-top: 1px solid rgba(25,24,23,.2); padding-top: 18px; margin-top: 18px; }
+    .control-label {
+      font: 700 10px/1 "Space Grotesk", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      color: #6a6560;
+      margin-bottom: 10px;
+    }
+    .segmented { display: flex; flex-wrap: wrap; gap: 6px; }
+    .shell-button {
+      min-height: 44px;
+      padding: 0 14px;
+      border: 1px solid rgba(25,24,23,.22);
+      background: transparent;
+      color: #2f2c29;
+      cursor: pointer;
+      font: 700 11px/1 "Space Grotesk", sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .shell-button.active { background: #191817; color: #f1efec; border-color: #191817; }
+    .mode-copy {
+      min-height: 44px;
+      color: #5e5954;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 10px;
+      max-width: 38ch;
+    }
+    .change-list { margin: 22px 0 0; padding: 0; list-style: none; }
+    .change-list li {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 10px;
+      padding: 12px 0;
+      border-top: 1px solid rgba(25,24,23,.14);
+      color: #4f4b47;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .change-list strong { color: #191817; font-family: "Space Grotesk", sans-serif; }
+    .change-index { color: #8b0000; font: 700 11px/1.4 "Space Grotesk", sans-serif; }
+    .stage { display: flex; justify-content: center; align-items: center; min-width: 0; }
+    .phone-wrap { position: relative; }
+    .flow-hint {
+      position: absolute;
+      top: 22px;
+      right: -154px;
+      width: 134px;
+      font: 700 10px/1.45 "Space Grotesk", sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6a6560;
+    }
+    .flow-hint::before { content: ""; position: absolute; left: -28px; top: 5px; width: 20px; height: 1px; background: #8b0000; }
+
+    /* App design system */
+    .tg-app {
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      position: relative;
+      height: 100%;
+      background: var(--void);
+      color: var(--text-primary);
+      font-family: "Work Sans", sans-serif;
+      overflow: hidden;
+    }
+    .tg-app::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 8;
+      opacity: var(--texture-opacity);
+      background-image:
+        repeating-linear-gradient(112deg, transparent 0 53px, rgba(255,255,255,.28) 54px, transparent 55px),
+        repeating-linear-gradient(23deg, transparent 0 91px, rgba(255,255,255,.2) 92px, transparent 93px);
+      mix-blend-mode: screen;
+    }
+    .tg-app.mode-compact { --screen-gap: 12px; --section-gap: 14px; --label-track: .12em; }
+    .tg-app.mode-cinematic { --screen-gap: 18px; --section-gap: 24px; --label-track: .2em; --texture-opacity: .065; }
+    .app-screen { height: 100%; display: flex; flex-direction: column; position: relative; z-index: 2; }
+    .app-scroll { flex: 1; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; }
+    .app-scroll::-webkit-scrollbar { display: none; }
+    .app-header {
+      height: 52px;
+      flex: 0 0 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--screen-gap);
+      background: var(--void-deep);
+      border-bottom: 1px solid rgba(90,64,60,.28);
+    }
+    .brand-lockup { display: flex; align-items: center; gap: 9px; }
+    .brand-lockup img { width: 28px; height: 28px; display: block; }
+    .brand-lockup span { font: 700 17px/1 "Space Grotesk", sans-serif; letter-spacing: -.04em; }
+    .header-meta { font: 700 9px/1 "Space Grotesk", sans-serif; letter-spacing: .16em; color: var(--text-tertiary); text-transform: uppercase; }
+    .screen-content { padding: var(--screen-gap); }
+    .micro { font: 700 9px/1.2 "Space Grotesk", sans-serif; letter-spacing: var(--label-track); text-transform: uppercase; color: var(--text-tertiary); }
+    .section-title { font: 700 11px/1.2 "Space Grotesk", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--text-secondary); }
+    .display { font: 700 34px/.95 "Space Grotesk", sans-serif; letter-spacing: -.05em; text-transform: uppercase; }
+    .mode-cinematic .display { font-size: 40px; }
+    .title { font: 700 18px/1.05 "Space Grotesk", sans-serif; letter-spacing: -.025em; text-transform: uppercase; }
+    .body { font-size: 13px; line-height: 1.45; color: var(--text-secondary); }
+    .surface { background: var(--surface-low); }
+    .divider { height: 1px; background: rgba(90,64,60,.35); }
+    .hero-copy { margin: 6px 0 18px; }
+    .hero-copy .micro { margin-bottom: 8px; }
+    .primary-action {
+      width: 100%; min-height: 74px; border: 0; color: var(--text-primary); background: var(--blood);
+      display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; padding: 14px 16px;
+      cursor: pointer; text-align: left; transition: transform 80ms ease, background 120ms ease;
+    }
+    .primary-action:active { transform: scale(.985); background: #690000; }
+    .action-kicker { font: 600 10px/1.2 "Space Grotesk", sans-serif; letter-spacing: .15em; text-transform: uppercase; color: var(--blood-bright); }
+    .action-title { margin-top: 4px; font: 700 20px/1 "Space Grotesk", sans-serif; letter-spacing: -.03em; text-transform: uppercase; }
+    .action-arrow { width: 44px; height: 44px; display: grid; place-items: center; background: var(--text-primary); color: var(--blood); }
+    .weekly { margin-top: var(--section-gap); padding: 14px 0 2px; }
+    .weekly-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+    .weekly-value { font: 700 20px/1 "Space Grotesk", sans-serif; color: var(--blood-bright); }
+    .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .day { min-height: 40px; display: grid; place-items: center; background: var(--surface-low); color: var(--text-tertiary); font: 700 9px/1 "Space Grotesk", sans-serif; }
+    .day.done { background: var(--surface-high); color: var(--text-primary); box-shadow: inset 0 -3px var(--blood); }
+    .metrics { margin-top: var(--section-gap); display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface-low); }
+    .metric { padding: 14px 12px; border-right: 1px solid rgba(90,64,60,.28); }
+    .metric:last-child { border-right: 0; }
+    .metric-value { margin-top: 8px; font: 700 23px/1 "Space Grotesk", sans-serif; letter-spacing: -.04em; }
+    .metric-unit { font-size: 9px; color: var(--text-tertiary); margin-left: 3px; letter-spacing: .08em; }
+    .section-head { display: flex; justify-content: space-between; align-items: center; margin: var(--section-gap) 0 10px; }
+    .text-action { border: 0; background: transparent; color: var(--blood-bright); min-height: 44px; padding: 0 4px; cursor: pointer; font: 700 9px/1 "Space Grotesk", sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+    .workout-row { min-height: 68px; display: grid; grid-template-columns: 42px 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; background: var(--surface-low); margin-bottom: 8px; }
+    .date-block { font: 700 10px/1.1 "Space Grotesk", sans-serif; text-align: center; color: var(--text-tertiary); }
+    .date-block strong { display: block; color: var(--text-primary); font-size: 18px; margin-top: 2px; }
+    .workout-name { font: 700 14px/1.1 "Space Grotesk", sans-serif; text-transform: uppercase; }
+    .workout-meta { margin-top: 5px; font-size: 10px; color: var(--text-tertiary); letter-spacing: .05em; }
+    .workout-volume { text-align: right; font: 700 15px/1 "Space Grotesk", sans-serif; }
+    .workout-volume span { display: block; margin-top: 4px; font-size: 8px; color: var(--text-tertiary); letter-spacing: .12em; }
+    .bottom-nav { height: 62px; flex: 0 0 62px; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--void-deep); border-top: 1px solid rgba(90,64,60,.25); }
+    .nav-item { border: 0; background: transparent; color: rgba(191,157,151,.58); cursor: pointer; min-width: 0; position: relative; display: grid; place-items: center; align-content: center; gap: 4px; }
+    .nav-item.active { color: var(--blood-bright); }
+    .nav-item.active::before { content: ""; position: absolute; top: 0; left: 22%; right: 22%; height: 3px; background: var(--blood); }
+    .nav-item span { font: 700 8px/1 "Space Grotesk", sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+    .icon { width: 20px; height: 20px; display: block; }
+
+    /* Session */
+    .session-bar { height: 56px; flex: 0 0 56px; padding: 0 14px; display: grid; grid-template-columns: 44px 1fr auto; align-items: center; background: var(--void-deep); border-bottom: 1px solid rgba(90,64,60,.28); }
+    .icon-button { width: 44px; height: 44px; border: 0; background: transparent; color: var(--text-secondary); display: grid; place-items: center; cursor: pointer; }
+    .session-title { text-align: center; }
+    .session-title strong { display: block; font: 700 13px/1 "Space Grotesk", sans-serif; letter-spacing: .1em; }
+    .session-time { margin-top: 5px; font: 600 10px/1 "Space Grotesk", sans-serif; letter-spacing: .1em; color: var(--text-tertiary); }
+    .live { display: inline-flex; align-items: center; gap: 6px; }
+    .live::before { content: ""; width: 7px; height: 7px; background: var(--blood); animation: pulse 1.4s infinite; }
+    @keyframes pulse { 50% { opacity: .35; transform: scale(.75); } }
+    .exercise-head { padding: 18px var(--screen-gap) 14px; }
+    .exercise-head .title { max-width: 320px; margin: 7px 0 8px; font-size: 22px; line-height: 1.03; }
+    .mode-compact .exercise-head .title { font-size: 19px; }
+    .suggestion { margin: 0 var(--screen-gap); padding: 11px 12px; background: var(--surface-low); display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; }
+    .suggestion strong { color: var(--blood-bright); font: 700 11px/1.2 "Space Grotesk", sans-serif; letter-spacing: .05em; }
+    .set-builder { padding: 18px var(--screen-gap) 12px; }
+    .number-grid { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 16px; align-items: stretch; }
+    .number-control { text-align: center; }
+    .step-row { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; margin-top: 8px; background: var(--surface-low); }
+    .step-button { width: 48px; height: 56px; border: 0; background: var(--surface-mid); color: var(--blood-bright); font: 500 27px/1 "Space Grotesk", sans-serif; cursor: pointer; }
+    .step-button:active { background: var(--surface-highest); }
+    .number-value { font: 700 28px/1 "Space Grotesk", sans-serif; letter-spacing: -.04em; }
+    .number-value small { display: block; margin-top: 6px; font: 700 8px/1 "Space Grotesk", sans-serif; letter-spacing: .16em; color: var(--text-tertiary); }
+    .builder-divider { background: rgba(90,64,60,.32); }
+    .set-options { margin-top: 14px; display: grid; grid-template-columns: auto 1fr; gap: 8px; }
+    .set-type { min-width: 78px; height: 48px; border: 1px solid rgba(90,64,60,.4); background: transparent; color: var(--text-secondary); cursor: pointer; font: 700 9px/1 "Space Grotesk", sans-serif; letter-spacing: .12em; }
+    .log-button { height: 48px; border: 0; background: var(--blood); color: var(--text-primary); cursor: pointer; font: 700 12px/1 "Space Grotesk", sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+    .log-button.logged { background: var(--text-primary); color: var(--blood); }
+    .set-list { padding: 0 var(--screen-gap) 18px; }
+    .set-row { min-height: 48px; display: grid; grid-template-columns: 36px 1fr auto; gap: 10px; align-items: center; border-top: 1px solid rgba(90,64,60,.28); }
+    .set-index { color: var(--text-tertiary); font: 700 10px/1 "Space Grotesk", sans-serif; }
+    .set-load { font: 700 13px/1 "Space Grotesk", sans-serif; }
+    .set-note { font-size: 10px; color: var(--text-tertiary); }
+    .toast { position: absolute; left: 16px; right: 16px; bottom: 18px; z-index: 20; min-height: 52px; display: flex; align-items: center; justify-content: center; background: var(--text-primary); color: var(--void); font: 700 11px/1 "Space Grotesk", sans-serif; letter-spacing: .12em; animation: toast-in 180ms ease-out; }
+    @keyframes toast-in { from { transform: translateY(12px); opacity: 0; } }
+
+    /* History + stats */
+    .screen-heading { display: flex; align-items: end; justify-content: space-between; padding: 18px var(--screen-gap) 12px; }
+    .screen-heading .display { font-size: 30px; }
+    .period-tabs { margin: 0 var(--screen-gap) 14px; display: grid; grid-template-columns: repeat(3,1fr); background: var(--surface-low); }
+    .period-tabs button { min-height: 44px; border: 0; color: var(--text-tertiary); background: transparent; cursor: pointer; font: 700 9px/1 "Space Grotesk", sans-serif; letter-spacing: .12em; }
+    .period-tabs button.active { background: var(--surface-highest); color: var(--text-primary); box-shadow: inset 0 -3px var(--blood); }
+    .summary-strip { margin: 0 var(--screen-gap) var(--section-gap); display: grid; grid-template-columns: repeat(3,1fr); background: var(--surface-low); }
+    .summary-strip > div { padding: 12px; border-right: 1px solid rgba(90,64,60,.26); }
+    .summary-strip > div:last-child { border-right: 0; }
+    .summary-strip strong { display: block; margin-top: 7px; font: 700 17px/1 "Space Grotesk", sans-serif; }
+    .history-list { padding: 0 var(--screen-gap) 20px; }
+    .history-list .workout-row:first-of-type { box-shadow: inset 3px 0 var(--blood); }
+    .stat-hero { margin: 0 var(--screen-gap); padding: 18px 0 16px; border-top: 1px solid rgba(90,64,60,.34); border-bottom: 1px solid rgba(90,64,60,.34); display: flex; justify-content: space-between; align-items: end; }
+    .stat-hero strong { font: 700 42px/.9 "Space Grotesk", sans-serif; letter-spacing: -.06em; }
+    .stat-hero small { font: 700 9px/1 "Space Grotesk", sans-serif; letter-spacing: .14em; color: var(--text-tertiary); }
+    .chart-card { margin: var(--section-gap) var(--screen-gap) 0; padding: 16px 14px 14px; background: var(--surface-low); }
+    .bar-chart { height: 150px; display: flex; align-items: end; gap: 6px; margin-top: 18px; border-bottom: 1px solid rgba(90,64,60,.36); }
+    .bar { flex: 1; min-width: 0; background: var(--surface-highest); position: relative; transition: height 220ms ease; }
+    .bar.active { background: var(--blood); }
+    .bar span { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font: 700 8px/1 "Space Grotesk", sans-serif; color: var(--text-tertiary); }
+    .heatmap { margin-top: 18px; display: grid; grid-template-columns: repeat(12,1fr); gap: 4px; }
+    .heat-cell { aspect-ratio: 1; background: var(--surface-highest); }
+    .heat-cell.l1 { background: #690000; }
+    .heat-cell.l2 { background: #8b0000; }
+    .heat-cell.l3 { background: #ffb4a8; }
+
+    @media (max-width: 980px) {
+      .prototype-shell { grid-template-columns: 1fr; align-items: start; }
+      .brief-panel { max-width: none; }
+      .stage { justify-content: flex-start; }
+      .flow-hint { display: none; }
+    }
+    @media (max-width: 520px) {
+      .prototype-shell { padding: 24px 12px 40px; gap: 24px; }
+      .stage { width: 100%; height: 752px; overflow: hidden; justify-content: flex-start; }
+      .phone-wrap { transform-origin: top left; transform: scale(.86); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useEffect, useMemo, useState } = React;
+
+    const APP_ICON = "data:image/png;base64,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";
+
+    const iconPaths = {
+      altar: "M12 3l2.2 5.2L20 9l-4 3.8 1.2 5.7L12 16l-5.2 2.5L8 12.8 4 9l5.8-.8L12 3z",
+      history: "M4 12a8 8 0 1 0 2.3-5.7L4 8.6V4h4.6L6.7 5.9A9.5 9.5 0 1 1 2.5 12H4zm7-5h2v5.4l3.4 2-.9 1.6-4.5-2.7V7z",
+      stats: "M4 19h3V9H4v10zm6 0h3V4h-3v15zm6 0h3v-7h-3v7z",
+      profile: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-7 8a7 7 0 0 1 14 0H5z",
+      arrow: "M5 11h11.2l-4.1-4.1L13.5 5l7 7-7 7-1.4-1.9 4.1-4.1H5v-2z",
+      back: "M19 11H7.8l4.1-4.1L10.5 5l-7 7 7 7 1.4-1.9L7.8 13H19v-2z",
+      close: "M6.3 5 5 6.3 10.7 12 5 17.7 6.3 19l5.7-5.7 5.7 5.7 1.3-1.3-5.7-5.7L19 6.3 17.7 5 12 10.7 6.3 5z",
+      search: "M10.5 4a6.5 6.5 0 1 0 3.9 11.7L19 20.3l1.3-1.3-4.6-4.6A6.5 6.5 0 0 0 10.5 4zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9z",
+      spark: "M13 2 5 14h6l-1 8 8-12h-6l1-8z"
+    };
+
+    function Icon({ name, size = 20 }) {
+      return <svg className="icon" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={iconPaths[name]} /></svg>;
+    }
+
+    // Exact starter component from Huashu's Android frame asset.
+    const androidFrameStyles = {
+      wrapper: { display:'inline-block', padding:10, background:'#1a1a1a', borderRadius:44, boxShadow:'0 0 0 2px #2a2a2a, 0 20px 60px rgba(0,0,0,0.3)', position:'relative' },
+      screen: { position:'relative', borderRadius:36, overflow:'hidden', background:'#fff' },
+      statusBar: { position:'absolute', top:0, left:0, right:0, height:32, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 24px', fontSize:14, fontWeight:500, fontFamily:'Roboto, -apple-system, sans-serif', zIndex:20, pointerEvents:'none' },
+      punchHole: { position:'absolute', top:10, left:'50%', transform:'translateX(-50%)', width:14, height:14, background:'#000', borderRadius:'50%', zIndex:30 },
+      statusIcons: { display:'flex', alignItems:'center', gap:6 },
+      batteryText: { fontSize:11, fontWeight:600, marginLeft:2 },
+      content: { position:'absolute', top:32, left:0, right:0, bottom:24, overflow:'auto' },
+      navBar: { position:'absolute', bottom:0, left:0, right:0, height:24, display:'flex', alignItems:'center', justifyContent:'center', gap:60, zIndex:10 },
+      navButton: { width:36, height:4, background:'rgba(0,0,0,0.3)', borderRadius:999 },
+    };
+    function AndroidFrame({ children, width=390, height=844, time='9:41', battery=88, darkMode=true, navStyle='gesture' }) {
+      const textColor = darkMode ? '#fff' : '#1a1a1a';
+      return <div style={androidFrameStyles.wrapper}><div style={{...androidFrameStyles.screen,width,height,background:darkMode?'#000':'#fff'}}>
+        <div style={{...androidFrameStyles.statusBar,color:textColor}}><span>{time}</span><div style={androidFrameStyles.statusIcons}>
+          <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2" height="4" rx="0.5"/><rect x="4" y="4" width="2" height="6" rx="0.5"/><rect x="8" y="2" width="2" height="8" rx="0.5"/><rect x="12" y="0" width="2" height="10" rx="0.5"/></svg>
+          <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M7 9a1 1 0 100-2 1 1 0 000 2z" fill="currentColor"/><path d="M3 6a5 5 0 018 0" stroke="currentColor" strokeWidth="1.2"/><path d="M0.5 3.5a11 11 0 0113 0" stroke="currentColor" strokeWidth="1.2" opacity="0.6"/></svg>
+          <div style={{width:22,height:10,border:'1.5px solid currentColor',borderRadius:2,padding:1,position:'relative'}}><div style={{width:`${battery}%`,height:'100%',background:'currentColor',borderRadius:1}}/></div><span style={androidFrameStyles.batteryText}>{battery}%</span>
+        </div></div><div style={androidFrameStyles.punchHole}/><div style={androidFrameStyles.content}>{children}</div>
+        {navStyle==='gesture'&&<div style={androidFrameStyles.navBar}><div style={{...androidFrameStyles.navButton,width:100,height:4,background:darkMode?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.4)'}}/></div>}
+      </div></div>;
+    }
+
+    const navItems = [
+      { id:'altar', label:'Altar', icon:'altar' },
+      { id:'history', label:'History', icon:'history' },
+      { id:'stats', label:'Stats', icon:'stats' },
+      { id:'profile', label:'Profile', icon:'profile' },
+    ];
+    const workouts = [
+      { day:'25', mon:'MAR', name:'Push', meta:'55 min · 20 sets', volume:'12 859' },
+      { day:'24', mon:'MAR', name:'Back & Arms', meta:'67 min · 24 sets', volume:'14 836' },
+      { day:'21', mon:'MAR', name:'Legs', meta:'52 min · 23 sets', volume:'20 090' },
+      { day:'20', mon:'MAR', name:'Full Body', meta:'58 min · 24 sets', volume:'13 123' },
+    ];
+    function AppHeader({ meta='Offline · Private' }) {
+      return <header className="app-header"><div className="brand-lockup"><img src={APP_ICON} alt="TrackGod logo"/><span>TRACKGOD</span></div><div className="header-meta">{meta}</div></header>;
+    }
+    function BottomNav({ screen, onNavigate }) {
+      return <nav className="bottom-nav" aria-label="Main navigation">{navItems.map(item=><button key={item.id} className={`nav-item ${screen===item.id?'active':''}`} onClick={()=>item.id==='profile'?null:onNavigate(item.id)} aria-label={item.label}><Icon name={item.icon}/><span>{item.label}</span></button>)}</nav>;
+    }
+    function WorkoutRow({ workout }) {
+      return <div className="workout-row"><div className="date-block">{workout.mon}<strong>{workout.day}</strong></div><div><div className="workout-name">{workout.name}</div><div className="workout-meta">{workout.meta}</div></div><div className="workout-volume">{workout.volume}<span>KG VOL</span></div></div>;
+    }
+    function AltarScreen({ onStart, onNavigate }) {
+      return <div className="app-screen"><AppHeader/><div className="app-scroll"><main className="screen-content">
+        <section className="hero-copy"><div className="micro">Today · Ready status</div><div className="display">Ready to<br/>train?</div></section>
+        <button className="primary-action" onClick={onStart}><div><div className="action-kicker">Next ritual · 8 exercises</div><div className="action-title">Start push</div></div><div className="action-arrow"><Icon name="arrow"/></div></button>
+        <section className="weekly"><div className="weekly-head"><div><div className="micro">Weekly ritual</div><div className="section-title" style={{marginTop:6}}>2 of 4 complete</div></div><div className="weekly-value">50%</div></div><div className="days">{['M','T','W','T','F','S','S'].map((d,i)=><div className={`day ${i===1||i===2?'done':''}`} key={i}>{d}</div>)}</div></section>
+        <section className="metrics"><div className="metric"><div className="micro">Streak</div><div className="metric-value">2<span className="metric-unit">DAYS</span></div></div><div className="metric"><div className="micro">Volume</div><div className="metric-value">0<span className="metric-unit">KG</span></div></div><div className="metric"><div className="micro">Sets</div><div className="metric-value">0<span className="metric-unit">TODAY</span></div></div></section>
+        <div className="section-head"><div className="section-title">Recent training</div><button className="text-action" onClick={()=>onNavigate('history')}>View all</button></div>{workouts.slice(0,2).map((w,i)=><WorkoutRow workout={w} key={i}/>) }
+      </main></div><BottomNav screen="altar" onNavigate={onNavigate}/></div>;
+    }
+    function SessionScreen({ onBack }) {
+      const [weight,setWeight]=useState(32.5); const [reps,setReps]=useState(12); const [setType,setSetType]=useState('WORK'); const [logged,setLogged]=useState(false); const [sets,setSets]=useState([{load:'30 KG × 12',note:'Working set'},{load:'30 KG × 12',note:'Working set'},{load:'32.5 KG × 10',note:'Working set'}]);
+      const types=['WORK','WARM','DROP','FAIL'];
+      function logSet(){ setSets([...sets,{load:`${weight} KG × ${reps}`,note:setType==='WORK'?'Working set':setType.toLowerCase()}]); setLogged(true); setTimeout(()=>setLogged(false),1300); }
+      return <div className="app-screen"><header className="session-bar"><button className="icon-button" onClick={onBack} aria-label="Back"><Icon name="back"/></button><div className="session-title"><strong>WORKOUT</strong><div className="session-time"><span className="live">00:47:12</span></div></div><button className="icon-button" aria-label="End workout"><Icon name="close"/></button></header><div className="app-scroll">
+        <section className="exercise-head"><div className="micro">Exercise 03 · Arms / Machine</div><div className="title">Hammer Strength MTS<br/>Iso-Lateral Biceps Curl</div><div className="body">Set {sets.length+1} · Previous best 32.5 kg × 10</div></section>
+        <section className="suggestion"><Icon name="spark"/><strong>LAST 30 KG × 12 · TRY 32.5 KG × 12</strong></section>
+        <section className="set-builder"><div className="number-grid"><div className="number-control"><div className="micro">Weight</div><div className="step-row"><button className="step-button" onClick={()=>setWeight(Math.max(0,weight-2.5))}>−</button><div className="number-value">{weight}<small>KG</small></div><button className="step-button" onClick={()=>setWeight(weight+2.5)}>+</button></div></div><div className="builder-divider"></div><div className="number-control"><div className="micro">Reps</div><div className="step-row"><button className="step-button" onClick={()=>setReps(Math.max(1,reps-1))}>−</button><div className="number-value">{reps}<small>REPS</small></div><button className="step-button" onClick={()=>setReps(reps+1)}>+</button></div></div></div>
+          <div className="set-options"><button className="set-type" onClick={()=>setSetType(types[(types.indexOf(setType)+1)%types.length])}>{setType}</button><button className={`log-button ${logged?'logged':''}`} onClick={logSet}>{logged?'✓ SET LOGGED':'LOG SET'}</button></div></section>
+        <section className="set-list"><div className="section-head"><div className="section-title">Current exercise</div><div className="micro">{sets.length} sets</div></div>{sets.slice().reverse().map((s,i)=><div className="set-row" key={`${s.load}-${i}`}><div className="set-index">{String(sets.length-i).padStart(2,'0')}</div><div><div className="set-load">{s.load}</div><div className="set-note">{s.note}</div></div><div className="micro">Done</div></div>)}</section>
+      </div>{logged&&<div className="toast">SET {sets.length} LOGGED · {weight} KG × {reps}</div>}</div>;
+    }
+    function HistoryScreen({ onNavigate }) {
+      const [period,setPeriod]=useState('MONTH'); return <div className="app-screen"><AppHeader meta="Training archive"/><div className="app-scroll"><div className="screen-heading"><div><div className="micro">Verified history</div><div className="display">Training<br/>log</div></div><button className="icon-button" aria-label="Search"><Icon name="search"/></button></div><div className="period-tabs">{['WEEK','MONTH','ALL'].map(p=><button key={p} onClick={()=>setPeriod(p)} className={period===p?'active':''}>{p}</button>)}</div><div className="summary-strip"><div><div className="micro">Sessions</div><strong>{period==='WEEK'?'3':'12'}</strong></div><div><div className="micro">Volume</div><strong>{period==='WEEK'?'47.7K':'184.6K'}</strong></div><div><div className="micro">Time</div><strong>{period==='WEEK'?'2H54':'9H24'}</strong></div></div><div className="history-list">{workouts.map((w,i)=><WorkoutRow workout={w} key={i}/>)}</div></div><BottomNav screen="history" onNavigate={onNavigate}/></div>;
+    }
+    const heat = [0,0,1,0,0,2,0,0,0,0,0,0, 0,0,0,1,0,2,2,2,2,2,0,0, 1,0,2,0,2,1,2,0,0,2,2,0, 1,0,0,1,2,2,2,0,0,0,2,0, 1,0,1,2,2,2,0,0,2,2,0,0];
+    function StatsScreen({ onNavigate }) {
+      const [period,setPeriod]=useState('MONTH'); const heights=period==='WEEK'?[28,42,48,70,60]:period==='MONTH'?[30,54,82,80,58]:[44,68,74,88,92];
+      return <div className="app-screen"><AppHeader meta="Performance protocol"/><div className="app-scroll"><div className="screen-heading"><div><div className="micro">Arsenal analytics</div><div className="display">Performance</div></div></div><div className="period-tabs">{['WEEK','MONTH','ALL'].map(p=><button key={p} onClick={()=>setPeriod(p)} className={period===p?'active':''}>{p}</button>)}</div><section className="stat-hero"><div><div className="micro">Total volume</div><strong>{period==='WEEK'?'47.7K':'184.6K'}</strong></div><small>KG LIFTED</small></section><section className="chart-card"><div className="section-title">Volume progression</div><div className="bar-chart">{heights.map((h,i)=><div key={i} className={`bar ${i===2||i===3?'active':''}`} style={{height:`${h}%`}}><span>W{i+1}</span></div>)}</div></section><section className="chart-card" style={{paddingBottom:28}}><div className="section-title">Consistency heatmap</div><div className="heatmap">{heat.map((v,i)=><div key={i} className={`heat-cell ${v?'l'+v:''}`}></div>)}</div></section></div><BottomNav screen="stats" onNavigate={onNavigate}/></div>;
+    }
+
+    const modeCopy = {
+      precision: 'Empfohlen: klarere Hierarchie, kontrollierter Rot-Einsatz und ruhige Flächen bei voller TrackGod-Identität.',
+      compact: 'Power-User-Variante: engere Abstände und mehr Information pro Bildschirm für schnelle Gym-Nutzung.',
+      cinematic: 'Markenstärkste Variante: größere Typografie und stärkere Textur – eindrucksvoll, aber bewusst weniger effizient.'
+    };
+    const screenChanges = {
+      altar: [ ['Primärweg','Die nächste sinnvolle Aktion ist sofort sichtbar statt zwischen gleich lauten Karten zu konkurrieren.'], ['Informationsdichte','Drei kompakte Tageswerte ersetzen vier große Statistik-Karten.'], ['Marke','Textur und Rot bleiben, werden aber gezielt statt flächig eingesetzt.'] ],
+      session: [ ['Ergonomie','Gewicht, Wiederholungen und Log-Aktion liegen in einer ruhigen, einhändig bedienbaren Zone.'], ['Hierarchie','Das große END-Element wird zu einer sekundären Toolbar-Aktion.'], ['Feedback','Satz-Logging bestätigt direkt und erhält den Kontext der Übung.'] ],
+      history: [ ['Scanbarkeit','Datum, Workout, Zeit und Volumen folgen auf jeder Zeile derselben Achse.'], ['Filter','Zeitraumsteuerung ersetzt die visuell schwere Kalenderleiste.'], ['Dichte','Mehr Verlauf bleibt sichtbar, ohne Text auf 8–9sp zu verkleinern.'] ],
+      stats: [ ['Priorität','Eine Hero-Metrik führt; Diagramme folgen in klarer Reihenfolge.'], ['Vergleich','Zeitraumwechsel verändert dieselbe Struktur statt mehrere konkurrierende Module zu zeigen.'], ['Lesbarkeit','Weniger Rahmen und größere Chart-Flächen verbessern das schnelle Erfassen.'] ]
+    };
+    function Prototype() {
+      const [screen,setScreen]=useState('altar'); const [mode,setMode]=useState('precision');
+      const screenLabel={altar:'Altar',session:'Session',history:'History',stats:'Stats'}[screen];
+      function navigate(target){ if(target==='profile') return; setScreen(target); }
+      let content = screen==='altar'?<AltarScreen onStart={()=>setScreen('session')} onNavigate={navigate}/>:screen==='session'?<SessionScreen onBack={()=>setScreen('altar')}/>:screen==='history'?<HistoryScreen onNavigate={navigate}/>:<StatsScreen onNavigate={navigate}/>;
+      return <main className="prototype-shell"><aside className="brief-panel"><div className="eyebrow">TrackGod · UX/UI Concept</div><h1>Harder.<br/>Calmer.<br/>Clearer.</h1><p>Eine professionelle Evolution des bestehenden Industrial-Brutalism-Systems – nicht freundlicher, sondern präziser und im täglichen Training schneller erfassbar.</p>
+        <div className="control-block"><div className="control-label">Screen</div><div className="segmented">{['altar','session','history','stats'].map(id=><button key={id} className={`shell-button ${screen===id?'active':''}`} onClick={()=>setScreen(id)}>{id}</button>)}</div></div>
+        <div className="control-block"><div className="control-label">Design-Intensität</div><div className="segmented">{[['precision','Precision'],['compact','Compact'],['cinematic','Cinematic']].map(([id,label])=><button key={id} className={`shell-button ${mode===id?'active':''}`} onClick={()=>setMode(id)}>{label}</button>)}</div><div className="mode-copy">{modeCopy[mode]}</div></div>
+        <ul className="change-list">{screenChanges[screen].map(([title,copy],i)=><li key={title}><span className="change-index">0{i+1}</span><span><strong>{title}</strong><br/>{copy}</span></li>)}</ul>
+      </aside><section className="stage"><div className="phone-wrap"><div className="flow-hint">Klickbar: Start Workout, ±, Log Set und Bottom Navigation</div><AndroidFrame><div className={`tg-app mode-${mode}`} data-screen={screenLabel}>{content}</div></AndroidFrame></div></section></main>;
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<Prototype/>);
+  </script>
+</body>
+</html>

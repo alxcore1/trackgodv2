@@ -5,6 +5,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import androidx.room.withTransaction
+import com.trackgod.app.core.database.LegacyCategoryMapper
 import com.trackgod.app.core.database.TrackGodDatabase
 import com.trackgod.app.core.database.entity.BodyMetricEntity
 import com.trackgod.app.core.database.entity.ExerciseEntity
@@ -45,19 +46,6 @@ class V1ImportRepository @Inject constructor(
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US),
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US),
             SimpleDateFormat("yyyy-MM-dd", Locale.US),
-        )
-
-        private val CATEGORY_MAP = mapOf(
-            "upper body" to "Chest",
-            "lower body" to "Legs",
-            "core" to "Core",
-            "back" to "Back",
-            "chest" to "Chest",
-            "shoulders" to "Shoulders",
-            "arms" to "Arms",
-            "legs" to "Legs",
-            "cardio" to "Cardio",
-            "full body" to "Full Body",
         )
 
         private val OBJECTIVE_MAP = mapOf(
@@ -119,43 +107,112 @@ class V1ImportRepository @Inject constructor(
             // 3. Import exercises (machines)
             val exerciseNameToId = mutableMapOf<String, Long>()
             var exercisesImported = 0
+            val exerciseByName = mutableMapOf<String, ExerciseEntity>()
+            val machineSources = mutableListOf<ImportExerciseSource>()
+            val legacyExerciseSources = mutableListOf<ImportExerciseSource>()
+            val sourceCategoryByName = mutableMapOf<String, String>()
 
             // Pre-populate map with exercises that already exist in v2
             db.exerciseDao().getAllActiveSnapshot().forEach { existing ->
-                exerciseNameToId[existing.name.lowercase()] = existing.id
+                val key = existing.name.lowercase()
+                exerciseNameToId[key] = existing.id
+                exerciseByName[key] = existing
+            }
+
+            if (tableExists(v1Db, "machines")) {
+                v1Db.rawQuery("SELECT * FROM machines", null).use { cursor ->
+                    while (cursor.moveToNext()) {
+                        val name = cursor.getStringOrNull("name") ?: continue
+                        val source = ImportExerciseSource(
+                            name = name,
+                            category = cursor.getStringOrNull("category"),
+                            equipmentType = "machine",
+                            brand = cursor.getStringOrNull("brand"),
+                            alternativeNames = cursor.getStringOrNull("alternative_names"),
+                        )
+                        machineSources += source
+                        sourceCategoryByName[name.lowercase()] = LegacyCategoryMapper.normalize(source.category)
+                    }
+                }
+            }
+
+            if (tableExists(v1Db, "exercises")) {
+                v1Db.rawQuery("SELECT * FROM exercises", null).use { cursor ->
+                    while (cursor.moveToNext()) {
+                        val name = cursor.getStringOrNull("name") ?: continue
+                        val source = ImportExerciseSource(
+                            name = name,
+                            category = cursor.getStringOrNull("muscle_group"),
+                            equipmentType = cursor.getStringOrNull("equipment_type") ?: "machine",
+                            brand = null,
+                            alternativeNames = null,
+                        )
+                        legacyExerciseSources += source
+                        sourceCategoryByName.putIfAbsent(name.lowercase(), LegacyCategoryMapper.normalize(source.category))
+                    }
+                }
             }
 
             db.withTransaction {
-                if (tableExists(v1Db, "machines")) {
-                    v1Db.rawQuery("SELECT * FROM machines", null).use { cursor ->
-                        while (cursor.moveToNext()) {
-                            val name = cursor.getStringOrNull("name") ?: continue
-                            val category = cursor.getStringOrNull("category") ?: "Other"
-                            val brand = cursor.getStringOrNull("brand")
-                            val alternativeNames = cursor.getStringOrNull("alternative_names")
-
-                            // Deduplicate: reuse existing exercise if name matches
-                            val existing = exerciseNameToId[name.lowercase()]
-                            if (existing != null) continue
-
-                            val mappedCategory = CATEGORY_MAP[category.lowercase()] ?: category
-
-                            val exerciseId = db.exerciseDao().insert(
-                                ExerciseEntity(
-                                    name = name,
-                                    category = mappedCategory,
-                                    equipmentType = "machine",
-                                    brand = brand,
-                                    alternativeNames = alternativeNames,
-                                    isCustom = false,
-                                    isActive = true,
-                                    createdAt = now,
-                                )
+                for (source in machineSources) {
+                    val key = source.name.lowercase()
+                    val existing = exerciseByName[key]
+                    if (existing != null) {
+                        val betterCategory = LegacyCategoryMapper.betterCategory(source.category, existing.category)
+                        if (betterCategory != null) {
+                            val updated = existing.copy(
+                                category = betterCategory,
+                                equipmentType = "machine",
+                                brand = existing.brand ?: source.brand,
+                                alternativeNames = existing.alternativeNames ?: source.alternativeNames,
                             )
-                            exerciseNameToId[name.lowercase()] = exerciseId
-                            exercisesImported++
+                            db.exerciseDao().update(updated)
+                            exerciseByName[key] = updated
                         }
+                        continue
                     }
+
+                    val exercise = ExerciseEntity(
+                        name = source.name,
+                        category = LegacyCategoryMapper.normalize(source.category),
+                        equipmentType = "machine",
+                        brand = source.brand,
+                        alternativeNames = source.alternativeNames,
+                        isCustom = false,
+                        isActive = true,
+                        createdAt = now,
+                    )
+                    val exerciseId = db.exerciseDao().insert(exercise)
+                    exerciseNameToId[key] = exerciseId
+                    exerciseByName[key] = exercise.copy(id = exerciseId)
+                    exercisesImported++
+                }
+
+                for (source in legacyExerciseSources) {
+                    val key = source.name.lowercase()
+                    val existing = exerciseByName[key]
+                    if (existing != null) {
+                        val betterCategory = LegacyCategoryMapper.betterCategory(source.category, existing.category)
+                        if (betterCategory != null) {
+                            val updated = existing.copy(category = betterCategory)
+                            db.exerciseDao().update(updated)
+                            exerciseByName[key] = updated
+                        }
+                        continue
+                    }
+
+                    val exercise = ExerciseEntity(
+                        name = source.name,
+                        category = LegacyCategoryMapper.normalize(source.category),
+                        equipmentType = source.equipmentType,
+                        isCustom = false,
+                        isActive = true,
+                        createdAt = now,
+                    )
+                    val exerciseId = db.exerciseDao().insert(exercise)
+                    exerciseNameToId[key] = exerciseId
+                    exerciseByName[key] = exercise.copy(id = exerciseId)
+                    exercisesImported++
                 }
 
                 // 4. Import workouts and entries
@@ -219,13 +276,19 @@ class V1ImportRepository @Inject constructor(
                                 // Check DB in case it was added outside our map
                                 val dbExisting = db.exerciseDao().getByName(machineName)
                                 if (dbExisting != null) {
+                                    val sourceCategory = sourceCategoryByName[machineName.lowercase()]
+                                    val betterCategory = LegacyCategoryMapper.betterCategory(sourceCategory, dbExisting.category)
+                                    if (betterCategory != null) {
+                                        db.exerciseDao().update(dbExisting.copy(category = betterCategory))
+                                    }
                                     exerciseNameToId[machineName.lowercase()] = dbExisting.id
                                     dbExisting.id
                                 } else {
+                                    val sourceCategory = sourceCategoryByName[machineName.lowercase()]
                                     val newId = db.exerciseDao().insert(
                                         ExerciseEntity(
                                             name = machineName,
-                                            category = "Other",
+                                            category = sourceCategory ?: "Other",
                                             equipmentType = "machine",
                                             isCustom = true,
                                             isActive = true,
@@ -410,3 +473,11 @@ class V1ImportRepository @Inject constructor(
         return if (isNull(index)) null else getFloat(index)
     }
 }
+
+private data class ImportExerciseSource(
+    val name: String,
+    val category: String?,
+    val equipmentType: String,
+    val brand: String?,
+    val alternativeNames: String?,
+)

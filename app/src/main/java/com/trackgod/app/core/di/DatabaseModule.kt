@@ -2,6 +2,7 @@ package com.trackgod.app.core.di
 
 import android.content.Context
 import androidx.room.Room
+import com.trackgod.app.core.database.LegacyDatabaseRepair
 import com.trackgod.app.core.database.TrackGodDatabase
 import com.trackgod.app.core.database.dao.BackupDao
 import com.trackgod.app.core.database.dao.BodyMetricDao
@@ -24,6 +25,7 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): TrackGodDatabase {
+        LegacyDatabaseRepair.repairIfNeeded(context.getDatabasePath("trackgod.db"))
         return Room.databaseBuilder(
             context,
             TrackGodDatabase::class.java,
